@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regex.make specs</title>
+
+  <!-- Jasmine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jasmine/jasmine@5.1.2/lib/jasmine-core/jasmine.css">
+  <script src="https://cdn.jsdelivr.net/gh/jasmine/jasmine@5.1.2/lib/jasmine-core/jasmine.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jasmine/jasmine@5.1.2/lib/jasmine-core/jasmine-html.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jasmine/jasmine@5.1.2/lib/jasmine-core/boot0.js"></script>
+  <script>
+    jasmine.getEnv().configure({random: false});
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/jasmine/jasmine@5.1.2/lib/jasmine-core/boot1.js"></script>
+
+  <!-- Lib -->
+  <script src="../dist/regex-make.min.js"></script>
+
+  <!-- Specs -->
+  <script src="./make-spec.js"></script>
+  <script src="./partial-spec.js"></script>
+  <script src="./interpolate-partial-spec.js"></script>
+  <script src="./interpolate-regexp-spec.js"></script>
+  <script src="./interpolate-string-spec.js"></script>
+  <script src="./regex-syntax-spec.js"></script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "regex-make",
+  "version": "0.1.0",
+  "description": "Context-aware regex template strings with batteries included",
+  "exports": "./src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --minify --sourcemap --outfile=dist/regex-make.min.js --global-name=Regex",
+    "pretest": "npm run build",
+    "test": "jasmine",
+    "prepublish": "npm test"
+  },
+  "author": "Steven Levithan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slevithan/regex-make.git"
+  },
+  "keywords": [
+    "regex",
+    "regexp",
+    "template"
+  ],
+  "devDependencies": {
+    "esbuild": "^0.21.4",
+    "jasmine": "^5.1.0"
+  }
+}

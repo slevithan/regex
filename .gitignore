@@ -1,0 +1,7 @@
+# Installed npm modules
+node_modules
+
+# Folder view configuration/cache files
+.DS_Store
+desktop.ini
+Thumbs.db
