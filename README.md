@@ -66,7 +66,7 @@ const palindrome = Regex.make('i')`
 palindrome.test('Redivider'); // true
 ```
 
-## Context
+## Why
 
 Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use.<sup>[1]</sup> The differences are just plain hard to fully grok and can easily create subtle bugs.
 
@@ -75,8 +75,6 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, free spacing, comments, no auto capture, subexpressions as subroutines via `\g<name>`, definition blocks via `(?(DEFINE)…)`, and always using UnicodeSets mode (flag `v`) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
 `Regex.make` adds all of these features and outputs native `RegExp` instances. It additionally adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with modern (ES2024+) JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
-
-Now lets party!
 
 ## Flags
 
@@ -171,7 +169,9 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - Adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own flags.
 
-For all of these cases, you can interpolate `Regex.partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` Regex.partial`…` `` as a tag, equivalent to ``Regex.partial(String.raw`…`)``. Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
+For all of these cases, you can interpolate `Regex.partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` Regex.partial`…` `` as a tag, equivalent to ``Regex.partial(String.raw`…`)``.
+
+Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
 > As with all interpolation in `Regex.make`, partial patterns are treated as atomic units. This is relevant e.g. if followed by a quantifier, if they contain top-level alternation, or if bordered by a character class range or set operator.
 
@@ -189,7 +189,7 @@ Regex.make`[a${Regex.partial('^')}]`
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags `u` and `v`.
 
-Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not escaped. `Regex.partial('^^')` embedded in character class context would still correctly lead to a double punctuator error.
+Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not escaped. `Regex.partial('^^')` embedded in character class context would still correctly lead to a double-punctuator error.
 
 > What if you wanted to dynamically choose whether to negate a character class? Well then! Put the whole character class inside the partial.
 
@@ -307,26 +307,21 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br> ●&nbsp;Backrefs adjusted <br> ●&nbsp;Own flags apply locally</td>
   </tr>
   <tr>
-    <td>Character class:<br>
-      <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.
-    </td>
+    <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
     <td><code>Regex.make`[${'a-z'}]`</code><br><br></td>
     <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br> ●&nbsp;Escaped</td>
     <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br><br></td>
     <td><i>Error</i> <br><br><br></td>
   </tr>
   <tr>
-    <td>Interval quantifier: <code>{…}</code>
-    </td>
+    <td>Interval quantifier: <code>{…}</code></td>
     <td><code>Regex.make`.{1,${5}}`</code></td>
     <td rowspan="3">●&nbsp;Sandboxed <br> ●&nbsp;Escaped <br><br><br></td>
     <td rowspan="3">●&nbsp;Sandboxed <br><br><br><br></td>
     <td rowspan="3"><i>Error</i> <br><br><br><br></td>
   </tr>
   <tr>
-    <td>Enclosed token:<br>
-      <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code>
-    </td>
+    <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
     <td><code>Regex.make`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
@@ -342,11 +337,13 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ```js
 import Regex from './src/index.js';
+
+console.log(Regex.make`\w+`.test('Nice!'));
 ```
 
 ## Compatibility
 
-`Regex.make` relies on `unicodeSets` (flag `v`), which has near-universal browser support since mid-2023 and is available in Node.js 20+. Using interpolated `RegExp` instances with a different value for flag `i` than their outer regex currently relies on regex [modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+, and throws a descriptive error in environments without support. You can avoid this by aligning the use of flag `i` on inner and outer regexes.
+`Regex.make` relies on `unicodeSets` (flag `v`), which has near-universal browser support since mid-2023 and is available in Node.js 20+. Using an interpolated `RegExp` instance with a different value for flag `i` than its outer regex currently relies on regex [modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+, and throws a descriptive error in environments without support. You can avoid this by aligning the use of flag `i` on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 
 ## About
 
