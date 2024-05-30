@@ -226,24 +226,22 @@ export function containsCharClassUnion(charClassPattern) {
 && |
 .
   `.replace(/\s+/g, ''), 'gsu');
-  let hasFirstOne = false;
+  let hasFirst = false;
   let lastMatch;
   for (const {0: match, groups} of charClassPattern.matchAll(regex)) {
     if (groups.pPropOfStr || groups.qPropOfStr) {
       return true;
     }
-    if (match === '[' && hasFirstOne) {
+    if (match === '[' && hasFirst) {
       return true;
     }
     if (['-', '--', '&&'].includes(match)) {
-      hasFirstOne = false;
-    } else if (['[', ']'].includes(match)) {
-      // No-op
-    } else {
-      if (hasFirstOne || lastMatch === ']') {
+      hasFirst = false;
+    } else if (!['[', ']'].includes(match)) {
+      if (hasFirst || lastMatch === ']') {
         return true;
       }
-      hasFirstOne = true;
+      hasFirst = true;
     }
     lastMatch = match;
   }

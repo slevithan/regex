@@ -123,7 +123,7 @@ Additionally:
 
 `Regex.make` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `Regex.make`, escaped strings are treated as atomic units. In other words, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a nested union class if it contains more than one character node.
+> As with all interpolation in `Regex.make`, escaped strings are treated as atomic units. In other words, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a nested union if it contains more than one character node.
 
 As a result, `Regex.make` is a safe alternative to TC39 proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
 
@@ -173,7 +173,7 @@ For all of these cases, you can interpolate `Regex.partial(value)` to avoid esca
 
 Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
-> As with all interpolation in `Regex.make`, partial patterns are treated as atomic units. This is relevant e.g. if followed by a quantifier, if they contain top-level alternation, or if bordered by a character class range or set operator.
+> As with all interpolation in `Regex.make`, partial patterns are treated as atomic units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
 
 If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
 

@@ -1,4 +1,5 @@
-//! Regex.make 0-alpha; Steven Levithan; MIT License
+//! Regex.make 0.1.0 alpha; Steven Levithan; MIT License
+// Context-aware regex template strings with batteries included
 
 import { CharClassContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, RegexContext, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
@@ -39,7 +40,6 @@ function makeFromTemplate(constructor, flags, template, ...values) {
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
-
   // To keep output cleaner for simple string escaping, don't start wrapping/sandboxing
   // interpolated values until something triggers the need for it
   let wrap = false;
@@ -119,35 +119,35 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
   return wrap ? `(?:${escapedValue})` : escapedValue;
 }
 
-function transformForFlags(innerRegex, outerFlags) {
+function transformForFlags(regex, outerFlags) {
   const modFlagsObj = {
     i: null,
     m: null,
     s: null,
   };
   const newlines = '\\n\\r\\u2028\\u2029';
-  let result = innerRegex.source;
+  let value = regex.source;
 
-  if (innerRegex.ignoreCase !== outerFlags.includes('i')) {
+  if (regex.ignoreCase !== outerFlags.includes('i')) {
     if (patternModsOn) {
-      modFlagsObj.i = innerRegex.ignoreCase;
+      modFlagsObj.i = regex.ignoreCase;
     } else {
       throw new Error('Pattern modifiers not supported, so the value of flag i on the interpolated RegExp must match the outer regex');
     }
   }
-  if (innerRegex.dotAll !== outerFlags.includes('s')) {
+  if (regex.dotAll !== outerFlags.includes('s')) {
     if (patternModsOn) {
-      modFlagsObj.s = innerRegex.dotAll;
+      modFlagsObj.s = regex.dotAll;
     } else {
-      result = replaceUnescaped(result, '\\.', (innerRegex.dotAll ? '[^]' : `[[^]--[${newlines}]]`), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\.', (regex.dotAll ? '[^]' : `[[^]--[${newlines}]]`), RegexContext.DEFAULT);
     }
   }
-  if (innerRegex.multiline !== outerFlags.includes('m')) {
+  if (regex.multiline !== outerFlags.includes('m')) {
     if (patternModsOn) {
-      modFlagsObj.m = innerRegex.multiline;
+      modFlagsObj.m = regex.multiline;
     } else {
-      result = replaceUnescaped(result, '\\^', (innerRegex.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), RegexContext.DEFAULT);
-      result = replaceUnescaped(result, '\\$', (innerRegex.multiline ? `(?=$|[${newlines}])` : '(?![^])'), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\^', (regex.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\$', (regex.multiline ? `(?=$|[${newlines}])` : '(?![^])'), RegexContext.DEFAULT);
     }
   }
 
@@ -160,12 +160,12 @@ function transformForFlags(innerRegex, outerFlags) {
     }
     if (modifier) {
       return {
-        value: `(?${modifier}:${result})`,
+        value: `(?${modifier}:${value})`,
         usedModifier: true,
       };
     }
   }
-  return {value: result};
+  return {value};
 }
 
 class PartialPattern {
