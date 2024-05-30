@@ -33,11 +33,11 @@ const emoji = Regex.make`
     | \p{Emoji_Presentation}
     | \p{Emoji} \uFE0F
   )
-  <kbd># Unnamed (…) is non-capturing, and \g<name> is a subroutine,
-  # not a backreference like \k<name></kbd>
+  # Unnamed (…) is non-capturing, and \g<name> is a subroutine,
+  # not a backreference like \k<name>
   ( \u200D  \g<emojiPart> )*
   |
-  <kbd># Regional indicator symbol letters are used for flags</kbd>
+  # Regional indicator symbol letters are used for flags
   [🇦-🇿]{2}
 `;
 
@@ -45,11 +45,11 @@ const interpolationExample = Regex.make('gm')`
   # The string is contextually escaped and repeated as an atomic unit
   ^ ${'a.b'}+ $
   |
-  <kbd># Only the inner regex is case insensitive!
-  # The outer regex's flag m is also not applied to it</kbd>
+  # Only the inner regex is case insensitive!
+  # The outer regex's flag m is also not applied to it
   ${/^a.b$/i}
   |
-  <kbd># This string is contextually sandboxed but not escaped</kbd>
+  # This string is contextually sandboxed but not escaped
   ${Regex.partial('^a.b$')}
 `;
 
@@ -59,7 +59,7 @@ const palindrome = Regex.make('i')`
   )
 
   (?<char> \g<alpha> )
-  <kbd># Recursively match the regex up to max-depth 10</kbd>
+  # Recursively match the regex up to max-depth 10
   ( (?R=10) | \g<alpha>? )
   \k<char>
 `;
@@ -306,7 +306,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td><code>make`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> <nobr>• Own flags apply locally</nobr></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> • Own flags apply locally</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
@@ -323,11 +323,11 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td rowspan="3"><i>Error</i> <br><br><br><br></td>
   </tr>
   <tr>
-    <td>Enclosed token:<br> <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
+    <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
     <td><code>make`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
-    <td>Group name:<br> <code>(?<…>)</code>, <code>\k<…></code>
+    <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>
     </td>
     <td><code>make`…\k<${'a'}>`</code></td>
   </tr>
