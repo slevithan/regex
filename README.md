@@ -306,7 +306,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td><code>make`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> • Own flags apply locally</td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Own flags apply</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>

@@ -10,6 +10,7 @@ export const RegexContext = {
 export const CharClassContext = {
   DEFAULT: 'CC_DEFAULT',
   ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
+  Q_TOKEN: 'CC_Q_TOKEN',
   OPEN_ESCAPE: 'CC_OPEN_ESCAPE',
 };
 
@@ -80,7 +81,8 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
   if (
     regexContext === RegexContext.ENCLOSED_TOKEN ||
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
-    charClassContext === CharClassContext.ENCLOSED_TOKEN
+    charClassContext === CharClassContext.ENCLOSED_TOKEN ||
+    charClassContext === CharClassContext.Q_TOKEN
   ) {
     if (escapesRemoved.includes('}')) {
       return '}';
@@ -102,11 +104,11 @@ export function getEndContextForIncompletePattern(partialPattern, {
   charClassDepth = 0,
   lastPos = 0,
 }) {
-  const possibleContextToken = /(?<groupN>\(\?<(?![=!])|\\k<)|(?<intervalQ>\{)|(?<enclosedT>\\[pPu]\{)|(?<ccOnlyEnclosedT>\\q\{)|\\.|(?<openE>\\)|./gsu;
+  const possibleContextToken = /(?<groupN>\(\?<(?![=!])|\\k<)|(?<intervalQ>\{)|(?<enclosedT>\\[pPu]\{)|(?<qT>\\q\{)|\\.|(?<openE>\\)|./gsu;
   possibleContextToken.lastIndex = lastPos;
   let match;
   while (match = possibleContextToken.exec(partialPattern)) {
-    const {0: m, groups: {groupN, intervalQ, enclosedT, ccOnlyEnclosedT, openE}} = match;
+    const {0: m, groups: {groupN, intervalQ, enclosedT, qT, openE}} = match;
     if (m === '[') {
       charClassDepth++;
       regexContext = RegexContext.CHAR_CLASS;
@@ -121,28 +123,32 @@ export function getEndContextForIncompletePattern(partialPattern, {
       // Reset for accuracy, but it will end up being an error if there is an unclosed context in
       // the character class
       charClassContext = CharClassContext.DEFAULT;
-    } else if (regexContext !== RegexContext.CHAR_CLASS) {
-      if (groupN) {
-        regexContext = RegexContext.GROUP_NAME;
-      } else if (intervalQ) {
-        regexContext = RegexContext.INTERVAL_QUANTIFIER;
+    } else if (regexContext === RegexContext.CHAR_CLASS) {
+      if (openE) {
+        charClassContext = CharClassContext.OPEN_ESCAPE;
+      } else if (enclosedT) {
+        charClassContext = CharClassContext.ENCLOSED_TOKEN;
+      } else if (qT) {
+        charClassContext = CharClassContext.Q_TOKEN;
+      } else if (
+        m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)
+      ) {
+        charClassContext = CharClassContext.DEFAULT;
+      }
+    } else {
+      if (openE) {
+        regexContext = RegexContext.OPEN_ESCAPE;
       } else if (enclosedT) {
         regexContext = RegexContext.ENCLOSED_TOKEN;
-      } else if (openE) {
-        regexContext = RegexContext.OPEN_ESCAPE;
+      } else if (intervalQ) {
+        regexContext = RegexContext.INTERVAL_QUANTIFIER;
+      } else if (groupN) {
+        regexContext = RegexContext.GROUP_NAME;
       } else if (
         (m === '>' && regexContext === RegexContext.GROUP_NAME) ||
-        (m === '}' && (regexContext === RegexContext.INTERVAL_QUANTIFIER || regexContext === RegexContext.ENCLOSED_TOKEN))
+        (m === '}' && (regexContext === RegexContext.ENCLOSED_TOKEN || regexContext === RegexContext.INTERVAL_QUANTIFIER))
        ) {
         regexContext = RegexContext.DEFAULT;
-      }
-    } else if (regexContext === RegexContext.CHAR_CLASS) {
-      if (enclosedT || ccOnlyEnclosedT) {
-        charClassContext = CharClassContext.ENCLOSED_TOKEN;
-      } else if (openE) {
-        charClassContext = CharClassContext.OPEN_ESCAPE;
-      } else if (m === '}' && charClassContext === CharClassContext.ENCLOSED_TOKEN) {
-        charClassContext = CharClassContext.DEFAULT;
       }
     }
   }
@@ -174,18 +180,18 @@ export function replaceUnescaped(input, needle, replacement, inRegexContext) {
   const regex = new RegExp(String.raw`(?!${needle})\\.|(?<found>${needle})|.`, 'gsu');
   let numCharClassesOpen = 0;
   let result = '';
-  for (const {0: match, groups: {found}} of input.matchAll(regex)) {
+  for (const {0: m, groups: {found}} of input.matchAll(regex)) {
     if (found && (!inRegexContext || (inRegexContext === RegexContext.DEFAULT) === !numCharClassesOpen)) {
       result += replacement;
       continue;
     }
 
-    if (match === '[') {
+    if (m === '[') {
       numCharClassesOpen++;
-    } else if (match === ']') {
+    } else if (m === ']') {
       numCharClassesOpen--;
     }
-    result += match;
+    result += m;
   }
   return result;
 }
@@ -227,23 +233,23 @@ export function containsCharClassUnion(charClassPattern) {
 .
   `.replace(/\s+/g, ''), 'gsu');
   let hasFirst = false;
-  let lastMatch;
-  for (const {0: match, groups} of charClassPattern.matchAll(regex)) {
+  let lastM;
+  for (const {0: m, groups} of charClassPattern.matchAll(regex)) {
     if (groups.pPropOfStr || groups.qPropOfStr) {
       return true;
     }
-    if (match === '[' && hasFirst) {
+    if (m === '[' && hasFirst) {
       return true;
     }
-    if (['-', '--', '&&'].includes(match)) {
+    if (['-', '--', '&&'].includes(m)) {
       hasFirst = false;
-    } else if (!['[', ']'].includes(match)) {
-      if (hasFirst || lastMatch === ']') {
+    } else if (!['[', ']'].includes(m)) {
+      if (hasFirst || lastM === ']') {
         return true;
       }
       hasFirst = true;
     }
-    lastMatch = match;
+    lastM = m;
   }
   return false;
 }

@@ -40,6 +40,7 @@ function makeFromTemplate(constructor, flags, template, ...values) {
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
+
   // To keep output cleaner for simple string escaping, don't start wrapping/sandboxing
   // interpolated values until something triggers the need for it
   let wrap = false;
@@ -50,6 +51,8 @@ function makeFromTemplate(constructor, flags, template, ...values) {
     if (raw !== '') {
       wrap = true;
     }
+    // Only need to sandbox `\0` in character classes since, elsewhere, following interpolated
+    // values are always atomized
     pattern += sandboxUnsafeNulls(raw, RegexContext.CHAR_CLASS);
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
@@ -87,11 +90,11 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
   }
 
   if (
-    regexContext === RegexContext.GROUP_NAME ||
-    regexContext === RegexContext.INTERVAL_QUANTIFIER ||
     regexContext === RegexContext.ENCLOSED_TOKEN ||
-    (regexContext === RegexContext.CHAR_CLASS &&
-      charClassContext === CharClassContext.ENCLOSED_TOKEN)
+    regexContext === RegexContext.INTERVAL_QUANTIFIER ||
+    regexContext === RegexContext.GROUP_NAME ||
+    charClassContext === CharClassContext.ENCLOSED_TOKEN ||
+    charClassContext === CharClassContext.Q_TOKEN
   ) {
     return isPartial ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
