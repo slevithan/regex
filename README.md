@@ -33,11 +33,11 @@ const emoji = Regex.make`
     | \p{Emoji_Presentation}
     | \p{Emoji} \uFE0F
   )
-  # Unnamed (…) is non-capturing, and \g<name> is a subroutine,
-  # not a backreference like \k<name>
+  <kbd># Unnamed (…) is non-capturing, and \g<name> is a subroutine,
+  # not a backreference like \k<name></kbd>
   ( \u200D  \g<emojiPart> )*
   |
-  # Regional indicator symbol letters are used for flags
+  <kbd># Regional indicator symbol letters are used for flags</kbd>
   [🇦-🇿]{2}
 `;
 
@@ -45,11 +45,11 @@ const interpolationExample = Regex.make('gm')`
   # The string is contextually escaped and repeated as an atomic unit
   ^ ${'a.b'}+ $
   |
-  # Only the inner regex is case insensitive!
-  # The outer regex's flag m is also not applied to it
+  <kbd># Only the inner regex is case insensitive!
+  # The outer regex's flag m is also not applied to it</kbd>
   ${/^a.b$/i}
   |
-  # This string is contextually sandboxed but not escaped
+  <kbd># This string is contextually sandboxed but not escaped</kbd>
   ${Regex.partial('^a.b$')}
 `;
 
@@ -59,7 +59,7 @@ const palindrome = Regex.make('i')`
   )
 
   (?<char> \g<alpha> )
-  # Recursively match the regex up to max-depth 10
+  <kbd># Recursively match the regex up to max-depth 10</kbd>
   ( (?R=10) | \g<alpha>? )
   \k<char>
 `;
@@ -178,7 +178,7 @@ Apart from edge cases, `Regex.partial` just embeds the provided string or other 
 If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
 
 <details>
-  <summary><b>Show me some edge cases</b></summary>
+  <summary>👉 <b>Show me some edge cases</b></summary>
 
 First, let's consider:
 
@@ -258,7 +258,7 @@ Regex.make`[a-${'d'}e]`
 </details>
 
 <details>
-  <summary><b>Show an example of composing a dynamic number of strings</b></summary>
+  <summary>👉 <b>Show an example of composing a dynamic number of strings</b></summary>
 
 ```js
 // Instead of
@@ -291,6 +291,8 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## Interpolation contexts
 
+> `Regex.make` is shortened below as `make` to better fit the table.
+
 <table>
   <tr>
     <th>Context</th>
@@ -301,33 +303,33 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
   <tr>
     <td>Default<br><br><br></td>
-    <td><code>Regex.make`${'^.+'}`</code><br><br><br></td>
-    <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br> ●&nbsp;Escaped <br><br></td>
-    <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br><br><br></td>
-    <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br> ●&nbsp;Backrefs adjusted <br> ●&nbsp;Own flags apply locally</td>
+    <td><code>make`${'^.+'}`</code><br><br><br></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> <nobr>• Own flags apply locally</nobr></td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
-    <td><code>Regex.make`[${'a-z'}]`</code><br><br></td>
-    <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br> ●&nbsp;Escaped</td>
-    <td>●&nbsp;Sandboxed <br> ●&nbsp;Atomized <br><br></td>
+    <td><code>make`[${'a-z'}]`</code><br><br></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br></td>
     <td><i>Error</i> <br><br><br></td>
   </tr>
   <tr>
     <td>Interval quantifier: <code>{…}</code></td>
-    <td><code>Regex.make`.{1,${5}}`</code></td>
-    <td rowspan="3">●&nbsp;Sandboxed <br> ●&nbsp;Escaped <br><br><br></td>
-    <td rowspan="3">●&nbsp;Sandboxed <br><br><br><br></td>
+    <td><code>make`.{1,${5}}`</code></td>
+    <td rowspan="3">•&nbsp;Sandboxed <br> •&nbsp;Escaped <br><br><br></td>
+    <td rowspan="3">•&nbsp;Sandboxed <br><br><br><br></td>
     <td rowspan="3"><i>Error</i> <br><br><br><br></td>
   </tr>
   <tr>
-    <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
-    <td><code>Regex.make`\u{${'A0'}}`</code></td>
+    <td>Enclosed token:<br> <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
+    <td><code>make`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
-    <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>
+    <td>Group name:<br> <code>(?<…>)</code>, <code>\k<…></code>
     </td>
-    <td><code>Regex.make`…\k<${'a'}>`</code></td>
+    <td><code>make`…\k<${'a'}>`</code></td>
   </tr>
 </table>
 
