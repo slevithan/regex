@@ -2,16 +2,16 @@ export const RegexContext = {
   DEFAULT: 'R_DEFAULT',
   CHAR_CLASS: 'R_CHAR_CLASS',
   GROUP_NAME: 'R_GROUP_NAME',
-  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
   ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
-  OPEN_ESCAPE: 'R_OPEN_ESCAPE',
+  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
+  INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
 };
 
 export const CharClassContext = {
   DEFAULT: 'CC_DEFAULT',
   ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
   Q_TOKEN: 'CC_Q_TOKEN',
-  OPEN_ESCAPE: 'CC_OPEN_ESCAPE',
+  INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
 };
 
 export const patternModsOn = (() => {
@@ -96,6 +96,30 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
   return '';
 }
 
+function getContextTokenRegex(withX) {
+  return new RegExp(String.raw`
+  (?<groupN> \(\?< (?! [=!] ) | \\k< )
+| (?<enclosedT> \\[pPu]\{ )
+| (?<qT> \\q\{ )
+| (?<intervalQ> \{ )
+| (?<incompleteT> \\ (?:
+    $
+  | c (?! [A-Za-z] )
+  | u (?! [A-Fa-f\d]{4} ) [A-Fa-f\d]{0,3}
+  | x (?! [A-Fa-f\d]{2} ) [A-Fa-f\d]?
+  )
+)
+| \\.
+${withX ? String.raw`| (?<x> (?: \s+ | #[^\n]*\n? )+ )` : ''}
+| .
+  `.replace(/\s+/g, ''), 'gsu');
+}
+
+const contextToken = {
+  withoutX: getContextTokenRegex(false),
+  withX: getContextTokenRegex(true),
+};
+
 // Accepts and returns its full state so it doesn't have to reprocess pattern parts that it's
 // already seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function getEndContextForIncompletePattern(partialPattern, {
@@ -104,11 +128,11 @@ export function getEndContextForIncompletePattern(partialPattern, {
   charClassDepth = 0,
   lastPos = 0,
 }) {
-  const possibleContextToken = /(?<groupN>\(\?<(?![=!])|\\k<)|(?<intervalQ>\{)|(?<enclosedT>\\[pPu]\{)|(?<qT>\\q\{)|\\.|(?<openE>\\)|./gsu;
-  possibleContextToken.lastIndex = lastPos;
+  const token = contextToken.withoutX;
+  token.lastIndex = lastPos;
   let match;
-  while (match = possibleContextToken.exec(partialPattern)) {
-    const {0: m, groups: {groupN, intervalQ, enclosedT, qT, openE}} = match;
+  while (match = token.exec(partialPattern)) {
+    const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
     if (m === '[') {
       charClassDepth++;
       regexContext = RegexContext.CHAR_CLASS;
@@ -120,33 +144,37 @@ export function getEndContextForIncompletePattern(partialPattern, {
       if (!charClassDepth) {
         regexContext = RegexContext.DEFAULT;
       }
-      // Reset for accuracy, but it will end up being an error if there is an unclosed context in
-      // the character class
+      // Reset for accuracy, but it will end up being an error if there is an unclosed context
+      // (ex: `\q{…` without closing `}`) in the character class
       charClassContext = CharClassContext.DEFAULT;
     } else if (regexContext === RegexContext.CHAR_CLASS) {
-      if (openE) {
-        charClassContext = CharClassContext.OPEN_ESCAPE;
+      if (incompleteT) {
+        charClassContext = CharClassContext.INVALID_INCOMPLETE_TOKEN;
       } else if (enclosedT) {
         charClassContext = CharClassContext.ENCLOSED_TOKEN;
       } else if (qT) {
         charClassContext = CharClassContext.Q_TOKEN;
       } else if (
-        m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)
+        (m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)) ||
+        // Don't want to continue in this context if we've advanced another token
+        charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN
       ) {
         charClassContext = CharClassContext.DEFAULT;
       }
     } else {
-      if (openE) {
-        regexContext = RegexContext.OPEN_ESCAPE;
+      if (incompleteT) {
+        regexContext = RegexContext.INVALID_INCOMPLETE_TOKEN;
+      } else if (groupN) {
+        regexContext = RegexContext.GROUP_NAME;
       } else if (enclosedT) {
         regexContext = RegexContext.ENCLOSED_TOKEN;
       } else if (intervalQ) {
         regexContext = RegexContext.INTERVAL_QUANTIFIER;
-      } else if (groupN) {
-        regexContext = RegexContext.GROUP_NAME;
       } else if (
         (m === '>' && regexContext === RegexContext.GROUP_NAME) ||
-        (m === '}' && (regexContext === RegexContext.ENCLOSED_TOKEN || regexContext === RegexContext.INTERVAL_QUANTIFIER))
+        (m === '}' && (regexContext === RegexContext.ENCLOSED_TOKEN || regexContext === RegexContext.INTERVAL_QUANTIFIER)) ||
+        // Don't want to continue in this context if we've advanced another token
+        regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN
        ) {
         regexContext = RegexContext.DEFAULT;
       }
@@ -220,17 +248,17 @@ export function containsCharClassUnion(charClassPattern) {
   // Supports any number of nested classes
   const regex = new RegExp(String.raw`
 \\ (?:
-  c [A-Za-z] |
-  p \{ (?<pPropOfStr> ${propertiesOfStringsNames} ) \} |
-  [pP] \{ [^\}]+ \} |
-  (?<qPropOfStr> q ) |
-  u (?: [A-Fa-f0-9]{4} | \{ [\dA-Fa-f]+ \} ) |
-  x [A-Fa-f0-9]{2} |
-  .
-) |
--- |
-&& |
-.
+    c [A-Za-z]
+  | p \{ (?<pPropOfStr> ${propertiesOfStringsNames} ) \}
+  | [pP] \{ [^\}]+ \}
+  | (?<qPropOfStr> q )
+  | u (?: [A-Fa-f\d]{4} | \{ [A-Fa-f\d]+ \} )
+  | x [A-Fa-f\d]{2}
+  | .
+)
+| --
+| &&
+| .
   `.replace(/\s+/g, ''), 'gsu');
   let hasFirst = false;
   let lastM;

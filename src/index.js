@@ -51,8 +51,8 @@ function makeFromTemplate(constructor, flags, template, ...values) {
     if (raw !== '') {
       wrap = true;
     }
-    // Only need to sandbox `\0` in character classes since, elsewhere, following interpolated
-    // values are always atomized
+    // Sandbox `\0` in character classes. Not needed outside classes because in other cases a
+    // following interpolated value would always be atomized
     pattern += sandboxUnsafeNulls(raw, RegexContext.CHAR_CLASS);
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
@@ -72,8 +72,10 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
   if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
   }
-  if (regexContext === RegexContext.OPEN_ESCAPE || charClassContext === CharClassContext.OPEN_ESCAPE) {
-    throw new Error('Unescaped "\\" precedes interpolation and would have side effects inside it');
+  if (regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN || charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
+    // Throw in all cases, but only *need* to handle preceding unescaped backslash (which would
+    // break sandboxing) since other errors would be handled by the invalid generated regex syntax
+    throw new Error('Interpolation preceded by invalid incomplete token');
   }
   const isPartial = value instanceof PartialPattern;
   let escapedValue;

@@ -306,7 +306,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td><code>make`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Own flags apply</td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Own flags apply locally</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
@@ -335,6 +335,8 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 > *Atomized* means that e.g., in default context, `${x}*` matches any number of the pattern specified by `x`, and not just the last character in the pattern. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
 
+> The implementation details for how `Regex.make` accomplishes concepts like *sandboxing* and *atomization* can vary given the details of a specific pattern, but the concepts described here should always hold up.
+
 ## Use
 
 ```js
@@ -345,7 +347,15 @@ console.log(Regex.make`\w+`.test('Nice!'));
 
 ## Compatibility
 
-`Regex.make` relies on `unicodeSets` (flag `v`), which has near-universal browser support since mid-2023 and is available in Node.js 20+. Using an interpolated `RegExp` instance with a different value for flag `i` than its outer regex currently relies on regex [modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+, and throws a descriptive error in environments without support. You can avoid this by aligning the use of flag `i` on inner and outer regexes. Local-only application of other flags does not rely on this feature.
+`Regex.make` relies on `unicodeSets` (flag `v`), which has had near-universal browser support since mid-2023 and is available in Node.js 20+. Using an interpolated `RegExp` instance with a different value for flag `i` than its outer regex currently relies on regex [modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+, and throws a descriptive error in environments without support. You can avoid this by aligning the use of flag `i` on inner and outer regexes. Local-only application of other flags does not rely on this feature.
+
+## Using `RegExp` subclasses
+
+`Regex.make` allows you to change its regex constructor by modifying `this`.
+
+```js
+Regex.make.bind(RegExpSubclass)`…`;
+```
 
 ## About
 
