@@ -96,8 +96,9 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
   return '';
 }
 
-function getContextTokenRegex(withX) {
-  return new RegExp(String.raw`
+// Only added the partial and complete versions of c/u/x tokens for `transformForFlagX`; otherwise
+// would only need to know about trailing unescaped backslash
+export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
 | (?<enclosedT> \\[pPu]\{ )
 | (?<qT> \\q\{ )
@@ -109,16 +110,14 @@ function getContextTokenRegex(withX) {
   | x (?! [A-Fa-f\d]{2} ) [A-Fa-f\d]?
   )
 )
+| \\ (?:
+    c [A-Za-z]
+  | u [A-Fa-f\d]{4}
+  | x [A-Fa-f\d]{2}
+)
 | \\.
-${withX ? String.raw`| (?<x> (?: \s+ | #[^\n]*\n? )+ )` : ''}
 | .
-  `.replace(/\s+/g, ''), 'gsu');
-}
-
-const contextToken = {
-  withoutX: getContextTokenRegex(false),
-  withX: getContextTokenRegex(true),
-};
+`.replace(/\s+/g, ''), 'gsu');
 
 // Accepts and returns its full state so it doesn't have to reprocess pattern parts that it's
 // already seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
@@ -128,10 +127,9 @@ export function getEndContextForIncompletePattern(partialPattern, {
   charClassDepth = 0,
   lastPos = 0,
 }) {
-  const token = contextToken.withoutX;
-  token.lastIndex = lastPos;
+  contextToken.lastIndex = lastPos;
   let match;
-  while (match = token.exec(partialPattern)) {
+  while (match = contextToken.exec(partialPattern)) {
     const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
     if (m === '[') {
       charClassDepth++;

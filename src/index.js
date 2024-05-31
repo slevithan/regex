@@ -1,7 +1,9 @@
 //! Regex.make 0.1.0 alpha; Steven Levithan; MIT License
 // Context-aware regex template strings with batteries included
 
-import { CharClassContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, RegexContext, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import { transformForFlagX } from "./flag-x.js";
+import { PartialPattern, partial } from "./partial.js";
+import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and safe,
@@ -41,6 +43,9 @@ function makeFromTemplate(constructor, flags, template, ...values) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
 
+  // Apply implicit flag x
+  ({template, values} = transformForFlagX(template, values));
+
   // To keep output cleaner for simple string escaping, don't start wrapping/sandboxing
   // interpolated values until something triggers the need for it
   let wrap = false;
@@ -73,7 +78,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
   }
   if (regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN || charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
-    // Throw in all cases, but only *need* to handle preceding unescaped backslash (which would
+    // Throw in all cases, but only *need* to handle a preceding unescaped backslash (which would
     // break sandboxing) since other errors would be handled by the invalid generated regex syntax
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
@@ -144,7 +149,7 @@ function transformForFlags(regex, outerFlags) {
     if (patternModsOn) {
       modFlagsObj.s = regex.dotAll;
     } else {
-      value = replaceUnescaped(value, '\\.', (regex.dotAll ? '[^]' : `[[^]--[${newlines}]]`), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\.', (regex.dotAll ? '[^]' : `[^${newlines}]`), RegexContext.DEFAULT);
     }
   }
   if (regex.multiline !== outerFlags.includes('m')) {
@@ -171,36 +176,6 @@ function transformForFlags(regex, outerFlags) {
     }
   }
   return {value};
-}
-
-class PartialPattern {
-  #value;
-  constructor(pattern) {
-    this.#value = pattern;
-  }
-  toString() {
-    return String(this.#value);
-  }
-}
-
-/**
-Can be called in two ways:
-1. `Regex.partial(value)` - For strings or values coerced to strings
-2. `` Regex.partial`…` `` - Shorthand for ``Regex.partial(String.raw`…`)``
-@param {any} first
-@param {...any} [values] Values to fill the template holes.
-@returns {PartialPattern}
-*/
-function partial(first, ...values) {
-  if (Array.isArray(first?.raw)) {
-    return new PartialPattern(
-      // Intersperse template raw strings and values
-      first.raw.flatMap((raw, i) => i < first.raw.length - 1 ? [raw, values[i]] : raw).join('')
-    );
-  } else if (!values.length) {
-    return new PartialPattern(first ?? '');
-  }
-  throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
 }
 
 const Regex = {

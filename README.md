@@ -2,20 +2,41 @@
 
 `Regex.make` is a string template tag for dynamically creating regular expressions. It comes with advanced features and deep knowledge of regex context that helps you **write beautiful, easy to understand, native regexes with batteries and safety included**. It's lightweight, and supports all ES2024+ regex features.
 
+<details>
+  <summary>📜 <b>Contents</b></summary>
+
+- [Features](#features)
+- [Examples](#examples)
+- [Why](#why)
+- [Using flags](#using-flags)
+  - [Can you disable implicit flags `v`, `x`, and `n`?](#can-you-disable-implicit-flags-v-x-and-n)
+- [Implicit flag `x`](#implicit-flag-x)
+- [Implicit flag `n`](#implicit-flag-n)
+- [Interpolating regexes](#interpolating-regexes)
+- [Interpolating escaped strings](#interpolating-escaped-strings)
+- [Interpolating partial patterns](#interpolating-partial-patterns)
+- [Interpolation principles](#interpolation-principles)
+- [Interpolation contexts](#interpolation-contexts)
+- [Use](#use)
+- [Compatibility](#compatibility)
+- [Using with `RegExp` subclasses](#using-with-regexp-subclasses)
+- [About](#about)
+</details>
+
 ## Features
 
 - Raw string template tag, for dynamic regexes without unreadable escaped backslashes `\\\\`.
+- Implicit flag `v` (`unicodeSets` mode) is always on, giving you the best level of Unicode support.
+- Implicit flag `x` ("free spacing and comments" mode) is always on, making regexes much more readable.
 - Context-aware escaping of regex syntax.
 - Context-aware interpolation of `RegExp` instances, partial patterns, and escaped strings.
 - Interpolated `RegExp` instances locally preserve the meaning of their flags (or their absense).
-- Implicit flag `v` (`unicodeSets` mode) is always on, giving you the best level of Unicode support.
 
 **Coming in v1:**
 
 > The documentation below assumes these features are available.
 
-- "Free spacing and comments" mode is always on (implicit flag `x`).
-- "No auto capture" mode is always on (implicit flag `n`).
+- Implicit flag `n` ("no auto capture" mode) is always on.
 - Numbered backreferences in interpolated regexes are adjusted to work within the overall pattern.
 
 **Coming in v1.1+:**
@@ -76,7 +97,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 `Regex.make` adds all of these features and outputs native `RegExp` instances. It additionally adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with modern (ES2024+) JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
 
-## Flags
+## Using flags
 
 To specify flags:
 
@@ -86,9 +107,9 @@ Regex.make('im')`^a`
 
 Flags provided this way do not apply to inner, interpolated `RegExp` instances, which preserve their own flags (see section "Interpolating regexes").
 
-`Regex.make` always uses flag `v` (ES2024's upgrade to flag `u`), so it can't be explicitly added or removed. It's applied after interpolation happens, so it applies to the full pattern. `Regex.make` also implicitly applies flags `x` (free spacing and comments) and `n` (no auto capture) to the outer regex. See the examples above for how regexes with these features look in practice.
+`Regex.make` always uses flag `v` (ES2024's upgrade to flag `u`), so it can't be explicitly added or removed. It's applied after interpolation happens, so it applies to the full pattern. `Regex.make` also implicitly applies flags `x` (free spacing and comments) and `n` (no auto capture) to the outer regex.
 
-> There's a flag `x` [proposal](https://github.com/tc39/proposal-regexp-x-mode) for JavaScript, and it's available in many other regex flavors. Flag `n` is available in .NET, Perl, and XRegExp, with an equivalent mode in PCRE, C++, and others. These flags will be supported on inner regexes should they ever be accepted into the JavaScript language. Note that the implicit flag `n` also disables numbered backreferences in the outer regex, since using them to reference named groups is a footgun (C++ also prevents numbered backreferences in its equivalent `nosubs` mode, and in other regex flavors the numbering of named groups is inconsistent).
+> There's a flag `x` [proposal](https://github.com/tc39/proposal-regexp-x-mode) for JavaScript, and it's available in many other regex flavors. Flag `n` is available in .NET, PCRE, Perl, and XRegExp, with an equivalent mode in C++. These flags will be supported on inner regexes should they ever be accepted into the JavaScript language.
 
 ### Can you disable implicit flags `v`, `x`, and `n`?
 
@@ -99,6 +120,51 @@ No. Since `Regex.make` is new and doesn't have to deal with legacy regular expre
 - Flag `n` turns off automatic capturing via `(…)` but keeps named capture. Requiring the noisy `(?:…)` where you could use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag `n` fixes this. And by encouraging more named groups, your regexes and the code using them become easier to read. Additionally, flag `n`'s behavior enables `Regex.make` to emulate atomic groups and recursion without unwanted side effects.
 
 > Implicit flags `x` and `n`, like all other flags except `v`, are not applied to interpolated `RegExp` instances (which preserve their own flags). Of course, if you interpolate a `RegExp` instance created by `Regex.make`, its implicit flags will continue to apply.
+
+## Implicit flag `x`
+
+Flag `x` is always implicitly on. It treats whitespace and line comments (starting with `#`) as insignificant, for readability.
+
+```js
+const date = Regex.make`
+  # Match a date in YYYY-MM-DD format
+  (?<year>  \d{4} ) - # Year part
+  (?<month> \d{2} ) - # Month part
+  (?<day>   \d{2} )   # Day part
+
+  # Escape whitespace and hashes to match them literally, or use other escapes
+  \    # space char
+  \x20 # space char
+  \#   # hash char
+  \s   # any whitespace char
+
+  # Or embed whitespace as a string, since special characters in interpolated
+  # strings are escaped
+  ${' '}+
+
+  # Partials use free spacing since their value is directly embedded
+  ${Regex.partial('( \d+ | [a - z] )')}
+
+  # Implicit flag x is not applied to interpolated RegExp instances, which use
+  # their own flags
+  ${/^Hakuna matata$/m}
+`;
+```
+
+As with everything, `Regex.make` sweats the details.
+
+- Whitespace and comments separate tokens, so it might be helpful to think of them as *do-nothing* (rather than *ignore-me*) metacharacters. This distinction is important with something like `\0 1`, which matches a null character followed by a literal `1`, rather than throwing as the invalid token `\01` would. Conversely, things like `\x 0A` and `(? :…)` are errors because the whitespace splits the tokens into incomplete parts. `( ?:…)` is an error because you can't quantify the group opening `(` with `?`.
+- Quantifiers following whitespace or comments apply to the preceeding token, so `x +` is equivalent to `x+`.
+- Whitespace is not allowed within most enclosed tokens like `\p{…}` and `\u{…}`, the exception being `[\q{…}]`.
+- Within a character class, `#` is not a special character (it doesn't start a comment) and the ignored whitespace characters are <kbd>space</kbd> and <kbd>tab</kbd> only (matching PCRE and Perl).
+- Outside of character classes, the ignored whitespace characters are those matched natively by `\s`.
+- Line comments with `#` do not extend into or beyond interpolation, so interpolation effectively acts as a newline for the sake of the comment.
+
+## Implicit flag `n`
+
+Flag `n` (no auto capture) is always implicitly on. It turns off capturing for `(…)` (making it equivalent to the syntactically clumsy `(?:…)`), but keeps named capture. This mode is sometimes known elsewhere as "explicit capture" or "named capture only".
+
+> The implicit flag `n` also disables numbered backreferences in the outer regex, since using them to reference named groups is a footgun. C++ also prevents numbered backreferences in its equivalent `nosubs` mode, and in other regex flavors the numbering of named groups is inconsistent.
 
 ## Interpolating regexes
 
@@ -349,7 +415,7 @@ console.log(Regex.make`\w+`.test('Nice!'));
 
 `Regex.make` relies on `unicodeSets` (flag `v`), which has had near-universal browser support since mid-2023 and is available in Node.js 20+. Using an interpolated `RegExp` instance with a different value for flag `i` than its outer regex currently relies on regex [modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+, and throws a descriptive error in environments without support. You can avoid this by aligning the use of flag `i` on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 
-## Using `RegExp` subclasses
+## Using with `RegExp` subclasses
 
 `Regex.make` allows you to change its regex constructor by modifying `this`.
 
