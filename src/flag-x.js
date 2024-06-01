@@ -26,24 +26,31 @@ export function transformForFlagX(template, values) {
   };
 }
 
+const divIf = cond => cond ? '(?:)' : '';
+const ws = /^\s$/;
+const escapedWsOrHash = /^\\[\s#]$/;
+const charClassWs = /^[ \t]$/;
+const escapedCharClassWs = /^\\[ \t]$/;
+
 function process(value, runningContext) {
   value = String(value);
-  const ws = /^\s$/;
-  const charClassWs = /^[ \t]$/;
   let ignoringWs = false;
   let ignoringCharClassWs = false;
   let ignoringComment = false;
   let pattern = '';
   let transformed = '';
   let lastSignificantCharClassContext = '';
-  let divPrecedesNext = false;
-  const div = str => (divPrecedesNext ? '(?:)' : '') + str;
+  let divNeeded = false;
+  const update = (str, {noPrefix = false, postfix = ''} = {}) => {
+    str = divIf(divNeeded && !noPrefix) + str + postfix;
+    divNeeded = false;
+    return str;
+  };
   for (const [m] of value.matchAll(contextToken)) {
     if (ignoringComment) {
       if (m === '\n') {
         ignoringComment = false;
-        // Flag instead of adding separator, so we can avoid a separator if followed by quantifier
-        divPrecedesNext = true;
+        divNeeded = true;
       }
       continue;
     }
@@ -52,8 +59,7 @@ function process(value, runningContext) {
         continue;
       }
       ignoringWs = false;
-      // Flag instead of adding separator, so we can avoid a separator if followed by quantifier
-      divPrecedesNext = true;
+      divNeeded = true;
     } else if (ignoringCharClassWs) {
       if (charClassWs.test(m)) {
         continue;
@@ -70,23 +76,20 @@ function process(value, runningContext) {
       throw new Error('Invalid unescaped hyphen as the end value for a range');
     }
     if ((regexContext === RegexContext.DEFAULT && /^[?*+]\??$/.test(m)) || (regexContext === RegexContext.INTERVAL_QUANTIFIER && m === '{')) {
-      // Skip the divider prefix added by `div`, to connect the quantifier to the previous token.
-      // Add a divider postfix if token is `?`, so that e.g. `( ?:)` becomes `(?(?:):)` and throws
-      // since you can't quantify `(`. `contextToken` matches valid group openings in one step, so
-      // you won't stop here at the `?` if watching within `(?:)`
-      transformed += m + (m === '?' ? '(?:)' : '');
-      divPrecedesNext = false;
+      // Skip the separator prefix and connect the quantifier to the previous token. Add a
+      // separator postfix if `m` is `?` to sandbox it from follwing tokens since `?` can be a
+      // group type marker. Ex: `( ?:)` becomes `(?(?:):)` and throws. This loop matches valid
+      // group openings in one step, so we won't stop here at the `?` if matching within `(?:)`
+      transformed += update(m, {noPrefix: true, postfix: divIf(m === '?')});
     } else if (regexContext === RegexContext.DEFAULT) {
       if (ws.test(m)) {
         ignoringWs = true;
       } else if (m.startsWith('#')) {
         ignoringComment = true;
-      } else if (/^\\[\s#]$/.test(m)) {
-        transformed += m[1];
-        divPrecedesNext = false;
+      } else if (escapedWsOrHash.test(m)) {
+        transformed += update(m[1], {noPrefix: true});
       } else {
-        transformed += div(m);
-        divPrecedesNext = false;
+        transformed += update(m);
       }
     } else if (regexContext === RegexContext.CHAR_CLASS && m !== '[' && m !== '[^') {
       if (
@@ -102,21 +105,17 @@ function process(value, runningContext) {
         // ends if we removed ws after it that was followed by something that completes the token
         throw new Error(`Invalid incomplete token in character class: ${m}`);
       } else if (
-        /^\\[ \t]$/.test(m) &&
+        escapedCharClassWs.test(m) &&
         (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.Q_TOKEN)
       ) {
-          transformed += m[1];
-          divPrecedesNext = false;
+          transformed += update(m[1], {noPrefix: true});
       } else if (charClassContext === CharClassContext.DEFAULT) {
-          transformed += div(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
-          divPrecedesNext = false;
+          transformed += update(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
       } else {
-        transformed += div(m);
-        divPrecedesNext = false;
+        transformed += update(m);
       }
     } else {
-      transformed += div(m);
-      divPrecedesNext = false;
+      transformed += update(m);
     }
     if (!(ignoringWs || ignoringCharClassWs || ignoringComment)) {
       lastSignificantCharClassContext = charClassContext;

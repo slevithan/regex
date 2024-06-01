@@ -25,7 +25,7 @@
 
 ## Features
 
-- Always-on flag `x` gives you free spacing and comments, making regexes much more readable.
+- Always-on flag `x` gives you free-spacing and comments, making regexes much more readable.
 - Always-on flag `v`, giving you the best level of Unicode support.
 - Raw string template tag, for dynamic regexes without unreadable escaped backslashes `\\\\`.
 - Safe and context-aware interpolation of regexes, escaped strings, and partial patterns.
@@ -106,7 +106,7 @@ Regex.make('im')`^a`
 
 Flags provided this way do not apply to inner, interpolated `RegExp` instances, which preserve their own flags (see section "Interpolating regexes").
 
-`Regex.make` always uses flag `v` (the upgrade to flag `u`), so it can't be explicitly added or removed. It's applied after interpolation happens, so it applies to the full pattern. `Regex.make` also implicitly applies flags `x` (free spacing and comments) and `n` (no auto capture) to the outer regex.
+`Regex.make` always uses flag `v` (the upgrade to flag `u`), so it can't be explicitly added or removed. It's applied after interpolation happens, so it applies to the full pattern. `Regex.make` also implicitly applies flags `x` (free-spacing and comments) and `n` (no auto capture) to the outer regex.
 
 ### Can you disable implicit flags `v`, `x`, and `n`?
 
@@ -215,7 +215,8 @@ Regex.make`^${str}+$`
 // Instead of
 new RegExp(`[a-${RegExp.escape(str)}]`, 'u')
 // You can say
-Regex.make`[a-${str}]` // Would be an error if str had more than one char
+Regex.make`[a-${str}]`
+// And given the context, this throws if str contains more than one char
 
 // Instead of
 new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v')
@@ -283,7 +284,7 @@ Regex.make`[\w--${Regex.partial('[_]')}]`
 Regex.make`[${Regex.partial('\\\\')}]`
 ```
 
-Interacting with the pattern outside the interpolation at any safe point based on the context is also fine:
+Partials can be embedded within any token scope:
 
 ```js
 // Not using Regex.partial for values that are not escaped anyway, but the
@@ -292,10 +293,8 @@ Regex.make`.{1,${6}}`
 Regex.make`\p{${'Letter'}}`
 Regex.make`\u{${'000A'}}`
 Regex.make`(?<${'name'}>…)\k<${'name'}>`
-Regex.make`[a-${'z'}]` // Would be an error if the str had more than one char
+Regex.make`[a-${'z'}]`
 Regex.make`[\w--${'_'}]`
-Regex.make`[\w${Regex.partial('--_')}]`
-Regex.make`[\w${Regex.partial('&&')}\d]`
 ```
 
 But again, changing the meaning or error status of characters outside the interpolation is an error:
@@ -313,7 +312,7 @@ These last examples are all errors due to the corresponding reasons below:
 2. The unescaped `}` within the partial is not allowed to break out of its interpolation sandbox.
 3. The group opening `(` can't be quantified with `?`.
 
-> Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of the interpolated pattern.
+> Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
 
 And since interpolated values are handled as atomic units, consider the following:
 
