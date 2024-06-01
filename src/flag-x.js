@@ -71,7 +71,7 @@ function process(value, runningContext) {
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (m === '-' && regexContext === RegexContext.CHAR_CLASS && lastSignificantCharClassContext === CharClassContext.RANGE) {
-      // Need to handle this here since the main regex parsing code would think the hyphen forms
+      // Need to handle this here since the main regex-parsing code would think the hyphen forms
       // part of a subtraction operator since we've removed preceding ws
       throw new Error('Invalid unescaped hyphen as the end value for a range');
     }
@@ -101,7 +101,7 @@ function process(value, runningContext) {
       ) {
         ignoringCharClassWs = true;
       } else if (charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
-        // Need to handle this here since the main regex parsing code wouldn't know where the token
+        // Need to handle this here since the main regex-parsing code wouldn't know where the token
         // ends if we removed ws after it that was followed by something that completes the token
         throw new Error(`Invalid incomplete token in character class: ${m}`);
       } else if (
