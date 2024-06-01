@@ -3,7 +3,7 @@
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
 
-`Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** for next-level parsing and pattern matching. It's lightweight, and supports all ES2024+ regex features. And it's unmatched in its robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
+`Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** for next-level parsing and pattern matching. It's lightweight, it supports all ES2024+ regex features, and it's unmatched in its robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
 
 ## 📜 Contents
 
@@ -28,9 +28,9 @@
 
 ## 💎 Features
 
-- Always-on flag <kbd>x</kbd> allows with to space your regexes freely and add comments.
+- Always-on flag <kbd>x</kbd> allows you to freely add space and comments to your regexes.
 - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and extra features.
-- It's a raw string template tag, so no unreadable escaped backslashes `\\\\`.
+- No unreadable escaped backslashes `\\\\`, since it's a raw string template tag.
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense).
 

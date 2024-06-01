@@ -108,6 +108,12 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     return isPartial ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPartial) {
+      const boundaryOperatorsRemoved = replaceUnescaped(value, '^-|^&&|-$|&&$', '');
+      if (boundaryOperatorsRemoved !== value) {
+        // Sandboxing so we don't change the chars outside the partial into being part of an
+        // operation they didn't initiate. Same as starting a partial with a quantifier
+        throw new Error('In character classes, a partial cannot use a range/set operator at its boundary; move the operation into the partial or the operator outside of it');
+      }
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check
       // the unadjusted value)

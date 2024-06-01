@@ -12,8 +12,21 @@ describe('interpolation: partial patterns', () => {
       expect('abd').toMatch(Regex.make`^a${Regex.partial`b|c`}d$`);
     });
 
+    it('should allow self-contained groups', () => {
+      expect('aa').toMatch(Regex.make`${Regex.partial`(a)+`}`);
+      expect('aa').toMatch(Regex.make`${Regex.partial`((a))+`}`);
+    });
+
     it('should not allow unescaped ) that is not part of a self-contained group', () => {
       expect(() => Regex.make`(${Regex.partial`)`}`).toThrow();
+      expect(() => Regex.make`(${Regex.partial`)`})`).toThrow();
+      expect(() => Regex.make`(${Regex.partial`())`}`).toThrow();
+    });
+
+    it('should not allow unescaped ( that is not part of a self-contained group', () => {
+      expect(() => Regex.make`${Regex.partial`(`})`).toThrow();
+      expect(() => Regex.make`(${Regex.partial`(`})`).toThrow();
+      expect(() => Regex.make`${Regex.partial`(()`})`).toThrow();
     });
 
     it('should not let } end an enclosed token', () => {
@@ -51,6 +64,21 @@ describe('interpolation: partial patterns', () => {
 
     it('should not change the meaning of the following token', () => {
       expect('\u{0}0').toMatch(Regex.make`${Regex.partial`\0`}0`);
+    });
+
+    it('should not allow a leading quantifier', () => {
+      const quantifiers = [
+        '?',
+        '*',
+        '+',
+        '{1}',
+        '{1,}',
+        '{1,2}',
+      ];
+      quantifiers.forEach(q => {
+        expect(() => Regex.make`.${Regex.partial(q)}`).toThrow();
+        expect(() => Regex.make`.${Regex.partial(`${q}?`)}`).toThrow();
+      });
     });
   });
 
@@ -157,6 +185,14 @@ describe('interpolation: partial patterns', () => {
       expect(']').toMatch(Regex.make`[${Regex.partial(String.raw`\\\]`)}]`);
     });
 
+    it('should not let unescaped [ that is not part of a self-contained nested class start a class', () => {
+      expect(() => Regex.make`${Regex.partial`[`}]`).toThrow();
+      expect(() => Regex.make`[a${Regex.partial`[`}b]`).toThrow();
+      expect('[').toMatch(Regex.make`[${Regex.partial(String.raw`\[`)}]`);
+      expect(() => Regex.make`[a${Regex.partial(String.raw`\\[`)}b]`).toThrow();
+      expect('[').toMatch(Regex.make`[${Regex.partial(String.raw`\\\[`)}]`);
+    });
+
     it('should not let } end an enclosed token', () => {
       expect(() => Regex.make`[\u{${Regex.partial`0}`}]`).toThrow();
       expect(() => Regex.make`[\u{${Regex.partial`0}`}}]`).toThrow();
@@ -201,9 +237,39 @@ describe('interpolation: partial patterns', () => {
       expect('\u{0}0').toMatch(Regex.make`[${Regex.partial`\0`}0]{2}`);
     });
 
-    it('should allow a double punctuator between operands', () => {
-      expect('a').toMatch(Regex.make`[\w${Regex.partial('--')}_]`);
-      expect('a').toMatch(Regex.make`[\w${Regex.partial('&&')}[a-z]]`);
+    it('should throw for a leading range hyphen', () => {
+      expect(() => Regex.make`[a${Regex.partial`-`}z]`).toThrow();
+      expect(() => Regex.make`[a${Regex.partial`-z`}]`).toThrow();
+    });
+
+    it('should throw for a trailing range hyphen', () => {
+      expect(() => Regex.make`[${Regex.partial`a-`}z]`).toThrow();
+      expect(() => Regex.make`[${Regex.partial`a-`}]`).toThrow();
+    });
+
+    it('should allow a self-contained range', () => {
+      expect('a').toMatch(Regex.make`[${Regex.partial`a-z`}]`);
+    });
+
+    it('should throw for a leading set operator', () => {
+      expect(() => Regex.make`[${Regex.partial`--`}_]`).toThrow();
+      expect(() => Regex.make`[\w${Regex.partial`--`}_]`).toThrow();
+      expect(() => Regex.make`[\w${Regex.partial`--_`}]`).toThrow();
+      expect(() => Regex.make`[${Regex.partial`&&`}[a-z]]`).toThrow();
+      expect(() => Regex.make`[\w${Regex.partial`&&`}[a-z]]`).toThrow();
+      expect(() => Regex.make`[\w${Regex.partial`&&[a-z]`}]`).toThrow();
+    });
+
+    it('should throw for a trailing set operator', () => {
+      expect(() => Regex.make`[${Regex.partial`\w--`}]`).toThrow();
+      expect(() => Regex.make`[${Regex.partial`\w--`}_]`).toThrow();
+      expect(() => Regex.make`[${Regex.partial`\w&&`}]`).toThrow();
+      expect(() => Regex.make`[${Regex.partial`\w&&`}[a-z]]`).toThrow();
+    });
+
+    it('should allow a self-contained set operation', () => {
+      expect('a').toMatch(Regex.make`[${Regex.partial`\w--_`}]`);
+      expect('a').toMatch(Regex.make`[${Regex.partial`\w&&[a-z]`}]`);
     });
 
     it('should throw for a double punctuator without operands', () => {

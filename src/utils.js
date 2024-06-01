@@ -27,6 +27,11 @@ export const patternModsOn = (() => {
 
 const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
+/**
+@param {string} str
+@param {RegexContext.DEFAULT | RegexContext.CHAR_CLASS} regexContext
+@returns {string}
+*/
 export function escapeV(str, regexContext) {
   if (regexContext === RegexContext.CHAR_CLASS) {
     // Escape all double punctuators (including ^, which is special on its own in the first
@@ -64,6 +69,21 @@ export function sandboxUnsafeNulls(str, inRegexContext) {
   return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', inRegexContext);
 }
 
+// No special handling for escaped versions of the characters
+function getUnbalancedChar(pattern, leftChar, rightChar) {
+  let numOpen = 0;
+  for (const [m] of pattern.matchAll(new RegExp(`[${escapeV(leftChar + rightChar)}]`, 'g'))) {
+    numOpen += m === leftChar ? 1 : -1;
+    if (numOpen < 0) {
+      return rightChar;
+    }
+  }
+  if (numOpen > 0) {
+    return leftChar;
+  }
+  return '';
+}
+
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
 export function getBreakoutChar(pattern, regexContext, charClassContext) {
   const escapesRemoved = pattern.replace(/\\./gsu, '');
@@ -72,21 +92,13 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
     return '\\';
   }
   if (regexContext === RegexContext.DEFAULT) {
-    if (escapesRemoved.includes(')')) {
-      return ')';
-    }
+    // Unbalanced `[` or `]` are also errors but don't breakout; they're caught by the wrapper
+    return getUnbalancedChar(escapesRemoved, '(', ')');
   } else if (
     regexContext === RegexContext.CHAR_CLASS &&
     !(charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)
   ) {
-    // Look for unescaped `]` that is not part of a self-contained nested class
-    let numOpen = 0;
-    for (const [m] of escapesRemoved.matchAll(/[\[\]]/g)) {
-      numOpen += m === '[' ? 1 : -1;
-      if (numOpen < 0) {
-        return ']';
-      }
-    }
+    return getUnbalancedChar(escapesRemoved, '[', ']');
   } else if (
     regexContext === RegexContext.ENCLOSED_TOKEN ||
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
