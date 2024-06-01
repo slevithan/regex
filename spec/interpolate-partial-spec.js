@@ -22,11 +22,16 @@ describe('interpolation: partial patterns', () => {
     });
 
     it('should not change the error status of the preceding token', () => {
+      expect(() => Regex.make`\c${Regex.partial`A`}`).toThrow();
+      expect(() => Regex.make`\u${Regex.partial`0000`}`).toThrow();
       expect(() => Regex.make`\x${Regex.partial`00`}`).toThrow();
     });
 
     it('should not change the meaning of the preceding token', () => {
       expect('\u{0}0').toMatch(Regex.make`\0${Regex.partial`0`}`);
+    });
+
+    it('should not change the meaning of the following token', () => {
       expect('\u{0}0').toMatch(Regex.make`${Regex.partial`\0`}0`);
     });
   });
@@ -122,8 +127,8 @@ describe('interpolation: partial patterns', () => {
     it('should not let leading ^ change the character class type', () => {
       expect('^').toMatch(Regex.make`[${Regex.partial`^`}a]`);
       expect('b').not.toMatch(Regex.make`[${Regex.partial`^`}a]`);
-      expect('_').toMatch(Regex.make`[${Regex.partial`^`}-a]`);
-      expect(() => Regex.make`[${Regex.partial`^^`}]`).toThrow();
+      expect('_').toMatch(Regex.make`[${Regex.partial`^`}-\xFF]`);
+      expect(() => Regex.make`[${Regex.partial`^^`}]`).withContext('^^').toThrow();
     });
 
     it('should not let unescaped ] that is not part of a self-contained nested class end a class', () => {
@@ -146,19 +151,36 @@ describe('interpolation: partial patterns', () => {
     });
 
     it('should not change the error status of the preceding token', () => {
+      expect(() => Regex.make`[\c${Regex.partial`A`}]`).toThrow();
+      expect(() => Regex.make`[\u${Regex.partial`0000`}]`).toThrow();
       expect(() => Regex.make`[\x${Regex.partial`00`}]`).toThrow();
     });
 
     it('should not change the meaning of the preceding token', () => {
       expect('\u{0}0').toMatch(Regex.make`[\0${Regex.partial`0`}]{2}`);
+    });
+
+    it('should not change the meaning of the following token', () => {
       expect('\u{0}0').toMatch(Regex.make`[${Regex.partial`\0`}0]{2}`);
     });
 
-    it('should throw with unescaped double punctuators', () => {
+    it('should allow a double punctuator between operands', () => {
+      expect('a').toMatch(Regex.make`[\w${Regex.partial('--')}_]`);
+      expect('a').toMatch(Regex.make`[\w${Regex.partial('&&')}[a-z]]`);
+    });
+
+    it('should throw for a double punctuator without operands', () => {
       const values = doublePunctuatorChars.map(v => v.repeat(2));
       values.push('_^^');
       values.forEach(v => {
-        expect(() => Regex.make`[${Regex.partial(v)}]`).toThrow();
+        expect(() => Regex.make`[${Regex.partial(v)}]`).withContext(v).toThrow();
+      });
+    });
+
+    it('should throw for a reserved double punctuator', () => {
+      const values = doublePunctuatorChars.map(v => v.repeat(2)).filter(v => v !== '&&');
+      values.forEach(v => {
+        expect(() => Regex.make`[a${Regex.partial(v)}b]`).withContext(v).toThrow();
       });
     });
 

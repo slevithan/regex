@@ -1,9 +1,9 @@
 //! Regex.make 0.1.0 alpha; Steven Levithan; MIT License
 // Context-aware regex template strings with batteries included
 
-import { transformForFlagX } from "./flag-x.js";
-import { PartialPattern, partial } from "./partial.js";
-import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import { transformForFlagX } from './flag-x.js';
+import { PartialPattern, partial } from './partial.js';
+import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and safe,
@@ -22,10 +22,13 @@ function make(first, ...values) {
   const constructor = this instanceof Function ? this : RegExp;
   // Given a template
   if (Array.isArray(first?.raw)) {
-    return makeFromTemplate(constructor, '', first, ...values);
+    return makeFromTemplate(constructor, {flags: ''}, first, ...values);
   // Given flags
   } else if ((typeof first === 'string' || first === undefined) && !values.length) {
-    return makeFromTemplate.bind(null, constructor, first ?? '');
+    return makeFromTemplate.bind(null, constructor, {flags: first});
+  // Given an options object (undocumented)
+  } else if (Object.prototype.toString.call(first) === '[object Object]' && !values.length) {
+    return makeFromTemplate.bind(null, constructor, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
 }
@@ -33,29 +36,31 @@ function make(first, ...values) {
 /**
 Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
 @param {RegExpConstructor} constructor
-@param {string} flags
+@param {Object} options
 @param {TemplateStringsArray} template
 @param {...any} values
 @returns {RegExp}
 */
-function makeFromTemplate(constructor, flags, template, ...values) {
+function makeFromTemplate(constructor, options, template, ...values) {
+  const {
+    flags = '',
+    __flag_x = true,
+  } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
 
-  // Apply implicit flag x
-  ({template, values} = transformForFlagX(template, values));
+  // Add implicit flag x; handled first because otherwise some regex syntax would have to be
+  // escaped for the sake of tokenizing even though it's within a comment
+  if (__flag_x) {
+    ({template, values} = transformForFlagX(template, values));
+  }
 
-  // To keep output cleaner for simple string escaping, don't start wrapping/sandboxing
-  // interpolated values until something triggers the need for it
-  let wrap = false;
   let runningContext = {};
   let pattern = '';
   // Intersperse template raw strings and values
   template.raw.forEach((raw, i) => {
-    if (raw !== '') {
-      wrap = true;
-    }
+    const wrapEscapedStrs = template.raw[i] || template.raw[i + 1];
     // Sandbox `\0` in character classes. Not needed outside classes because in other cases a
     // following interpolated value would always be atomized
     pattern += sandboxUnsafeNulls(raw, RegexContext.CHAR_CLASS);
@@ -63,17 +68,14 @@ function makeFromTemplate(constructor, flags, template, ...values) {
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
       let value = values[i];
-      if (value instanceof RegExp || value instanceof PartialPattern) {
-        wrap = true;
-      }
-      const transformedValue = interpolate(value, flags, regexContext, charClassContext, wrap);
+      const transformedValue = interpolate(value, flags, regexContext, charClassContext, wrapEscapedStrs);
       pattern += transformedValue;
     }
   });
   return new constructor(pattern, `v${flags}`);
 }
 
-function interpolate(value, flags, regexContext, charClassContext, wrap) {
+function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStrs) {
   if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
   }
@@ -105,9 +107,8 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
   ) {
     return isPartial ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
-    // `CharClassContext.DEFAULT`
     if (isPartial) {
-      const sandboxedValue = sandboxLoneDoublePunctuatorChar(value);
+      const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check
       // the unadjusted value)
       return containsCharClassUnion(value) ? `[${sandboxedValue}]` : sandboxUnsafeNulls(sandboxedValue);
@@ -125,8 +126,8 @@ function interpolate(value, flags, regexContext, charClassContext, wrap) {
     // Sandbox and atomize
     return `(?:${value})`;
   }
-  // Sandbox and atomize; this is the only place checking `wrap` since it's true in all other cases
-  return wrap ? `(?:${escapedValue})` : escapedValue;
+  // Sandbox and atomize
+  return wrapEscapedStrs ? `(?:${escapedValue})` : escapedValue;
 }
 
 function transformForFlags(regex, outerFlags) {

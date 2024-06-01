@@ -9,6 +9,7 @@ export const RegexContext = {
 
 export const CharClassContext = {
   DEFAULT: 'CC_DEFAULT',
+  RANGE: 'CC_RANGE',
   ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
   Q_TOKEN: 'CC_Q_TOKEN',
   INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
@@ -35,18 +36,25 @@ export function escapeV(str, regexContext) {
   return str.replace(/[()\[\]{}|\\^$*+?.]/g, '\\$&');
 }
 
+// Sandbox without escaping by repeating the character and escaping only the first one. The second
+// one is so that, if followed by the same symbol, the resulting double punctuator will still throw
+// as expected. Details:
+// - Only need to check the first position because, if it's part of an implicit union,
+//   interpolation handling will wrap it in nested `[…]`.
+// - Can't just wrap in nested `[…]` here, since the value might be used in a range.
+// - Can't add a second unescaped symbol if a lone symbol is the entire string because it might be
+//   followed by the same unescaped symbol outside an interpolation, and since it won't be wrapped,
+//   the second symbol wouldn't be sandboxed from the one following it.
 export function sandboxLoneDoublePunctuatorChar(str) {
-  // Sandbox without escaping by repeating the character and escaping only the first one. The
-  // second one is so that, if followed by the same symbol, the double punctuator will still throw
-  // as expected. Can't just wrap in nested `[…]` since it might be used in a range. Only need to
-  // check the first position because, if it's part of an implicit union, interpolation handling
-  // will wrap it in nested `[…]`. Can't add a second unescaped symbol if a lone symbol is the
-  // entire string because then it won't be wrapped and it might be followed by the same unescaped
-  // symbol outside the interpolation. This also takes care of sandboxing a leading `^` so it can't
-  // change the meaning of the surrounding character class if we happen to be at the first position
-  return str.replace(new RegExp(`^[${doublePunctuatorChars}]`), (m, pos) => {
+  return str.replace(new RegExp(String.raw`^([${doublePunctuatorChars}])(?!\1)`), (m, _, pos) => {
     return `\\${m}${pos + 1 === str.length ? '' : m}`;
   });
+}
+
+// Sandbox `^` if relevant, done so it can't change the meaning of the surrounding character class
+// if we happen to be at the first position. See `sandboxLoneDoublePunctuatorChar` for more details
+export function sandboxLoneCharClassCaret(str) {
+  return str.replace(/^\^/, '\\^^');
 }
 
 // Regex.make`[\0${0}]` and Regex.make`[${Regex.partial`\0`}0]` can't be guarded against via
@@ -59,7 +67,7 @@ export function sandboxUnsafeNulls(str, inRegexContext) {
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
 export function getBreakoutChar(pattern, regexContext, charClassContext) {
   const escapesRemoved = pattern.replace(/\\./gsu, '');
-  // Trailing unescaped `\`. `escapesRemoved.includes('\\')` would also work
+  // Trailing unescaped `\`. Checking `escapesRemoved.includes('\\')` would also work
   if (escapesRemoved.at(-1) === '\\') {
     return '\\';
   }
@@ -67,8 +75,10 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
     if (escapesRemoved.includes(')')) {
       return ')';
     }
-  }
-  if (regexContext === RegexContext.CHAR_CLASS && charClassContext === CharClassContext.DEFAULT) {
+  } else if (
+    regexContext === RegexContext.CHAR_CLASS &&
+    !(charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)
+  ) {
     // Look for unescaped `]` that is not part of a self-contained nested class
     let numOpen = 0;
     for (const [m] of escapesRemoved.matchAll(/[\[\]]/g)) {
@@ -77,8 +87,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
         return ']';
       }
     }
-  }
-  if (
+  } else if (
     regexContext === RegexContext.ENCLOSED_TOKEN ||
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
     charClassContext === CharClassContext.ENCLOSED_TOKEN ||
@@ -87,8 +96,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
     if (escapesRemoved.includes('}')) {
       return '}';
     }
-  }
-  if (regexContext === RegexContext.GROUP_NAME) {
+  } else if (regexContext === RegexContext.GROUP_NAME) {
     if (escapesRemoved.includes('>')) {
       return '>';
     }
@@ -96,8 +104,15 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
   return '';
 }
 
-// Only added the partial and complete versions of c/u/x tokens for `transformForFlagX`; otherwise
-// would only need to know about trailing unescaped backslash
+// To support flag x handling (where this regex is reused as a tokenizer, which isn't really its
+// purpose in `getEndContextForIncompletePattern`), the following tokens are added which would
+// otherwise not need special handling here:
+// - Partial token versions of `\\[cux]`. Without serving dual purpose for flag x, `incompleteT`
+//   would only *need* to know about trailing unescaped `\\`.
+// - Complete token versions of `\\[cux0]`.
+// - Negated character class opener `[^`.
+// - Group openings, so they can be stepped past.
+// - Double-punctuators.
 export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
 | (?<enclosedT> \\[pPu]\{ )
@@ -114,8 +129,13 @@ export const contextToken = new RegExp(String.raw`
     c [A-Za-z]
   | u [A-Fa-f\d]{4}
   | x [A-Fa-f\d]{2}
+  | 0 \d+
 )
-| \\.
+| \[\^
+| \(\?[:=!<]
+| (?<dp> [${doublePunctuatorChars}] ) \k<dp>
+| --
+| \\ .
 | .
 `.replace(/\s+/g, ''), 'gsu');
 
@@ -131,7 +151,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
   let match;
   while (match = contextToken.exec(partialPattern)) {
     const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
-    if (m === '[') {
+    if (m === '[' || m === '[^') {
       charClassDepth++;
       regexContext = RegexContext.CHAR_CLASS;
       charClassContext = CharClassContext.DEFAULT;
@@ -148,14 +168,17 @@ export function getEndContextForIncompletePattern(partialPattern, {
     } else if (regexContext === RegexContext.CHAR_CLASS) {
       if (incompleteT) {
         charClassContext = CharClassContext.INVALID_INCOMPLETE_TOKEN;
+      } else if (m === '-') {
+        charClassContext = CharClassContext.RANGE;
       } else if (enclosedT) {
         charClassContext = CharClassContext.ENCLOSED_TOKEN;
       } else if (qT) {
         charClassContext = CharClassContext.Q_TOKEN;
       } else if (
         (m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)) ||
-        // Don't want to continue in this context if we've advanced another token
-        charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN
+        // Don't want to continue in these contexts if we've advanced another token
+        charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN ||
+        charClassContext === CharClassContext.RANGE
       ) {
         charClassContext = CharClassContext.DEFAULT;
       }

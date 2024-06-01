@@ -118,9 +118,15 @@ No. Since `Regex.make` is new and doesn't have to deal with legacy regular expre
 
 > Implicit flags `x` and `n`, like all other flags except `v`, are not applied to interpolated `RegExp` instances (which preserve their own flags). Of course, if you interpolate a `RegExp` instance created by `Regex.make`, its implicit flags will continue to apply.
 
+<details>
+  <summary>Debugging</summary>
+
+> ⚠️ For debugging, you can disable flags `x` and `n` via experimental options:<br> `` Regex.make({__flag_x: false, __flag_n: false})`…` ``.
+</details>
+
 ## Implicit flag `x`
 
-Flag `x` is always implicitly on. It ignores whitespace and comments starting with `#`, for readability.
+Flag `x` is always implicitly on. It ignores whitespace and comments starting with `#`, for improved readability.
 
 ```js
 const date = Regex.make`
@@ -135,11 +141,11 @@ const date = Regex.make`
   \#   # hash char
   \s   # any whitespace char
 
-  # Since special characters in interpolated strings are escaped, you can also
-  // add literal whitespace by embedding it as a string
+  # Since embedded strings are always matched literally, you can also match
+  # whitespace by embedding it as a string
   ${' '}+
 
-  # Partials are directly embedded, so they also use free spacing
+  # Partials are directly embedded, so they use free spacing
   ${Regex.partial('( \d+ | [a - z] )')}
 
   # Flag x isn't applied to interpolated regexes, which use their own flags
@@ -147,17 +153,17 @@ const date = Regex.make`
 `;
 ```
 
-> There's a flag `x` [proposal](https://github.com/tc39/proposal-regexp-x-mode) for JavaScript, and it's available in many other regex flavors.
+> Flag `x` is based on the [TC39 proposal](https://github.com/tc39/proposal-regexp-x-mode) and its support in many other regex flavors.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
 As with everything, `Regex.make` sweats the details.
 
-- Whitespace and comments separate tokens, so it might be helpful to think of them as *do-nothing* (rather than *ignore-me*) metacharacters. This distinction is important with something like `\0 1`, which matches a null character followed by a literal `1`, rather than throwing as the invalid token `\01` would. Conversely, things like `\x 0A` and `(? :…)` are errors because the whitespace splits the tokens into incomplete parts. `( ?:…)` is an error because you can't quantify the group opening `(` with `?`.
-- Quantifiers following whitespace or comments apply to the preceeding token, so `x +` is equivalent to `x+`.
-- Whitespace is not allowed within most enclosed tokens like `\p{…}` and `\u{…}`, the exception being `[\q{…}]`.
-- Within a character class, `#` is not a special character (it doesn't start a comment) and the ignored whitespace characters are <kbd>space</kbd> and <kbd>tab</kbd> only (matching PCRE and Perl's `xx` flag).
+- Whitespace and comments separate tokens, so it might be helpful to think of them as *do-nothing* (rather than *ignore-me*) metacharacters. This distinction is important with something like `\0 1`, which matches a null character followed by a literal `1`, rather than throwing as the invalid token `\01` would. Conversely, things like `\x 0A` and `(? :…)` are errors because the whitespace splits a valid node into incomplete parts. `( ?:…)` is an error because you can't quantify the group opening `(` with `?`.
+- Quantifiers that follow whitespace or comments apply to the preceeding token, so `x +` is equivalent to `x+`.
+- Whitespace is not insignificant within most enclosed tokens like `\p{…}` and `\u{…}`. The exception is `[\q{…}]`.
+- Within a character class, `#` is not a special character. It matches a literal `#` and doesn't start a comment. Additionally, the only insignificant whitespace characters within character classes are <kbd>space</kbd> and <kbd>tab</kbd>. This behavior follows the `xx` flag from Perl and PCRE.
 - Outside of character classes, the ignored whitespace characters are those matched natively by `\s`.
 - Line comments with `#` do not extend into or beyond interpolation, so interpolation effectively acts as a newline for the sake of the comment.
 </details>
@@ -289,6 +295,7 @@ Regex.make`(?<${'name'}>…)\k<${'name'}>`
 Regex.make`[a-${'z'}]` // Would be an error if the str had more than one char
 Regex.make`[\w--${'_'}]`
 Regex.make`[\w${Regex.partial('--_')}]`
+Regex.make`[\w${Regex.partial('&&')}\d]`
 ```
 
 But again, changing the meaning or error status of characters outside the interpolation is an error:
@@ -410,7 +417,22 @@ The above descriptions of interpolation might feel complex. But there are three 
 ```js
 import Regex from './src/index.js';
 
-console.log(Regex.make`\w+`.test('Nice!'));
+Regex.make`\w+`.test('Nice');
+```
+
+Or if you prefer:
+
+```js
+import { make, partial } from './src/index.js';
+```
+
+In browsers:
+
+```html
+<script src="./dist/regex-make.min.js"></script>
+<script>
+  Regex.make`\p{L}+`.test('いいね');
+</script>
 ```
 
 ## Compatibility

@@ -10,8 +10,9 @@ describe('interpolation: escaped strings', () => {
     });
 
     it('should be quantified as an atomic unit', () => {
-      const str = '^abc';
-      expect(str.repeat(3)).toMatch(Regex.make`^${str}+$`);
+      const str = 'abc';
+      expect(str.repeat(2)).toMatch(Regex.make`^${str}+$`);
+      expect(str.repeat(2)).toMatch(Regex.make`${str}{2}`);
     });
 
     it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
@@ -73,7 +74,7 @@ describe('interpolation: escaped strings', () => {
       expect('\u{0}0').toMatch(Regex.make`[\0${'0'}]{2}`);
     });
 
-    it('should escape double punctuator characters', () => {
+    it('should escape double-punctuator characters', () => {
       expect('&').toMatch(Regex.make`[${'&'}&]`);
       expect('!').toMatch(Regex.make`[${'!'}!]`);
       expect('#').toMatch(Regex.make`[${'#'}#]`);
