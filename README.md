@@ -1,5 +1,8 @@
 # `Regex.make` 0.1 <sup>(alpha)</sup>
 
+[<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
+<sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
+
 `Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** for next-level parsing and pattern matching. It's lightweight, and supports all ES2024+ regex features. And it's unmatched in its robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
 
 ## 📜 Contents
@@ -43,7 +46,7 @@
 Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
 
 <details>
-  <summary>The four parsing modes</summary>
+  <summary>See the four parsing modes</summary>
 
 1. Unicode-unaware (legacy) mode, which you get by default and which silently creates Unicode-related bugs.
 2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
@@ -165,7 +168,7 @@ const date = Regex.make`
 `;
 ```
 
-> Flag <kbd>x</kbd> is based on the [JavaScript proposal](https://github.com/tc39/proposal-regexp-x-mode) and support for flag <kbd>x</kbd> in many other regex flavors. Note that rules for whitespace *within character classes* are inconsistent across regex flavors, so `Regex.make` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from PCRE and Perl.
+> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `Regex.make` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from PCRE and Perl.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -449,8 +452,11 @@ In browsers:
 
 - `Regex.make` relies on `unicodeSets` (flag <kbd>v</kbd>), which has had near-universal browser support since mid-2023 and is available in Node.js 20+.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex currently relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
-- If you want `Regex.make` to use a `RegExp` subclass or other constructor, you can modify `this`: `` Regex.make.bind(RegExpSubclass)`…` ``.
+- If you want `Regex.make` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` Regex.make.bind(RegExpSubclass)`…` ``.
 
 ## 🏷️ About
 
-`Regex.make` was partly inspired by [regexp-make-js](https://github.com/mikesamuel/regexp-make-js) and [`XRegExp`](https://github.com/slevithan/xregexp)`.tag`. However, I wouldn't recommend using those libraries anymore since they have numerous problems with context awareness, safety, and correctness (in addition to lacking some of `Regex.make`'s advanced features and showing their age by not supporting the latest flags and features from modern JavaScript regular expressions).
+`Regex.make` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
+
+Crafted with ❤︎ by Steven Levithan.<br>
+MIT License.
