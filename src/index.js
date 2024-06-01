@@ -3,7 +3,7 @@
 
 import { transformForFlagX } from './flag-x.js';
 import { PartialPattern, partial } from './partial.js';
-import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakePattern, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and safe,
@@ -72,7 +72,7 @@ function makeFromTemplate(constructor, options, template, ...values) {
       pattern += transformedValue;
     }
   });
-  return new constructor(pattern, `v${flags}`);
+  return new constructor(rakePattern(pattern), `v${flags}`);
 }
 
 function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStrs) {

@@ -214,9 +214,9 @@ Replaces tokens only when they're unescaped and in the given context.
 Doesn't skip over complete multicharacter tokens (only `\` and folowing char) so must be used with
 knowledge of what's safe to do given regex syntax.
 Assumes flag v and doesn't worry about syntax errors that are caught by it.
-@param {string} input 
-@param {string} needle Search as regex pattern
-@param {string} replacement 
+@param {string} input
+@param {string} needle Search as a regex pattern, with flags `su`
+@param {string} replacement
 @param {RegexContext.DEFAULT | RegexContext.CHAR_CLASS} [inRegexContext]
 @returns {string}
 @example
@@ -301,4 +301,12 @@ export function containsCharClassUnion(charClassPattern) {
     lastM = m;
   }
   return false;
+}
+
+export function rakePattern(pattern) {
+  const div = String.raw`\(\?:\)`;
+  pattern = replaceUnescaped(pattern, `^(?:${div})+`, '', RegexContext.DEFAULT);
+  pattern = replaceUnescaped(pattern, `(?:${div}){2,}`, '(?:)', RegexContext.DEFAULT);
+  pattern = replaceUnescaped(pattern, `${div}$`, '', RegexContext.DEFAULT);
+  return pattern;
 }

@@ -16,6 +16,24 @@ describe('interpolation: partial patterns', () => {
       expect(() => Regex.make`(${Regex.partial`)`}`).toThrow();
     });
 
+    it('should not let } end an enclosed token', () => {
+      expect(() => Regex.make`\u{${Regex.partial`0}`}`).toThrow();
+      expect(() => Regex.make`\u{${Regex.partial`0}`}}`).toThrow();
+      expect(() => Regex.make`\u{${Regex.partial`0\}`}}`).toThrow();
+      expect(() => Regex.make`\p{${Regex.partial`L}`}`).toThrow();
+      expect(() => Regex.make`\p{${Regex.partial`L}`}}`).toThrow();
+      expect(() => Regex.make`\p{${Regex.partial`L\}`}}`).toThrow();
+      expect(() => Regex.make`\P{${Regex.partial`L}`}`).toThrow();
+      expect(() => Regex.make`\P{${Regex.partial`L}`}}`).toThrow();
+      expect(() => Regex.make`\P{${Regex.partial`L\}`}}`).toThrow();
+    });
+
+    it('should not let } end an interval quantifier', () => {
+      expect(() => Regex.make`.{{${Regex.partial`0}`}`).toThrow();
+      expect(() => Regex.make`.{{${Regex.partial`0}`}}`).toThrow();
+      expect(() => Regex.make`.{{${Regex.partial`0\}`}}`).toThrow();
+    });
+
     it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `\${'w'}` since the raw \ escapes the $
       expect(() => Regex.make({raw: ['\\', '']}, Regex.partial`w`)).toThrow();
@@ -137,6 +155,25 @@ describe('interpolation: partial patterns', () => {
       expect(']').toMatch(Regex.make`[${Regex.partial(String.raw`\]`)}]`);
       expect(() => Regex.make`[a${Regex.partial(String.raw`\\]`)}b]`).toThrow();
       expect(']').toMatch(Regex.make`[${Regex.partial(String.raw`\\\]`)}]`);
+    });
+
+    it('should not let } end an enclosed token', () => {
+      expect(() => Regex.make`[\u{${Regex.partial`0}`}]`).toThrow();
+      expect(() => Regex.make`[\u{${Regex.partial`0}`}}]`).toThrow();
+      expect(() => Regex.make`[\u{${Regex.partial`0\}`}}]`).toThrow();
+      expect(() => Regex.make`[\p{${Regex.partial`L}`}]`).toThrow();
+      expect(() => Regex.make`[\p{${Regex.partial`L}`}}]`).toThrow();
+      expect(() => Regex.make`[\p{${Regex.partial`L\}`}}]`).toThrow();
+      expect(() => Regex.make`[\P{${Regex.partial`L}`}]`).toThrow();
+      expect(() => Regex.make`[\P{${Regex.partial`L}`}}]`).toThrow();
+      expect(() => Regex.make`[\P{${Regex.partial`L\}`}}]`).toThrow();
+    });
+
+    it('should not let unescaped } end an enclosed \\q token', () => {
+      expect(() => Regex.make`[\q{${Regex.partial`a}`}]`).toThrow();
+      expect(() => Regex.make`[\q{${Regex.partial`a}`}}]`).toThrow();
+      expect('a}').toMatch(Regex.make`[\q{${Regex.partial`a\}`}}]`);
+      expect(() => Regex.make`[\q{${Regex.partial`a\\}`}}]`).toThrow();
     });
 
     it('should not let trailing unescaped \\ change the character after the interpolation', () => {

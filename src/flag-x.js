@@ -78,8 +78,8 @@ function process(value, runningContext) {
     if ((regexContext === RegexContext.DEFAULT && /^[?*+]\??$/.test(m)) || (regexContext === RegexContext.INTERVAL_QUANTIFIER && m === '{')) {
       // Skip the separator prefix and connect the quantifier to the previous token. Add a
       // separator postfix if `m` is `?` to sandbox it from follwing tokens since `?` can be a
-      // group type marker. Ex: `( ?:)` becomes `(?(?:):)` and throws. This loop matches valid
-      // group openings in one step, so we won't stop here at the `?` if matching within `(?:)`
+      // group-type marker. Ex: `( ?:)` becomes `(?(?:):)` and throws. The loop we're in matches
+      // valid group openings in one step, so we won't arrive here if matching e.g. `(?:`
       transformed += update(m, {noPrefix: true, postfix: divIf(m === '?')});
     } else if (regexContext === RegexContext.DEFAULT) {
       if (ws.test(m)) {

@@ -28,16 +28,14 @@ describe('make', () => {
     expect(Regex.make('g')``.unicodeSets).toBeTrue();
   });
 
-  it('should not allow explicitly adding flag v', () => {
-    expect(() => Regex.make('v')``).toThrow();
-    expect(() => Regex.make('ivm')``).toThrow();
-    expect(() => Regex.make({flags: 'v'})``).toThrow();
-  });
-
-  it('should not allow explicitly adding flag u', () => {
-    expect(() => Regex.make('u')``).toThrow();
-    expect(() => Regex.make('ium')``).toThrow();
-    expect(() => Regex.make({flags: 'u'})``).toThrow();
+  it('should not allow explicitly adding implicit flags', () => {
+    // Flag `u` is not allowed due to `v`
+    const flags = ['v', 'x', 'n', 'u'];
+    flags.forEach(f => {
+      expect(() => Regex.make(f)``).toThrow();
+      expect(() => Regex.make(`i${f}m`)``).toThrow();
+      expect(() => Regex.make({flags: f})``).toThrow();
+    });
   });
 
   it('should allow binding to a RegExp subclass', () => {
@@ -52,5 +50,10 @@ describe('make', () => {
     }
     expect(Regex.make.bind(fn)`a`).toBeInstanceOf(RegExp);
     expect('a').toMatch(Regex.make.bind(fn)`a`);
+  });
+
+  it('should clean up superfluous token separators in output', () => {
+    // JS returns '(?:)' for `RegExp('').source`, but '' would also be a fine result
+    expect(['(?:)', '']).toContain(Regex.make`(?:)(?:)(?:)(?:)(?:)`.source);
   });
 });
