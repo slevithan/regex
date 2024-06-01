@@ -48,7 +48,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 <details>
   <summary>See the four parsing modes</summary>
 
-1. Unicode-unaware (legacy) mode, which you get by default and which silently creates Unicode-related bugs.
+1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
 2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
 3. Unicode mode with flag <kbd>u</kbd>, which makes unreserved letter escapes an error, switches to code point based matching (changing the potential handling of the dot, negated shorthands like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
 4. UnicodeSets mode with flag <kbd>v</kbd>, which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.

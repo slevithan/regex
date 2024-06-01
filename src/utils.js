@@ -315,10 +315,16 @@ export function containsCharClassUnion(charClassPattern) {
   return false;
 }
 
-export function rakePattern(pattern) {
-  const div = String.raw`\(\?:\)`;
-  pattern = replaceUnescaped(pattern, `^(?:${div})+`, '', RegexContext.DEFAULT);
-  pattern = replaceUnescaped(pattern, `(?:${div}){2,}`, '(?:)', RegexContext.DEFAULT);
-  pattern = replaceUnescaped(pattern, `${div}$`, '', RegexContext.DEFAULT);
+// Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
+export function rakeSeparators(pattern) {
+  const sep = String.raw`\(\?:\)`;
+  // No need for repeated separators
+  pattern = replaceUnescaped(pattern, `${sep}(?:${sep})+`, '(?:)', RegexContext.DEFAULT);
+  // No need for separators at:
+  // - The beginning, if not followed by a quantifier.
+  // - The end.
+  // - Before one of `()|`.
+  // - After one of `()|` or the opening of a non-capturing group or lookaround.
+  pattern = replaceUnescaped(pattern, String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|])|(?<=[()|]|\(\?(?:[:=!]|<[=!]))${sep}`, '', RegexContext.DEFAULT);
   return pattern;
 }
