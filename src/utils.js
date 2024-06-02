@@ -127,7 +127,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 // - Negated character class opener `[^`.
 // - Group openings, so they can be stepped past (also relied on by flag n).
 // - Double-punctuators.
-// To support flag n, complete backreference number were also added so they can be shown in error
+// To support flag n, complete backreference numbers were also added so they can be shown in error
 // messages
 export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )

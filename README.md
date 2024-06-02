@@ -28,12 +28,13 @@
 
 ## 💎 Features
 
-- Always-on flag <kbd>x</kbd> allows you to freely add space and comments to your regexes.
-- Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and extra features.
-- No unreadable escaped backslashes `\\\\`, since it's a raw string template tag.
+- A modern baseline so you don't need to continually opt into best practices:
+  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
+  - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+  - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
+  - No unreadable escaped backslashes `\\\\`, since it's a raw string template tag.
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
-- Interpolated regexes locally preserve the meaning of their own flags (or their absense).
-- Always-on flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
+- Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
 
 ## ❓ Context
 
@@ -55,6 +56,32 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 ## 🪧 Examples
 
 ```js
+const palindrome = Regex.make('i')`
+  (?(DEFINE)
+    (?<alpha> [a-z] )
+  )
+
+  (?<char> \g<alpha> )
+  # Recursively match the regex up to max-depth 10
+  ( (?R=10) | \g<alpha>? )
+  \k<char>
+`;
+palindrome.test('Redivider'); // true
+
+const interpolationExample = Regex.make('gm')`
+  # The string is contextually escaped and repeated as an atomic unit
+  ^ ${'a.b'}+ $
+  |
+  # Only the inner regex is case insensitive
+  # The outer regex's flag m is also not applied to it
+  ${/^a.b$/i}
+  |
+  # This string is contextually sandboxed but not escaped
+  ${Regex.partial('^a.b$')}
+`;
+```
+
+<!--
 const emoji = Regex.make`
   (?<emojiPart> \p{Emoji_Modifier_Base} \p{Emoji_Modifier}?
     | \p{Emoji_Presentation}
@@ -67,31 +94,7 @@ const emoji = Regex.make`
   # Regional indicator symbol letters are used for flags
   [🇦-🇿]{2}
 `;
-
-const interpolationExample = Regex.make('gm')`
-  # The string is contextually escaped and repeated as an atomic unit
-  ^ ${'a.b'}+ $
-  |
-  # Only the inner regex is case insensitive!
-  # The outer regex's flag m is also not applied to it
-  ${/^a.b$/i}
-  |
-  # This string is contextually sandboxed but not escaped
-  ${Regex.partial('^a.b$')}
-`;
-
-const palindrome = Regex.make('i')`
-  (?(DEFINE)
-    (?<alpha> [a-z] )
-  )
-
-  (?<char> \g<alpha> )
-  # Recursively match the regex up to max-depth 10
-  ( (?R=10) | \g<alpha>? )
-  \k<char>
-`;
-palindrome.test('Redivider'); // true
-```
+-->
 
 ## 🦾 New regex syntax
 
@@ -112,14 +115,11 @@ Flags are added like this:
 Regex.make('gm')`^.+`
 ```
 
-`RegExp` instances interpolated into the regex pattern preserve their own flags locally (see [*Interpolating regexes*](#interpolating-regexes)).
+`RegExp` instances interpolated into the pattern preserve their own flags locally (see [*Interpolating regexes*](#interpolating-regexes)).
 
 ## Implicit flags
 
-- Flag <kbd>v</kbd> is always on, providing upgraded Unicode support, new regex features, and strict errors. It's applied to the full pattern after interpolation happens.
-- Implicit flags <kbd>x</kbd> and <kbd>n</kbd> are also always applied, though they don't extend into interpolated `RegExp` instances (to avoid changing their meaning). Flag <kbd>x</kbd> makes whitespace insignificant and lets you add comments. Flag <kbd>n</kbd> is *no auto capture* mode.
-
-These flags are always on, giving you a modern, baseline regex syntax and avoiding the continual need to opt into their superior modes.
+Flag <kbd>v</kbd> and implicit flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `Regex.make`, giving you a modern, baseline regex syntax and avoiding the need to continually opt into their superior modes. See the details about each of these flags below.
 
 <details>
   <summary>⚠️ Debugging</summary>
@@ -129,11 +129,13 @@ These flags are always on, giving you a modern, baseline regex syntax and avoidi
 
 ### Flag `v`
 
-Flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest, fancy regex features like character class set operators and properties of strings. It's always on, which helps avoid numerous potential Unicode-related bugs, and means there's only one way to parse a regex instead of four (so you only need to remember one set of regex syntax and behavior).
+Flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operators and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `Regex.make`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of four (so you only need to remember one set of regex syntax and behavior).
+
+> Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
 ### Flag `x`
 
-Flag <kbd>x</kbd> adds support for line comments (starting with `#`) and makes whitespace insignificant, allowing you to freely format your regexes for readability. It's always implicitly on.
+Flag <kbd>x</kbd> makes whitespace insignificant and adds support for line comments (starting with `#`), allowing you to freely format your regexes for readability. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
 Example:
 
@@ -177,11 +179,11 @@ const date = Regex.make`
 
 ### Flag `n`
 
-Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a non-capturing group but preserves named capture. It's always implicitly on.
+Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a non-capturing group but preserves named capture. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
 Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows C++. Referring to named groups by number is a footgun, and the way named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows C++. Referring to named groups by number is a footgun, and the ordering of named group numbers is inconsistent across regex flavors.
 
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
 
