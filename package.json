@@ -1,6 +1,6 @@
 {
   "name": "regex-make",
-  "version": "0.1.0",
+  "version": "1.0.0-beta",
   "description": "Context-aware regex template strings with batteries included",
   "exports": "./src/index.js",
   "type": "module",

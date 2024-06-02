@@ -1,19 +1,20 @@
-//! Regex.make 0.1.0 alpha; Steven Levithan; MIT License
+//! Regex.make 1.0.0-beta; Steven Levithan; MIT License
 // Context-aware regex template strings with batteries included
 
 import { flagNProcessor } from './flag-n.js';
 import { flagXProcessor } from './flag-x.js';
 import { PartialPattern, partial } from './partial.js';
-import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakeSeparators, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
+import { CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakeSeparators, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
 
 /**
-Template tag for constructing a UnicodeSets-mode RegExp with advanced features and safe,
-context-aware interpolation of regexes, escaped strings, and partial patterns.
+Template tag for constructing a UnicodeSets-mode RegExp with advanced features and context-aware
+interpolation of regexes, escaped strings, and partial patterns.
 
 Can be called in multiple ways:
 1. `` Regex.make`…` `` - Regex pattern as a raw string.
 2. `` Regex.make('gis')`…` `` - To specify flags.
-3. `` Regex.make.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
+3. `` Regex.make({flags: 'gis'})`…` `` - With options.
+4. `` Regex.make.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 @param {string | TemplateStringsArray} first Flags or a template.
 @param {...any} [values] Values to fill the template holes.
 @returns {RegExp | (TemplateStringsArray, ...any) => RegExp}
@@ -27,7 +28,7 @@ function make(first, ...values) {
   // Given flags
   } else if ((typeof first === 'string' || first === undefined) && !values.length) {
     return makeFromTemplate.bind(null, constructor, {flags: first});
-  // Given an options object (undocumented)
+  // Given an options object
   } else if (Object.prototype.toString.call(first) === '[object Object]' && !values.length) {
     return makeFromTemplate.bind(null, constructor, first);
   }
@@ -62,26 +63,29 @@ function makeFromTemplate(constructor, options, template, ...values) {
     ({template, values} = transformTemplateAndValues(template, values, flagNProcessor));
   }
 
-  let runningContext = {};
+  let precedingCaptures = 0;
   let pattern = '';
+  let runningContext = {};
   // Intersperse template raw strings and values
   template.raw.forEach((raw, i) => {
-    const wrapEscapedStrs = template.raw[i] || template.raw[i + 1];
-    // Sandbox `\0` in character classes. Not needed outside classes because in other cases a
-    // following interpolated value would always be atomized
+    const wrapEscapedStr = template.raw[i] || template.raw[i + 1];
+    // Even with flag n enabled, we might have named captures
+    precedingCaptures += countCaptures(raw);
+    // Sandbox `\0` in character classes. Not needed outside character classes because in other
+    // cases a following interpolated value would always be atomized
     pattern += sandboxUnsafeNulls(raw, RegexContext.CHAR_CLASS);
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
-      let value = values[i];
-      const transformedValue = interpolate(value, flags, regexContext, charClassContext, wrapEscapedStrs);
-      pattern += transformedValue;
+      const interpolated = interpolate(values[i], flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+      precedingCaptures += interpolated.capturesAdded || 0;
+      pattern += interpolated.value;
     }
   });
   return new constructor(__rake ? rakeSeparators(pattern) : pattern, `v${flags}`);
 }
 
-function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStrs) {
+function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures) {
   if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
   }
@@ -111,7 +115,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     charClassContext === CharClassContext.ENCLOSED_TOKEN ||
     charClassContext === CharClassContext.Q_TOKEN
   ) {
-    return isPartial ? value : escapedValue;
+    return {value: isPartial ? value : escapedValue};
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPartial) {
       const boundaryOperatorsRemoved = replaceUnescaped(value, '^-|^&&|-$|&&$', '');
@@ -123,26 +127,35 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check
       // the unadjusted value)
-      return containsCharClassUnion(value) ? `[${sandboxedValue}]` : sandboxUnsafeNulls(sandboxedValue);
+      return {value: containsCharClassUnion(value) ? `[${sandboxedValue}]` : sandboxUnsafeNulls(sandboxedValue)};
     }
     // Atomize via nested character class `[…]` if more than one node
-    return containsCharClassUnion(escapedValue) ? `[${escapedValue}]` : escapedValue;
+    return {value: containsCharClassUnion(escapedValue) ? `[${escapedValue}]` : escapedValue};
   }
   // `RegexContext.DEFAULT`
   if (value instanceof RegExp) {
-    const transformed = transformForFlags(value, flags);
+    const transformed = transformForLocalFlags(value, flags);
+    const backrefsAdjusted = adjustNumberedBackrefs(transformed.value, precedingCaptures);
     // Sandbox and atomize; if we used a pattern modifier it has the same effect
-    return transformed.usedModifier ? transformed.value : `(?:${transformed.value})`;
+    return {
+      value: transformed.usedModifier ? backrefsAdjusted : `(?:${backrefsAdjusted})`,
+      capturesAdded: countCaptures(value.source),
+    };
   }
   if (isPartial) {
     // Sandbox and atomize
-    return `(?:${value})`;
+    return {value: `(?:${value})`};
   }
   // Sandbox and atomize
-  return wrapEscapedStrs ? `(?:${escapedValue})` : escapedValue;
+  return {value: wrapEscapedStr ? `(?:${escapedValue})` : escapedValue};
 }
 
-function transformForFlags(regex, outerFlags) {
+/**
+@param {RegExp} regex
+@param {string} outerFlags
+@returns {Object}
+*/
+function transformForLocalFlags(regex, outerFlags) {
   const modFlagsObj = {
     i: null,
     m: null,

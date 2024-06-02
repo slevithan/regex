@@ -127,6 +127,8 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 // - Negated character class opener `[^`.
 // - Group openings, so they can be stepped past (also relied on by flag n).
 // - Double-punctuators.
+// To support flag n, complete backreference number were also added so they can be shown in error
+// messages
 export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
 | (?<enclosedT> \\[pPu]\{ )
@@ -148,6 +150,7 @@ export const contextToken = new RegExp(String.raw`
 | \[\^
 | \(\?[:=!<]
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
+| \\[1-9]\d*
 | --
 | \\ .
 | .
@@ -240,7 +243,7 @@ replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~', RegexContext.DEFAUL
 // -> String.raw`~\.\\~\\\.[[\.].]~`
 */
 export function replaceUnescaped(input, needle, replacement, inRegexContext) {
-  const regex = new RegExp(String.raw`(?!${needle})\\.|(?<found>${needle})|.`, 'gsu');
+  const regex = new RegExp(String.raw`(?<found>${needle})|\\.|.`, 'gsu');
   let numCharClassesOpen = 0;
   let result = '';
   for (const {0: m, groups: {found}} of input.matchAll(regex)) {
@@ -248,7 +251,6 @@ export function replaceUnescaped(input, needle, replacement, inRegexContext) {
       result += replacement;
       continue;
     }
-
     if (m === '[') {
       numCharClassesOpen++;
     } else if (m === ']') {
@@ -257,6 +259,28 @@ export function replaceUnescaped(input, needle, replacement, inRegexContext) {
     result += m;
   }
   return result;
+}
+
+// Assumes flag v and doesn't worry about syntax errors that are caught by it
+export function countCaptures(pattern) {
+  const regex = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\.|./gsu;
+  // Don't worry about tracking if we're in a character class or other invalid context for an
+  // unescaped `(`, because (given flag v) the unescaped `(` is invalid anyway. However, that means
+  // backrefs in subsequent interpolated regexes might be adjusted using an incorrect count, which
+  // is displayed in the error message about the overall regex being invalid
+  return Array.from(pattern.matchAll(regex)).filter(m => m.groups.capture).length;
+}
+
+// Assumes flag v and doesn't worry about syntax errors that are caught by it
+export function adjustNumberedBackrefs(pattern, precedingCaptures) {
+  // Note: Because this doesn't track whether matches are in a character class, it renumbers
+  // regardless. That's not a significant issue because the regex would be invalid even without
+  // renumbering (given flag v), but the error is more confusing when e.g. an invalid `[\1]` is
+  // shown as `[\2]`
+  return pattern.replace(
+    /\\([1-9]\d*)|\\.|./gsu,
+    (m0, m1) => m1 ? '\\' + (Number(m1) + precedingCaptures) : m0
+  );
 }
 
 const propertiesOfStringsNames = [

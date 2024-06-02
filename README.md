@@ -1,4 +1,4 @@
-# `Regex.make` 0.1 <sup>(alpha)</sup>
+# `Regex.make` 1.0 beta
 
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
@@ -34,10 +34,6 @@
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense).
 - Always-on flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
-
-**Coming in v1:**
-
-- When interpolating regex instances, numbered backreferences within them are adjusted to work within the overall pattern.<!-- remove from the list when added -->
 
 ## ❓ Context
 
@@ -106,7 +102,7 @@ palindrome.test('Redivider'); // true
 - Atomic groups: `(?>…)`. ReDoS begone!
 - Recursion, up to a specified max depth: `(?R=N)`.
 
-<!-- Additionally, `Regex.make` adds flags <kbd>x</kbd> and <kbd>n</kbd> that are always implicitly enabled (see the section [*Implicit flags*](#implicit-flags)). -->
+<!-- Additionally, `Regex.make` adds flags <kbd>x</kbd> and <kbd>n</kbd> that are always implicitly enabled (see [*Implicit flags*](#implicit-flags)). -->
 
 ## 🚩 Flags
 
@@ -116,7 +112,7 @@ Flags are added like this:
 Regex.make('gm')`^.+`
 ```
 
-`RegExp` instances interpolated into the regex pattern preserve their own flags locally (see the section [*Interpolating regexes*](#interpolating-regexes)).
+`RegExp` instances interpolated into the regex pattern preserve their own flags locally (see [*Interpolating regexes*](#interpolating-regexes)).
 
 ## Implicit flags
 
@@ -208,7 +204,7 @@ This is also true for other flags that can change how an inner regex is matched:
 Additionally:
 
 - Interpolated regexes are always treated as atomic units. For example, a following quantifier will repeat the entire embedded regex rather than just the last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
-- Regexes can't be interpolated in the middle of a character class (so `` Regex.make`[${/./}]` `` is an error) because the syntax context doesn't match. See the section [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
+- Regexes can't be interpolated in the middle of a character class (so `` Regex.make`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
 
 ### Interpolating escaped strings
 
@@ -449,7 +445,7 @@ In browsers:
 ## 🪶 Compatibility
 
 - `Regex.make` relies on `unicodeSets` (flag <kbd>v</kbd>), which has had near-universal browser support since mid-2023 and is available in Node.js 20+.
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex currently relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 - If you want `Regex.make` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` Regex.make.bind(RegExpSubclass)`…` ``.
 
 ## 🏷️ About
