@@ -122,7 +122,7 @@ Regex.make('gm')`^.+`
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `Regex.make`, giving you a modern, baseline regex syntax and avoiding the need to continually opt into their superior modes.
 
 <details>
-  <summary>⚠️ Debugging</summary>
+  <summary>🐜 Debugging</summary>
 
 > For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` Regex.make({__flag_x: false, __flag_n: false})`…` ``.
 </details>
@@ -426,10 +426,9 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
-- *Atomized* means that e.g., in default context, `${x}*` matches any number of the pattern specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
-- *Sandboxed* means that the pattern never changes the meaning or error status of characters outside of the interpolation, and vice versa.
+*Atomized* means that e.g., in default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom. *Sandboxed* means that the value never changes the meaning or error status of characters outside of the interpolation, and vice versa.
 
-> The implementation details for how `Regex.make` accomplishes *sandboxing* and *atomization* can vary given the details of a specific pattern, but the concepts should always hold up.
+> The implementation details vary for how `Regex.make` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
 ## 🕹️ Use
 
