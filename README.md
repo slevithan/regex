@@ -65,6 +65,18 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 ## 🪧 Examples
 
 ```js
+const interpolationExample = Regex.make('gm')`
+  # The string is contextually escaped and repeated as an atomic unit
+  ^ ${'a.b'}+ $
+  |
+  # Only the inner regex is case insensitive
+  # Also, the outer regex's flag m is not applied to it
+  ${/^a.b$/i}
+  |
+  # This string is contextually sandboxed but not escaped
+  ${Regex.partial('^a.b$')}
+`;
+
 const palindrome = Regex.make('i')`
   (?(DEFINE)
     (?<alpha> [a-z] )
@@ -76,21 +88,9 @@ const palindrome = Regex.make('i')`
   \k<char>
 `;
 palindrome.test('Redivider'); // true
-
-const interpolationExample = Regex.make('gm')`
-  # The string is contextually escaped and repeated as an atomic unit
-  ^ ${'a.b'}+ $
-  |
-  # Only the inner regex is case insensitive
-  # The outer regex's flag m is also not applied to it
-  ${/^a.b$/i}
-  |
-  # This string is contextually sandboxed but not escaped
-  ${Regex.partial('^a.b$')}
-`;
 ```
 
-> The palindrome example shows new regex syntax coming soon in v1.1+.
+> The palindrome example shows new regex syntax that's coming soon in v1.1+.
 
 <!--
 const emoji = Regex.make`
@@ -426,9 +426,10 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
-> *Atomized* means that e.g., in default context, `${x}*` matches any number of the pattern specified by `x`, and not just the last character in the pattern. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
+- *Atomized* means that e.g., in default context, `${x}*` matches any number of the pattern specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
+- *Sandboxed* means that the pattern never changes the meaning or error status of characters outside of the interpolation, and vice versa.
 
-> The implementation details for how `Regex.make` accomplishes concepts like *sandboxing* and *atomization* can vary given the details of a specific pattern, but the concepts described here should always hold up.
+> The implementation details for how `Regex.make` accomplishes *sandboxing* and *atomization* can vary given the details of a specific pattern, but the concepts should always hold up.
 
 ## 🕹️ Use
 

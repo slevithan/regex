@@ -152,8 +152,7 @@ export const contextToken = new RegExp(String.raw`
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
 | \\[1-9]\d*
 | --
-| \\ .
-| .
+| \\? .
 `.replace(/\s+/g, ''), 'gsu');
 
 // Accepts and returns its full state so it doesn't have to reprocess pattern parts that it's
@@ -243,7 +242,7 @@ replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~', RegexContext.DEFAUL
 // -> String.raw`~\.\\~\\\.[[\.].]~`
 */
 export function replaceUnescaped(input, needle, replacement, inRegexContext) {
-  const regex = new RegExp(String.raw`(?<found>${needle})|\\.|.`, 'gsu');
+  const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
   let numCharClassesOpen = 0;
   let result = '';
   for (const {0: m, groups: {found}} of input.matchAll(regex)) {
@@ -263,7 +262,7 @@ export function replaceUnescaped(input, needle, replacement, inRegexContext) {
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function countCaptures(pattern) {
-  const regex = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\.|./gsu;
+  const regex = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\?./gsu;
   // Don't worry about tracking if we're in a character class or other invalid context for an
   // unescaped `(`, because (given flag v) the unescaped `(` is invalid anyway. However, that means
   // backrefs in subsequent interpolated regexes might be adjusted using an incorrect count, which
@@ -278,7 +277,7 @@ export function adjustNumberedBackrefs(pattern, precedingCaptures) {
   // renumbering (given flag v), but the error is more confusing when e.g. an invalid `[\1]` is
   // shown as `[\2]`
   return pattern.replace(
-    /\\([1-9]\d*)|\\.|./gsu,
+    /\\([1-9]\d*)|\\?./gsu,
     (m0, m1) => m1 ? '\\' + (Number(m1) + precedingCaptures) : m0
   );
 }
