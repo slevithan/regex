@@ -55,6 +55,17 @@ describe('interpolation: regexes', () => {
       expect('\n\na\n'). not.toMatch(Regex.make('m')`^.${/a.$/s}`);
       expect('\nxa\n\n').not.toMatch(Regex.make('m')`^.${/a.$/s}`);
     });
+
+    it('should adjust the backreferences of interpolated regexes', function() {
+      const regex = /(.)\1/;
+      expect('aaba').not.toMatch(Regex.make`^${regex}${regex}$`);
+      expect('aabb').toMatch(Regex.make`^${regex}${regex}$`);
+      expect('aabb').toMatch(Regex.make`^(?<n1>)(?<n2>${regex}${regex})$`);
+      expect('aa').toMatch(Regex.make`^(?<outer>)${/(?<inner>.)\1/}$`);
+      // These rely on the backref adjustments to make them into errors
+      expect(() => Regex.make`(?<n>)${/\1/}`).toThrow();
+      expect(() => Regex.make`(?<n>)${/()\2/}`).toThrow();
+    });
   });
 
   describe('in character class context', () => {

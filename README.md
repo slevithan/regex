@@ -16,7 +16,7 @@
   - [Flag <kbd>v</kbd>](#flag-v)
   - [Flag <kbd>x</kbd>](#flag-x)
   - [Flag <kbd>n</kbd>](#flag-n)
-- [Interpolating](#-interpolation)
+- [Interpolation](#-interpolation)
   - [`RegExp` instances](#interpolating-regexes)
   - [Escaped strings](#interpolating-escaped-strings)
   - [Partial patterns](#interpolating-partial-patterns)
@@ -283,7 +283,7 @@ Regex.make`[a${Regex.partial('^')}]`
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not escaped. `Regex.partial('^^')` embedded in character class context would still correctly lead to a double-punctuator error.
+Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `Regex.partial('^^')` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
 > What if you wanted to dynamically choose whether to negate a character class? Well then! Put the whole character class inside the partial.
 
