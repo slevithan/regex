@@ -1,9 +1,10 @@
 //! Regex.make 0.1.0 alpha; Steven Levithan; MIT License
 // Context-aware regex template strings with batteries included
 
-import { transformForFlagX } from './flag-x.js';
+import { flagNProcessor } from './flag-n.js';
+import { flagXProcessor } from './flag-x.js';
 import { PartialPattern, partial } from './partial.js';
-import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakeSeparators, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import { CharClassContext, RegexContext, containsCharClassUnion, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakeSeparators, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and safe,
@@ -44,6 +45,7 @@ Makes a UnicodeSets-mode RegExp from a template and values to fill the template 
 function makeFromTemplate(constructor, options, template, ...values) {
   const {
     flags = '',
+    __flag_n = true,
     __flag_x = true,
     __rake = true,
   } = options;
@@ -51,10 +53,13 @@ function makeFromTemplate(constructor, options, template, ...values) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
 
-  // Add implicit flag x; handled first because otherwise some regex syntax would have to be
-  // escaped for the sake of tokenizing even though it's within a comment
+  // Add implicit flag x; handled first because otherwise some regex syntax within comments could
+  // cause problems when parsing if unescaped
   if (__flag_x) {
-    ({template, values} = transformForFlagX(template, values));
+    ({template, values} = transformTemplateAndValues(template, values, flagXProcessor));
+  }
+  if (__flag_n) {
+    ({template, values} = transformTemplateAndValues(template, values, flagNProcessor));
   }
 
   let runningContext = {};

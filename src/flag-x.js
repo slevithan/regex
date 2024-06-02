@@ -1,30 +1,4 @@
-import { PartialPattern, partial } from './partial.js';
 import { CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
-
-export function transformForFlagX(template, values) {
-  let newTemplate = {raw: []};
-  let newValues = [];
-  let runningContext = {};
-  template.raw.forEach((raw, i) => {
-    const result = process(raw, {...runningContext, lastPos: 0});
-    newTemplate.raw.push(result.transformed);
-    runningContext = result.runningContext;
-    if (i < template.raw.length - 1) {
-      const value = values[i];
-      if (value instanceof PartialPattern) {
-        const result = process(value, {...runningContext, lastPos: 0});
-        newValues.push(partial(result.transformed));
-        runningContext = result.runningContext;
-      } else {
-        newValues.push(value);
-      }
-    }
-  });
-  return {
-    template: newTemplate,
-    values: newValues,
-  };
-}
 
 const divIf = cond => cond ? '(?:)' : '';
 const ws = /^\s$/;
@@ -32,7 +6,7 @@ const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
 
-function process(value, runningContext) {
+export function flagXProcessor(value, runningContext) {
   value = String(value);
   let ignoringWs = false;
   let ignoringCharClassWs = false;

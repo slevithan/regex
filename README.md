@@ -16,7 +16,7 @@
   - [Flag <kbd>v</kbd>](#flag-v)
   - [Flag <kbd>x</kbd>](#flag-x)
   - [Flag <kbd>n</kbd>](#flag-n)
-- Interpolating
+- [Interpolating](#-interpolation)
   - [`RegExp` instances](#interpolating-regexes)
   - [Escaped strings](#interpolating-escaped-strings)
   - [Partial patterns](#interpolating-partial-patterns)
@@ -33,12 +33,10 @@
 - No unreadable escaped backslashes `\\\\`, since it's a raw string template tag.
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense).
+- Always-on flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
 
 **Coming in v1:**
 
-> The documentation below assumes these features are available.
-
-- Always-on flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
 - When interpolating regex instances, numbered backreferences within them are adjusted to work within the overall pattern.<!-- remove from the list when added -->
 
 ## ❓ Context

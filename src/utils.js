@@ -1,3 +1,5 @@
+import { PartialPattern, partial } from './partial.js';
+
 export const RegexContext = {
   DEFAULT: 'R_DEFAULT',
   CHAR_CLASS: 'R_CHAR_CLASS',
@@ -123,7 +125,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 //   would only *need* to know about trailing unescaped `\\`.
 // - Complete token versions of `\\[cux0]`.
 // - Negated character class opener `[^`.
-// - Group openings, so they can be stepped past.
+// - Group openings, so they can be stepped past (also relied on by flag n).
 // - Double-punctuators.
 export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
@@ -325,6 +327,43 @@ export function rakeSeparators(pattern) {
   // - The end.
   // - Before one of `()|`.
   // - After one of `()|` or the opening of a non-capturing group or lookaround.
-  pattern = replaceUnescaped(pattern, String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|])|(?<=[()|]|\(\?(?:[:=!]|<[=!]))${sep}`, '', RegexContext.DEFAULT);
+  pattern = replaceUnescaped(
+    pattern,
+    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|])|(?<=[()|]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    '',
+    RegexContext.DEFAULT
+  );
   return pattern;
+}
+
+/**
+The template's `raw` array is processed, along with (only) values that are instanceof `PartialPattern`.
+@param {TemplateStringsArray} template
+@param {any[]} values
+@param {(value, runningContext) => {transformed: string; runningContext: Object}} processor
+@returns {{template: TemplateStringsArray; values: any[]}}
+*/
+export function transformTemplateAndValues(template, values, processor) {
+  let newTemplate = {raw: []};
+  let newValues = [];
+  let runningContext = {};
+  template.raw.forEach((raw, i) => {
+    const result = processor(raw, {...runningContext, lastPos: 0});
+    newTemplate.raw.push(result.transformed);
+    runningContext = result.runningContext;
+    if (i < template.raw.length - 1) {
+      const value = values[i];
+      if (value instanceof PartialPattern) {
+        const result = processor(value, {...runningContext, lastPos: 0});
+        newValues.push(partial(result.transformed));
+        runningContext = result.runningContext;
+      } else {
+        newValues.push(value);
+      }
+    }
+  });
+  return {
+    template: newTemplate,
+    values: newValues,
+  };
 }
