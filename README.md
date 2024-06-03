@@ -8,8 +8,8 @@
 ## 📜 Contents
 
 - [Features](#-features)
+- [Example](#-example)
 - [Context](#-context)
-- [Examples](#-examples)
 - [New regex syntax](#-new-regex-syntax)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
@@ -36,24 +36,7 @@
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
 
-## ❓ Context
-
-Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
-
-<details>
-  <summary>See the four parsing modes</summary>
-
-1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
-2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
-3. Unicode mode with flag <kbd>u</kbd>, which makes unreserved letter escapes an error, switches to code point based matching (changing the potential handling of the dot, negated shorthands like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd>, which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
-</details>
-
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, subexpressions as subroutines via `\g<name>`, definition blocks via `(?(DEFINE)…)`, and always using UnicodeSets mode (flag <kbd>v</kbd>) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
-
-`Regex.make` adds all of these features and returns native `RegExp` instances. It additionally adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
-
-## 🪧 Examples
+## 🪧 Example
 
 ```js
 const interpolationExample = Regex.make('gm')`
@@ -67,7 +50,36 @@ const interpolationExample = Regex.make('gm')`
   # This string is contextually sandboxed but not escaped
   ${Regex.partial('^a.b$')}
 `;
+```
 
+## ❓ Context
+
+Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
+
+<details>
+  <summary>See the four parsing modes</summary>
+
+1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
+2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
+3. Unicode mode with flag <kbd>u</kbd>, which makes unreserved letter escapes an error, switches to code point based matching (changing the potential handling of the dot, negated shorthands like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd>, which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
+</details>
+
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, subexpressions as subroutines via `\g<name>`, and definition blocks via `(?(DEFINE)…)` — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+
+`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses UnicodeSets mode (flag <kbd>v</kbd>), which enables Unicode-related features, prevents Unicode-related bugs, and simplifies everything down to the one (best) parsing mode. And it adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
+
+## 🦾 New regex syntax
+
+> [!NOTE]
+> These are coming soon in v1.1+.
+
+- Subexpressions as subroutines: `\g<name>`.
+- Definition blocks: `(?(DEFINE)…)`.
+- Atomic groups: `(?>…)`. ReDoS begone!
+- Recursion, up to a specified max depth: `(?R=N)`.
+
+<!--
 const palindrome = Regex.make('i')`
   (?(DEFINE)
     (?<alpha> [a-z] )
@@ -79,11 +91,7 @@ const palindrome = Regex.make('i')`
   \k<char>
 `;
 palindrome.test('Redivider'); // true
-```
 
-> The palindrome example shows new regex syntax that's coming soon in v1.1+.
-
-<!--
 const emoji = Regex.make`
   (?<emojiPart> \p{Emoji_Modifier_Base} \p{Emoji_Modifier}?
     | \p{Emoji_Presentation}
@@ -97,16 +105,6 @@ const emoji = Regex.make`
   [🇦-🇿]{2}
 `;
 -->
-
-## 🦾 New regex syntax
-
-> [!NOTE]
-> These are coming soon in v1.1+.
-
-- Subexpressions as subroutines: `\g<name>`.
-- Definition blocks: `(?(DEFINE)…)`.
-- Atomic groups: `(?>…)`. ReDoS begone!
-- Recursion, up to a specified max depth: `(?R=N)`.
 
 ## 🚩 Flags
 
@@ -125,7 +123,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 <details>
   <summary>🐜 Debugging</summary>
 
-> For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` Regex.make({__flag_x: false, __flag_n: false})`…` ``.
+For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` Regex.make({__flag_x: false, __flag_n: false})`…` ``.
 </details>
 
 ### Flag `v`
