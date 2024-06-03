@@ -28,7 +28,7 @@
 
 ## 💎 Features
 
-- A modern baseline so you don't need to continually opt into best practices:
+- A modern regex baseline so you don't need to continually opt into best practices:
   - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
@@ -183,7 +183,7 @@ Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a n
 
 Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows C++. Referring to named groups by number is a footgun, and the ordering of named group numbers is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way named groups are numbered is inconsistent across regex flavors.
 
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
 
@@ -256,12 +256,12 @@ These and other issues (including the effects of current and future flags like `
 
 ### Interpolating partial patterns
 
-As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Some example cases:
+As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Some example use cases:
 
 - Composing a dynamic number of strings.
 - Adding a pattern in the middle of a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
-- Adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
-- When you don't want the pattern to specify its own flags.
+- Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
+- When you don't want the pattern to specify its own, local flags.
 
 For all of these cases, you can interpolate `Regex.partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` Regex.partial`…` `` as a tag, equivalent to ``Regex.partial(String.raw`…`)``.
 
