@@ -2,9 +2,9 @@
 // Context-aware regex template strings with batteries included
 
 import { flagNProcessor } from './flag-n.js';
-import { flagXProcessor } from './flag-x.js';
+import { flagXProcessor, rakeSeparators } from './flag-x.js';
 import { PartialPattern, partial } from './partial.js';
-import { CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, rakeSeparators, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
+import { CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and context-aware
@@ -48,7 +48,7 @@ function makeFromTemplate(constructor, options, template, ...values) {
     flags = '',
     __flag_n = true,
     __flag_x = true,
-    __rake = true,
+    __rake = options.__flag_x ?? true,
   } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');

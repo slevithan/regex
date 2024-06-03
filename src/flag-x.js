@@ -1,4 +1,4 @@
-import { CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import { CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
 const divIf = cond => cond ? '(?:)' : '';
 const ws = /^\s$/;
@@ -99,4 +99,23 @@ export function flagXProcessor(value, runningContext) {
     transformed,
     runningContext,
   };
+}
+
+// Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
+export function rakeSeparators(pattern) {
+  const sep = String.raw`\(\?:\)`;
+  // No need for repeated separators
+  pattern = replaceUnescaped(pattern, `${sep}(?:${sep})+`, '(?:)', RegexContext.DEFAULT);
+  // No need for separators at:
+  // - The beginning, if not followed by a quantifier.
+  // - The end.
+  // - Before one of `()|`.
+  // - After one of `()|` or the opening of a non-capturing group or lookaround.
+  pattern = replaceUnescaped(
+    pattern,
+    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|])|(?<=[()|]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    '',
+    RegexContext.DEFAULT
+  );
+  return pattern;
 }
