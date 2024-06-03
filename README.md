@@ -81,7 +81,6 @@ const palindrome = Regex.make('i')`
 palindrome.test('Redivider'); // true
 ```
 
-> [!NOTE]
 > The palindrome example shows new regex syntax that's coming soon in v1.1+.
 
 <!--
@@ -133,8 +132,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 
 Flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operators and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `Regex.make`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of four (so you only need to remember one set of regex syntax and behavior).
 
-> [!NOTE]
-> Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
+Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
 ### Flag `x`
 
@@ -208,7 +206,6 @@ Regex.make('i')`hello-${/world/}`
 
 This is also true for other flags that can change how an inner regex is matched: `m` (`multiline`) and `s` (`dotAll`).
 
-> [!NOTE]
 > As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as atomic units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
 
 <details>
@@ -222,7 +219,6 @@ This is also true for other flags that can change how an inner regex is matched:
 
 `Regex.make` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> [!NOTE]
 > As with all interpolation in `Regex.make`, escaped strings are sandboxed and treated as atomic units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
 As a result, `Regex.make` is a safe and context-aware alternative to JavaScript proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
@@ -274,7 +270,6 @@ For all of these cases, you can interpolate `Regex.partial(value)` to avoid esca
 
 Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
-> [!NOTE]
 > As with all interpolation in `Regex.make`, partials are sandboxed and treated as atomic units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
 
 If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
@@ -339,7 +334,6 @@ These last examples are all errors due to the corresponding reasons below:
 2. The unescaped `}` within the partial is not allowed to break out of its interpolation sandbox.
 3. The group opening `(` can't be quantified with `?`.
 
-> [!NOTE]
 > Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
 
 And since interpolated values are handled as atomic units, consider the following:
@@ -389,12 +383,10 @@ The above descriptions of interpolation might feel complex. But there are three 
 2. Interpolated values are always aware of the context of where they're embedded.
 3. When relevant, interpolated values are always treated as atomic units.
 
-> [!NOTE]
 > Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation. Also note that "atomic units" are unrelated to the "atomic groups" feature that controls backtracking in some regex flavors (and that is planned for future versions of `Regex.make`).
 
 ### Interpolation contexts
 
-> [!NOTE]
 > `Regex.make` is shortened below as `make` to better fit the table.
 
 <table>
