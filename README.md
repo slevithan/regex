@@ -28,7 +28,7 @@
 
 ## 💎 Features
 
-- A modern regex baseline so you don't need to continually opt into best practices:
+- A modern regex baseline so you don't need to continually opt-in to best practices.
   - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
@@ -62,12 +62,12 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
 2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
 3. Unicode mode with flag <kbd>u</kbd>, which makes unreserved letter escapes an error, switches to code point based matching (changing the potential handling of the dot, negated shorthands like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd>, which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, subexpressions as subroutines via `\g<name>`, and definition blocks via `(?(DEFINE)…)` — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses UnicodeSets mode (flag <kbd>v</kbd>), which enables Unicode-related features, prevents Unicode-related bugs, and simplifies everything down to the one (best) parsing mode. And it adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
+`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (which is already a best practice for all new regular expressions) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. And it adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
 
 ## 🦾 New regex syntax
 
@@ -118,7 +118,7 @@ Regex.make('gm')`^.+`
 
 ### Implicit flags
 
-Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `Regex.make`, giving you a modern, baseline regex syntax and avoiding the need to continually opt into their superior modes.
+Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `Regex.make`, giving you a modern, baseline regex syntax and avoiding the need to continually opt-in to their superior modes.
 
 <details>
   <summary>🐜 Debugging</summary>
@@ -171,7 +171,7 @@ const date = Regex.make`
 
 - Within a character class, `#` is not a special character. It matches a literal `#` and doesn't start a comment. Additionally, the only insignificant whitespace characters within character classes are <kbd>space</kbd> and <kbd>tab</kbd>.
 - Outside of character classes, insignificant whitespace includes all Unicode characters matched natively by `\s`.
-- Whitespace and comments still separate tokens, so they aren't *ignored*. This is important with something like `\0 1`, which matches a null character followed by a literal `1`, rather than throwing as the invalid token `\01` would. Conversely, things like `\x 0A` and `(? :` are errors because the whitespace splits a valid node into incomplete parts.
+- Whitespace and comments still separate tokens, so they aren't *ignored*. This is important with e.g. `\0 1`, which matches a null character followed by a literal `1`, rather than throwing as the invalid token `\01` would. Conversely, things like `\x 0A` and `(? :` are errors because the whitespace splits a valid node into incomplete parts.
 - Quantifiers that follow whitespace or comments apply to the preceeding token, so `x +` is equivalent to `x+`.
 - Whitespace is not insignificant within most enclosed tokens like `\p{…}` and `\u{…}`. The exception is `[\q{…}]`.
 - Line comments with `#` do not extend into or beyond interpolation, so interpolation effectively acts as a terminating newline for the comment.
@@ -184,7 +184,7 @@ Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a n
 Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 >
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
 
@@ -452,7 +452,7 @@ In browsers:
 
 ## 🪶 Compatibility
 
-- `Regex.make` relies on `unicodeSets` (flag <kbd>v</kbd>), which has had near-universal browser support since mid-2023 and is available in Node.js 20+.
+- `Regex.make` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had near-universal browser support since mid-2023 and is available in Node.js 20+.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 - If you want `Regex.make` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` Regex.make.bind(RegExpSubclass)`…` ``.
 
