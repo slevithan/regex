@@ -47,7 +47,7 @@ describe('interpolation: partial patterns', () => {
       expect(() => Regex.make`.{{${Regex.partial`0\}`}}`).toThrow();
     });
 
-    it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
+    it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `\${'w'}` since the raw \ escapes the $
       expect(() => Regex.make({raw: ['\\', '']}, Regex.partial`w`)).toThrow();
     });
@@ -109,7 +109,7 @@ describe('interpolation: partial patterns', () => {
       expect('5').toMatch(Regex.make`[1-${Regex.partial(9)}]`);
     });
 
-    it('should allow at range boundary for lone double-punctuator character', () => {
+    it('should allow at range boundary for a lone double-punctuator character', () => {
       doublePunctuatorChars.forEach(char => {
         expect(char).toMatch(Regex.make`[\0-${Regex.partial(char)}]`);
         expect(char).toMatch(Regex.make`[${Regex.partial(char)}-\u{10FFFF}]`);
@@ -170,14 +170,14 @@ describe('interpolation: partial patterns', () => {
       });
     });
 
-    it('should not let leading ^ change the character class type', () => {
+    it('should not let a leading ^ change the character class type', () => {
       expect('^').toMatch(Regex.make`[${Regex.partial`^`}a]`);
       expect('b').not.toMatch(Regex.make`[${Regex.partial`^`}a]`);
       expect('_').toMatch(Regex.make`[${Regex.partial`^`}-\xFF]`);
       expect(() => Regex.make`[${Regex.partial`^^`}]`).withContext('^^').toThrow();
     });
 
-    it('should not let unescaped ] that is not part of a self-contained nested class end a class', () => {
+    it('should not let an unescaped ] that is not part of a self-contained nested class end a class', () => {
       expect(() => Regex.make`[${Regex.partial`]`}`).toThrow();
       expect(() => Regex.make`[a${Regex.partial`]`}b]`).toThrow();
       expect(']').toMatch(Regex.make`[${Regex.partial(String.raw`\]`)}]`);
@@ -185,7 +185,7 @@ describe('interpolation: partial patterns', () => {
       expect(']').toMatch(Regex.make`[${Regex.partial(String.raw`\\\]`)}]`);
     });
 
-    it('should not let unescaped [ that is not part of a self-contained nested class start a class', () => {
+    it('should not let an unescaped [ that is not part of a self-contained nested class start a class', () => {
       expect(() => Regex.make`${Regex.partial`[`}]`).toThrow();
       expect(() => Regex.make`[a${Regex.partial`[`}b]`).toThrow();
       expect('[').toMatch(Regex.make`[${Regex.partial(String.raw`\[`)}]`);
@@ -205,20 +205,20 @@ describe('interpolation: partial patterns', () => {
       expect(() => Regex.make`[\P{${Regex.partial`L\}`}}]`).toThrow();
     });
 
-    it('should not let unescaped } end an enclosed \\q token', () => {
+    it('should not let an unescaped } end an enclosed \\q token', () => {
       expect(() => Regex.make`[\q{${Regex.partial`a}`}]`).toThrow();
       expect(() => Regex.make`[\q{${Regex.partial`a}`}}]`).toThrow();
       expect('a}').toMatch(Regex.make`[\q{${Regex.partial`a\}`}}]`);
       expect(() => Regex.make`[\q{${Regex.partial`a\\}`}}]`).toThrow();
     });
 
-    it('should not let trailing unescaped \\ change the character after the interpolation', () => {
+    it('should not let a trailing unescaped \\ change the character after the interpolation', () => {
       expect(() => Regex.make`[${Regex.partial('\\')}w]`).toThrow();
       expect('\\').toMatch(Regex.make`[${Regex.partial('\\\\')}w]`);
       expect(() => Regex.make`[${Regex.partial('\\\\\\')}w]`).toThrow();
     });
 
-    it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
+    it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `[\${'w'}]` since the raw \ escapes the $
       expect(() => Regex.make({raw: ['[\\', ']']}, Regex.partial`w`)).toThrow();
     });

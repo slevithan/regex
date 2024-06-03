@@ -30,7 +30,7 @@ describe('flag x', () => {
       expect('aaa').toMatch(Regex.make({raw: ['^a  #comment\n +$']}, []));
     });
 
-    it('should not let the token following ignored whitespace or line comments modify the preceding token', () => {
+    it('should not let the token following whitespace or line comments modify the preceding token', () => {
         expect('\u{0}0').toMatch(Regex.make`\0 0`);
         expect('\u{0}1').toMatch(Regex.make`\0 1`);
         expect('\u{0}1').toMatch(Regex.make({raw: ['\0#\n1']}, []));
@@ -78,7 +78,14 @@ describe('flag x', () => {
       expect('#').toMatch(Regex.make`[#a]`);
     });
 
-    it('should not let the token following ignored whitespace modify the preceding token', () => {
+    it ('should not let a leading ^ following whitespace change the character class type', () => {
+      expect('^').toMatch(Regex.make`[ ^]`);
+      expect('_').not.toMatch(Regex.make`[ ^]`);
+      expect('^').toMatch(Regex.make`[ ^a]`);
+      expect('_').not.toMatch(Regex.make`[ ^a]`);
+    });
+
+    it('should not let the token following whitespace modify the preceding token', () => {
         expect('0').toMatch(Regex.make`[\0 0]`);
         expect('1').toMatch(Regex.make`[\0 1]`);
     });
@@ -127,7 +134,7 @@ describe('flag x', () => {
       expect('a').toMatch(Regex.make`[\w &&[a-z]]`);
     });
 
-    it('should match double-punctuator character separated from its pair by whitespace as a literal character', () => {
+    it('should match (as a literal character) a lone double-punctuator character separated from its partner by whitespace', () => {
       const doublePunctuatorChars = [
         '&',
         '!',

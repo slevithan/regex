@@ -1,6 +1,5 @@
 import { CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
 
-const divIf = cond => cond ? '(?:)' : '';
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
@@ -15,8 +14,8 @@ export function flagXProcessor(value, runningContext) {
   let transformed = '';
   let lastSignificantCharClassContext = '';
   let divNeeded = false;
-  const update = (str, {noPrefix = false, postfix = ''} = {}) => {
-    str = divIf(divNeeded && !noPrefix) + str + postfix;
+  const update = (str, {prefix = true, postfix = false} = {}) => {
+    str = (divNeeded && prefix ? '(?:)' : '') + str + (postfix ? '(?:)' : '');
     divNeeded = false;
     return str;
   };
@@ -54,14 +53,14 @@ export function flagXProcessor(value, runningContext) {
       // separator postfix if `m` is `?` to sandbox it from follwing tokens since `?` can be a
       // group-type marker. Ex: `( ?:)` becomes `(?(?:):)` and throws. The loop we're in matches
       // valid group openings in one step, so we won't arrive here if matching e.g. `(?:`
-      transformed += update(m, {noPrefix: true, postfix: divIf(m === '?')});
+      transformed += update(m, {prefix: false, postfix: m === '?'});
     } else if (regexContext === RegexContext.DEFAULT) {
       if (ws.test(m)) {
         ignoringWs = true;
       } else if (m.startsWith('#')) {
         ignoringComment = true;
       } else if (escapedWsOrHash.test(m)) {
-        transformed += update(m[1], {noPrefix: true});
+        transformed += update(m[1], {prefix: false});
       } else {
         transformed += update(m);
       }
@@ -82,7 +81,7 @@ export function flagXProcessor(value, runningContext) {
         escapedCharClassWs.test(m) &&
         (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.Q_TOKEN)
       ) {
-          transformed += update(m[1], {noPrefix: true});
+          transformed += update(m[1], {prefix: false});
       } else if (charClassContext === CharClassContext.DEFAULT) {
           transformed += update(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
       } else {

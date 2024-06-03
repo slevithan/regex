@@ -15,7 +15,7 @@ describe('interpolation: escaped strings', () => {
       expect(str.repeat(2)).toMatch(Regex.make`${str}{2}`);
     });
 
-    it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
+    it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `\${'w'}` since the raw \ escapes the $
       expect(() => Regex.make({raw: ['\\', '']}, 'w')).toThrow();
     });
@@ -61,7 +61,7 @@ describe('interpolation: escaped strings', () => {
       });
     });
 
-    it('should not let preceding unescaped \\ change the first character inside the interpolation', () => {
+    it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `[\${'w'}]` since the raw \ escapes the $
       expect(() => Regex.make({raw: ['[\\', ']']}, 'w')).toThrow();
     });
