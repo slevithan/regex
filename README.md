@@ -8,9 +8,9 @@
 ## 📜 Contents
 
 - [Features](#-features)
-- [New regex syntax](#-new-regex-syntax)
 - [Context](#-context)
 - [Examples](#-examples)
+- [New regex syntax](#-new-regex-syntax)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
   - [Flag <kbd>v</kbd>](#flag-v)
@@ -36,15 +36,6 @@
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
 
-## 🦾 New regex syntax
-
-These are coming soon in v1.1+:
-
-- Subexpressions as subroutines: `\g<name>`.
-- Definition blocks: `(?(DEFINE)…)`.
-- Atomic groups: `(?>…)`. ReDoS begone!
-- Recursion, up to a specified max depth: `(?R=N)`.
-
 ## ❓ Context
 
 Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
@@ -60,7 +51,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, subexpressions as subroutines via `\g<name>`, definition blocks via `(?(DEFINE)…)`, and always using UnicodeSets mode (flag <kbd>v</kbd>) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`Regex.make` adds all of these features and returns native `RegExp` instances. It additionally adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with modern (ES2024+) JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
+`Regex.make` adds all of these features and returns native `RegExp` instances. It additionally adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
 
 ## 🪧 Examples
 
@@ -90,7 +81,7 @@ const palindrome = Regex.make('i')`
 palindrome.test('Redivider'); // true
 ```
 
-> The palindrome example shows new regex syntax that's coming soon in v1.1+.
+> [!NOTE] The palindrome example shows new regex syntax that's coming soon in v1.1+.
 
 <!--
 const emoji = Regex.make`
@@ -106,6 +97,15 @@ const emoji = Regex.make`
   [🇦-🇿]{2}
 `;
 -->
+
+## 🦾 New regex syntax
+
+> [!NOTE] These are coming soon in v1.1+.
+
+- Subexpressions as subroutines: `\g<name>`.
+- Definition blocks: `(?(DEFINE)…)`.
+- Atomic groups: `(?>…)`. ReDoS begone!
+- Recursion, up to a specified max depth: `(?R=N)`.
 
 ## 🚩 Flags
 
@@ -131,7 +131,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 
 Flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operators and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `Regex.make`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of four (so you only need to remember one set of regex syntax and behavior).
 
-> Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
+> [!NOTE] Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
 ### Flag `x`
 
@@ -164,7 +164,7 @@ const date = Regex.make`
 `;
 ```
 
-> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `Regex.make` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
+> [!NOTE] Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `Regex.make` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -183,9 +183,9 @@ Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a n
 
 Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way named groups are numbered is inconsistent across regex flavors.
+> [!NOTE] Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way named groups are numbered is inconsistent across regex flavors.
 
-> Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
+> [!NOTE] Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
 
 ## 🧩 Interpolation
 
@@ -203,7 +203,7 @@ Regex.make('i')`hello-${/world/}`
 
 This is also true for other flags that can change how an inner regex is matched: `m` (`multiline`) and `s` (`dotAll`).
 
-> As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as atomic units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
+> [!NOTE] As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as atomic units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -216,7 +216,7 @@ This is also true for other flags that can change how an inner regex is matched:
 
 `Regex.make` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `Regex.make`, escaped strings are sandboxed and treated as atomic units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
+> [!NOTE] As with all interpolation in `Regex.make`, escaped strings are sandboxed and treated as atomic units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
 As a result, `Regex.make` is a safe and context-aware alternative to JavaScript proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
 
@@ -267,7 +267,7 @@ For all of these cases, you can interpolate `Regex.partial(value)` to avoid esca
 
 Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
-> As with all interpolation in `Regex.make`, partials are sandboxed and treated as atomic units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
+> [!NOTE] As with all interpolation in `Regex.make`, partials are sandboxed and treated as atomic units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
 
 If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
 
@@ -285,7 +285,7 @@ Although `[^…]` is a negated character class, `^` ***within*** a class doesn't
 
 Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `Regex.partial('^^')` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
-> What if you wanted to dynamically choose whether to negate a character class? Well then! Put the whole character class inside the partial.
+> [!TIP] If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the partial.
 
 Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of the surrounding patterns:
 
@@ -331,7 +331,7 @@ These last examples are all errors due to the corresponding reasons below:
 2. The unescaped `}` within the partial is not allowed to break out of its interpolation sandbox.
 3. The group opening `(` can't be quantified with `?`.
 
-> Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
+> [!NOTE] Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
 
 And since interpolated values are handled as atomic units, consider the following:
 
@@ -380,11 +380,11 @@ The above descriptions of interpolation might feel complex. But there are three 
 2. Interpolated values are always aware of the context of where they're embedded.
 3. When relevant, interpolated values are always treated as atomic units.
 
-> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation. Also note that "atomic units" are unrelated to the "atomic groups" feature that controls backtracking in some regex flavors (and that is planned for future versions of `Regex.make`).
+> [!NOTE] Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation. Also note that "atomic units" are unrelated to the "atomic groups" feature that controls backtracking in some regex flavors (and that is planned for future versions of `Regex.make`).
 
 ### Interpolation contexts
 
-> `Regex.make` is shortened below as `make` to better fit the table.
+> [!NOTE] `Regex.make` is shortened below as `make` to better fit the table.
 
 <table>
   <tr>
@@ -428,7 +428,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 *Atomized* means that e.g., in default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom. *Sandboxed* means that the value never changes the meaning or error status of characters outside of the interpolation, and vice versa.
 
-> The implementation details vary for how `Regex.make` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
+> [!NOTE] The implementation details vary for how `Regex.make` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
 ## 🕹️ Use
 
