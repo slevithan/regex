@@ -54,8 +54,8 @@ function makeFromTemplate(constructor, options, template, ...values) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
   }
 
-  // Add implicit flag x; handled first because otherwise some regex syntax within comments could
-  // cause problems when parsing if unescaped
+  // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
+  // comments could cause problems when parsing
   if (__flag_x) {
     ({template, values} = transformTemplateAndValues(template, values, flagXProcessor));
   }

@@ -1,12 +1,12 @@
 import { PartialPattern, partial } from './partial.js';
 
 export const RegexContext = {
-  DEFAULT: 'R_DEFAULT',
-  CHAR_CLASS: 'R_CHAR_CLASS',
-  GROUP_NAME: 'R_GROUP_NAME',
-  ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
-  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
-  INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
+  DEFAULT: 'DEFAULT',
+  CHAR_CLASS: 'CHAR_CLASS',
+  GROUP_NAME: 'GROUP_NAME',
+  ENCLOSED_TOKEN: 'ENCLOSED_TOKEN',
+  INTERVAL_QUANTIFIER: 'INTERVAL_QUANTIFIER',
+  INVALID_INCOMPLETE_TOKEN: 'INVALID_INCOMPLETE_TOKEN',
 };
 
 export const CharClassContext = {
@@ -31,7 +31,7 @@ const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
 /**
 @param {string} str
-@param {RegexContext.DEFAULT | RegexContext.CHAR_CLASS} regexContext
+@param {'DEFAULT' | 'CHAR_CLASS'} regexContext
 @returns {string}
 */
 export function escapeV(str, regexContext) {
@@ -233,7 +233,7 @@ Assumes flag v and doesn't worry about syntax errors that are caught by it.
 @param {string} input
 @param {string} needle Search as a regex pattern, with flags `su`
 @param {string} replacement
-@param {RegexContext.DEFAULT | RegexContext.CHAR_CLASS} [inRegexContext]
+@param {'DEFAULT' | 'CHAR_CLASS'} [inRegexContext]
 @returns {string}
 @example
 replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~');

@@ -32,7 +32,7 @@
   - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
-  - No unreadable escaped backslashes `\\\\`, since it's a raw string template tag.
+  - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
 - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
 
