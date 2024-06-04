@@ -171,7 +171,7 @@ describe('flag x', () => {
   });
 
   it('should set flag x status with an experimental option', () => {
-    expect('a b').not.toMatch(Regex.make({__flag_x: true})`a b`);
-    expect('a b').toMatch(Regex.make({__flag_x: false})`a b`);
+    expect('a b').not.toMatch(Regex.make({__flagX: true})`a b`);
+    expect('a b').toMatch(Regex.make({__flagX: false})`a b`);
   });
 });

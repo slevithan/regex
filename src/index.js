@@ -1,6 +1,6 @@
 //! Regex.make 1.0.0-beta; Steven Levithan; MIT License
-// Context-aware regex template strings with batteries included
 
+import { transformAtomicGroups } from './atomic-groups.js';
 import { flagNProcessor } from './flag-n.js';
 import { flagXProcessor, rakeSeparators } from './flag-x.js';
 import { PartialPattern, partial } from './partial.js';
@@ -29,7 +29,7 @@ function make(first, ...values) {
   } else if ((typeof first === 'string' || first === undefined) && !values.length) {
     return makeFromTemplate.bind(null, constructor, {flags: first});
   // Given an options object
-  } else if (Object.prototype.toString.call(first) === '[object Object]' && !values.length) {
+  } else if ({}.toString.call(first) === '[object Object]' && !values.length) {
     return makeFromTemplate.bind(null, constructor, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
@@ -46,9 +46,9 @@ Makes a UnicodeSets-mode RegExp from a template and values to fill the template 
 function makeFromTemplate(constructor, options, template, ...values) {
   const {
     flags = '',
-    __flag_n = true,
-    __flag_x = true,
-    __rake = options.__flag_x ?? true,
+    __flagN = true,
+    __flagX = true,
+    __rake = options.__flagX ?? true,
   } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
@@ -56,10 +56,10 @@ function makeFromTemplate(constructor, options, template, ...values) {
 
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
-  if (__flag_x) {
+  if (__flagX) {
     ({template, values} = transformTemplateAndValues(template, values, flagXProcessor));
   }
-  if (__flag_n) {
+  if (__flagN) {
     ({template, values} = transformTemplateAndValues(template, values, flagNProcessor));
   }
 
@@ -82,6 +82,8 @@ function makeFromTemplate(constructor, options, template, ...values) {
       pattern += interpolated.value;
     }
   });
+
+  pattern = transformAtomicGroups(pattern);
   return new constructor(__rake ? rakeSeparators(pattern) : pattern, `v${flags}`);
 }
 

@@ -108,11 +108,11 @@ export function rakeSeparators(pattern) {
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
-  // - Before one of `()|`.
-  // - After one of `()|` or the opening of a non-capturing group or lookaround.
+  // - Before one of `()|\`.
+  // - After one of `()|>` or the opening of a non-capturing group or lookaround.
   pattern = replaceUnescaped(
     pattern,
-    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|])|(?<=[()|]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|\\])|(?<=[()|>]|\(\?(?:[:=!]|<[=!]))${sep}`,
     '',
     RegexContext.DEFAULT
   );

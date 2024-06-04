@@ -11,6 +11,7 @@
 - [Example](#-example)
 - [Context](#-context)
 - [New regex syntax](#-new-regex-syntax)
+  - [Atomic groups](#atomic-groups)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
   - [Flag <kbd>v</kbd>](#flag-v)
@@ -33,22 +34,27 @@
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- Context-aware and safe interpolation of regexes, escaped strings, and partial patterns.
-- Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
+- Atomic groups via `(?>…)`. ReDoS begone!
+- Context-aware and safe interpolation of regexes, strings, and partial patterns.
+  - Interpolated strings have their special characters escaped.
+  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
 
 ## 🪧 Example
 
 ```js
-const interpolationExample = Regex.make('gm')`
+const regex = Regex.make('gm')`
   # The string is contextually escaped and repeated as an atomic unit
   ^ ${'a.b'}+ $
   |
-  # Only the inner regex is case insensitive
+  # Only the inner regex is case insensitive (flag i)
   # Also, the outer regex's flag m is not applied to it
   ${/^a.b$/i}
   |
   # This string is contextually sandboxed but not escaped
-  ${Regex.partial('^a.b$')}
+  ${Regex.partial('^ a.b $')}
+  |
+  # This is an atomic group
+  (?> \w+ \s? )+
 `;
 ```
 
@@ -65,18 +71,27 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, subexpressions as subroutines via `\g<name>`, and definition blocks via `(?(DEFINE)…)` — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture (and coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (which is already a best practice for all new regular expressions) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. And it adds context-aware and safe interpolation (of regexes, escaped strings, and partial pattern strings), along with atomic groups via `(?>…)` and recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.
+`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. And on top of that it gives you context-aware interpolation, escaping of interpolated strings, and atomic groups via `(?>…)`. <!--and recursion via `(?R)` up to a specified max depth.--> <!--Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.-->
 
 ## 🦾 New regex syntax
 
+### Atomic groups
+
+[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to prevent [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html).
+
+`Regex.make` brings this much needed feature to native JavaScript regular expressions.
+
 > [!NOTE]
-> These are coming soon in v1.1+.
+> Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
+
+### Coming soon
+
+The following are planned for v1.1+.
 
 - Subexpressions as subroutines: `\g<name>`.
 - Definition blocks: `(?(DEFINE)…)`.
-- Atomic groups: `(?>…)`. ReDoS begone!
 - Recursion, up to a specified max depth: `(?R=N)`.
 
 <!--
@@ -123,7 +138,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 <details>
   <summary>🐜 Debugging</summary>
 
-For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` Regex.make({__flag_x: false, __flag_n: false})`…` ``.
+For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` Regex.make({__flagX: false, __flagN: false})`…` ``.
 </details>
 
 ### Flag `v`

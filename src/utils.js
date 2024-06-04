@@ -128,7 +128,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 // - Group openings, so they can be stepped past (also relied on by flag n).
 // - Double-punctuators.
 // To support flag n, complete backreference numbers were also added so they can be shown in error
-// messages
+// messages. To support atomic groups, `(?>` was added
 export const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
 | (?<enclosedT> \\[pPu]\{ )
@@ -148,7 +148,7 @@ export const contextToken = new RegExp(String.raw`
   | 0 \d+
 )
 | \[\^
-| \(\?[:=!<]
+| \(\?[:=!<>]
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
 | \\[1-9]\d*
 | --
@@ -226,13 +226,13 @@ export function getEndContextForIncompletePattern(partialPattern, {
 }
 
 /**
-Replaces tokens only when they're unescaped and in the given context.
+Replaces patterns only when they're unescaped and in the given context.
 Doesn't skip over complete multicharacter tokens (only `\` and folowing char) so must be used with
 knowledge of what's safe to do given regex syntax.
 Assumes flag v and doesn't worry about syntax errors that are caught by it.
-@param {string} input
+@param {string} pattern
 @param {string} needle Search as a regex pattern, with flags `su`
-@param {string} replacement
+@param {string | (match: RegExpExecArray) => string} replacement
 @param {'DEFAULT' | 'CHAR_CLASS'} [inRegexContext]
 @returns {string}
 @example
@@ -241,18 +241,23 @@ replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~');
 replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~', RegexContext.DEFAULT);
 // -> String.raw`~\.\\~\\\.[[\.].]~`
 */
-export function replaceUnescaped(input, needle, replacement, inRegexContext) {
+export function replaceUnescaped(pattern, needle, replacement, inRegexContext) {
   const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
   let numCharClassesOpen = 0;
   let result = '';
-  for (const {0: m, groups: {found}} of input.matchAll(regex)) {
+  for (const match of pattern.matchAll(regex)) {
+    const {0: m, groups: {found}} = match;
     if (found && (!inRegexContext || (inRegexContext === RegexContext.DEFAULT) === !numCharClassesOpen)) {
-      result += replacement;
+      if (replacement instanceof Function) {
+        result += replacement(match);
+      } else {
+        result += replacement;
+      }
       continue;
     }
     if (m === '[') {
       numCharClassesOpen++;
-    } else if (m === ']') {
+    } else if (m === ']' && numCharClassesOpen) {
       numCharClassesOpen--;
     }
     result += m;
@@ -278,7 +283,7 @@ export function adjustNumberedBackrefs(pattern, precedingCaptures) {
   // shown as `[\2]`
   return pattern.replace(
     /\\([1-9]\d*)|\\?./gsu,
-    (m0, m1) => m1 ? '\\' + (Number(m1) + precedingCaptures) : m0
+    (m, b1) => b1 ? '\\' + (Number(b1) + precedingCaptures) : m
   );
 }
 

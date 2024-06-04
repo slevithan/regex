@@ -27,7 +27,7 @@ describe('flag n', () => {
   });
 
   it('should set flag n status with an experimental option', () => {
-    expect(() => Regex.make({__flag_n: true})`()\1`).toThrow();
-    expect('aa').toMatch(Regex.make({__flag_n: false})`(a)\1`);
+    expect(() => Regex.make({__flagN: true})`()\1`).toThrow();
+    expect('aa').toMatch(Regex.make({__flagN: false})`(a)\1`);
   });
 });
