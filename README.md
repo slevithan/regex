@@ -3,7 +3,9 @@
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
 
-`Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** for next-level parsing and pattern matching. It's lightweight, it supports all ES2024+ regex features, and it's unmatched in its robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
+`Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** with advanced features. It's lightweight, has no dependencies, and supports all ES2024+ regex features.
+
+Highlights include freely spacing your regexes and adding comments (via implicit flag <kbd>x</kbd>), saving you from [ReDoS](https://en.wikipedia.org/wiki/ReDoS) via atomic groups with `(?>…)`, and robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
 
 ## 📜 Contents
 
@@ -73,7 +75,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture (and coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. And on top of that it gives you context-aware interpolation, escaping of interpolated strings, and atomic groups via `(?>…)`. <!--and recursion via `(?R)` up to a specified max depth.--> <!--Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.-->
+`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And everything is built on a foundation that gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. <!--and recursion via `(?R)` up to a specified max depth.--> <!--Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.-->
 
 ## 🦾 New regex syntax
 
@@ -81,7 +83,17 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 [Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to prevent [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html).
 
-`Regex.make` brings this much needed feature to native JavaScript regular expressions.
+Example:
+
+```js
+Regex.make`^(?>\w+\s?)+$`
+```
+
+This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails if given a long target string with a punctuation mark on the end, like `'A target string that takes a long time or can even hang your browser!'`.
+
+Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking it triggers, it will either take a *very* long time, hang your browser, or throw an internal error after a delay.
+
+Atomic groups are thus a much needed feature that `Regex.make` brings to native JavaScript regular expressions.
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
