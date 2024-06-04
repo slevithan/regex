@@ -45,7 +45,7 @@ Highlights include freely spacing your regexes and adding comments (via implicit
 
 ```js
 const regex = Regex.make('gm')`
-  # The string is contextually escaped and repeated as an atomic unit
+  # The string is contextually escaped and repeated as an complete unit
   ^ ${'a.b'}+ $
   |
   # Only the inner regex is case insensitive (flag i)
@@ -229,7 +229,7 @@ Regex.make('i')`hello-${/world/}`
 
 This is also true for other flags that can change how an inner regex is matched: `m` (`multiline`) and `s` (`dotAll`).
 
-> As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as atomic units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
+> As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as complete units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -242,7 +242,7 @@ This is also true for other flags that can change how an inner regex is matched:
 
 `Regex.make` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `Regex.make`, escaped strings are sandboxed and treated as atomic units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
+> As with all interpolation in `Regex.make`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
 As a result, `Regex.make` is a safe and context-aware alternative to JavaScript proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
 
@@ -293,7 +293,7 @@ For all of these cases, you can interpolate `Regex.partial(value)` to avoid esca
 
 Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
-> As with all interpolation in `Regex.make`, partials are sandboxed and treated as atomic units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
+> As with all interpolation in `Regex.make`, partials are sandboxed and treated as complete units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
 
 If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
 
@@ -359,7 +359,7 @@ These last examples are all errors due to the corresponding reasons below:
 
 > Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
 
-And since interpolated values are handled as atomic units, consider the following:
+And since interpolated values are handled as complete units, consider the following:
 
 ```js
 // This works fine
@@ -404,9 +404,9 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 1. Interpolation never changes the meaning or error status of characters outside of the interpolation, and vice versa.
 2. Interpolated values are always aware of the context of where they're embedded.
-3. When relevant, interpolated values are always treated as atomic units.
+3. When relevant, interpolated values are always treated as complete units.
 
-> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation. Also note that "atomic units" are unrelated to the "atomic groups" feature that controls backtracking in some regex flavors (and that is planned for future versions of `Regex.make`).
+> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation.
 
 ### Interpolation contexts
 
@@ -452,9 +452,9 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
-*Atomized* means that e.g., in default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom. *Sandboxed* means that the value never changes the meaning or error status of characters outside of the interpolation, and vice versa.
+- *Atomized* means that that something is treated as a complete unit; it isn't related to the *atomic groups* feature. Example: In default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
+- *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
 
-> [!NOTE]
 > The implementation details vary for how `Regex.make` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
 ## 🕹️ Use
