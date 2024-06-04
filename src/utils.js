@@ -1,4 +1,4 @@
-import { PartialPattern, partial } from './partial.js';
+import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
   DEFAULT: 'DEFAULT',

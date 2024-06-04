@@ -1,4 +1,4 @@
-import { RegexContext, contextToken, getEndContextForIncompletePattern } from './utils.js';
+import {RegexContext, contextToken, getEndContextForIncompletePattern} from './utils.js';
 
 export function flagNProcessor(value, runningContext) {
   value = String(value);

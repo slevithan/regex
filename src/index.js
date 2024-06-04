@@ -1,10 +1,10 @@
 //! Regex.make 1.0.0-beta; Steven Levithan; MIT License
 
-import { transformAtomicGroups } from './atomic-groups.js';
-import { flagNProcessor } from './flag-n.js';
-import { flagXProcessor, rakeSeparators } from './flag-x.js';
-import { PartialPattern, partial } from './partial.js';
-import { CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues } from './utils.js';
+import {transformAtomicGroups} from './atomic-groups.js';
+import {flagNProcessor} from './flag-n.js';
+import {flagXProcessor, rakeSeparators} from './flag-x.js';
+import {PartialPattern, partial} from './partial.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues} from './utils.js';
 
 /**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and context-aware

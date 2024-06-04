@@ -1,4 +1,4 @@
-import { RegexContext, replaceUnescaped } from './utils.js';
+import {RegexContext, replaceUnescaped} from './utils.js';
 
 export function transformAtomicGroups(pattern) {
   if (!hasUnescapedInDefaultRegexContext(pattern, String.raw`\(\?>`)) {

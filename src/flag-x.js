@@ -1,4 +1,4 @@
-import { CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls } from './utils.js';
+import {CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;

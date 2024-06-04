@@ -461,7 +461,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ```js
 import Regex from './src/index.js';
-// Or: import { make, partial } from './src/index.js';
+// Or: import {make, partial} from './src/index.js';
 
 Regex.make`^\p{L}+$`.test('こんにちは');
 ```
@@ -485,5 +485,5 @@ In browsers:
 
 `Regex.make` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-Crafted with ❤︎ by Steven Levithan.<br>
+Crafted with ❤︎ (for developers and regular expressions) by Steven Levithan.<br>
 MIT License.
