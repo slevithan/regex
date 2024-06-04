@@ -28,19 +28,18 @@ export function transformAtomicGroups(pattern) {
         } else if (m === ')' && inAG()) {
           if (!numGroupsOpenInAG) {
             aGCount++;
-            const marker = `$AG$${aGCount}`;
-            // Replace `pattern` and start over from the beginning position of the atomic group, in
+            // Replace `pattern` and start over from the opening position of the atomic group, in
             // case the processed group contains additional atomic groups
-            pattern = `${pattern.slice(0, aGPos)}(?:(?=(?<${marker}>${pattern.slice(aGPos + aGDelimLen, pos)}))\\k<${marker}>)${pattern.slice(pos + 1)}`;
+            pattern = `${pattern.slice(0, aGPos)}(?:(?=(${pattern.slice(aGPos + aGDelimLen, pos)}))\\k<${aGCount}>)${pattern.slice(pos + 1)}`;
             hasProcessedAG = true;
             break;
           }
           numGroupsOpenInAG--;
         } else if (backrefNum) {
-          // Could handle this with extra effort (adjusting both the backreferences found and those
-          // used to emulate atomic groups) but it's probably not worth it for the edge case since
-          // to trigger this the regex must contain both an atomic group and an interpolated RegExp
-          // instance with a numbered backreference
+          // Could allow this with extra effort (adjusting both the backreferences found and those
+          // used to emulate atomic groups) but it's probably not worth it. To trigger this, the
+          // regex must contain both an atomic group and an interpolated RegExp instance with a
+          // numbered backreference
           throw new Error(`Invalid delimal escape "${m}" in regex with atomic group; check interpolated regexes`);
         }
       } else if (m === ']') {
@@ -48,11 +47,11 @@ export function transformAtomicGroups(pattern) {
       }
     }
   } while (hasProcessedAG);
-  // Depollute the resulting `groups` object by replacing named groups and backrefs with numbers
+  // Replace the `\k<…>` added as a shield from the check for invalid numbered backreferences
   pattern = replaceUnescaped(
     pattern,
-    String.raw`\(\?<\$AG\$\d+>|\\k<\$AG\$(?<backrefNum>\d+)>`,
-    ({groups: {backrefNum}}) => backrefNum ? `\\${backrefNum}` : '(',
+    String.raw`\\k<(?<backrefNum>\d+)>`,
+    ({groups: {backrefNum}}) => `\\${backrefNum}`,
     RegexContext.DEFAULT
   );
   return pattern;

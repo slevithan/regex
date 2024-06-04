@@ -88,7 +88,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ### Coming soon
 
-The following are planned for v1.1+.
+The following new regex syntax is planned for v1.1+:
 
 - Subexpressions as subroutines: `\g<name>`.
 - Definition blocks: `(?(DEFINE)…)`.
