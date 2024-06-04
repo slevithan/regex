@@ -5,7 +5,7 @@
 
 `Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** with advanced features. It's lightweight, has no dependencies, and supports all ES2024+ regex features.
 
-Highlights include freely spacing your regexes and adding comments (via implicit flag <kbd>x</kbd>), saving you from [ReDoS](https://en.wikipedia.org/wiki/ReDoS) via atomic groups with `(?>…)`, and robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial pattern strings.
+Highlights include freely spacing your regexes and adding comments (via implicit flag <kbd>x</kbd>), saving you from [ReDoS](https://en.wikipedia.org/wiki/ReDoS) via atomic groups `(?>…)`, and robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 📜 Contents
 
@@ -36,7 +36,7 @@ Highlights include freely spacing your regexes and adding comments (via implicit
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- Atomic groups via `(?>…)`. ReDoS begone!
+- Atomic groups via `(?>…)` that can improve performance and save you from ReDoS.
 - Context-aware and safe interpolation of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
   - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
@@ -81,7 +81,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ### Atomic groups
 
-[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to prevent [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html).
+[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to prevent [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html), and are a much needed feature that `Regex.make` brings to native JavaScript regular expressions.
 
 Example:
 
@@ -89,11 +89,9 @@ Example:
 Regex.make`^(?>\w+\s?)+$`
 ```
 
-This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails if given a long target string with a punctuation mark on the end, like `'A target string that takes a long time or can even hang your browser!'`.
+This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails to find a match if given a long list of words that end with something not allowed, like `'A target string that takes a long time or can even hang your browser!'`.
 
 Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking it triggers, it will either take a *very* long time, hang your browser, or throw an internal error after a delay.
-
-Atomic groups are thus a much needed feature that `Regex.make` brings to native JavaScript regular expressions.
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
