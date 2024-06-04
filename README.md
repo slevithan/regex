@@ -81,7 +81,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ### Atomic groups
 
-[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to prevent [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html), and are a much needed feature that `Regex.make` brings to native JavaScript regular expressions.
+[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to improve performance, and are a much needed feature that `Regex.make` brings to native JavaScript regular expressions.
 
 Example:
 
@@ -91,7 +91,7 @@ Regex.make`^(?>\w+\s?)+$`
 
 This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails to find a match if given a long list of words that end with something not allowed, like `'A target string that takes a long time or can even hang your browser!'`.
 
-Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking it triggers, it will either take a *very* long time, hang your browser, or throw an internal error after a delay.
+Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it's taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `Regex.make` to the rescue!
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
