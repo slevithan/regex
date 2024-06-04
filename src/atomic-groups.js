@@ -8,12 +8,12 @@ export function transformAtomicGroups(pattern) {
   const aGDelimLen = '(?>'.length;
   let hasProcessedAG;
   let aGCount = 0;
+  let aGPos = NaN;
   do {
     hasProcessedAG = false;
     let numCharClassesOpen = 0;
     let numGroupsOpenInAG = 0;
-    let aGPos = NaN;
-    const inAG = () => !Number.isNaN(aGPos);
+    let inAG = false;
     token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + aGDelimLen;
     let match;
     while (match = token.exec(pattern)) {
@@ -21,11 +21,12 @@ export function transformAtomicGroups(pattern) {
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
-        if (m === '(?>' && !inAG()) {
+        if (m === '(?>' && !inAG) {
           aGPos = pos;
-        } else if (groupStart && inAG()) {
+          inAG = true;
+        } else if (groupStart && inAG) {
           numGroupsOpenInAG++;
-        } else if (m === ')' && inAG()) {
+        } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
             // Replace `pattern` and start over from the opening position of the atomic group, in
@@ -40,7 +41,7 @@ export function transformAtomicGroups(pattern) {
           // used to emulate atomic groups) but it's probably not worth it. To trigger this, the
           // regex must contain both an atomic group and an interpolated RegExp instance with a
           // numbered backreference
-          throw new Error(`Invalid delimal escape "${m}" in regex with atomic group; check interpolated regexes`);
+          throw new Error(`Invalid delimal escape "${m}" in interpolated regex used with atomic group`);
         }
       } else if (m === ']') {
         numCharClassesOpen--;

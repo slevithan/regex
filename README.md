@@ -5,7 +5,7 @@
 
 `Regex.make` is a template tag for dynamically creating **modern, readable, native JavaScript regular expressions** with advanced features. It's lightweight, has no dependencies, and supports all ES2024+ regex features.
 
-Highlights include freely spacing your regexes and adding comments (via implicit flag <kbd>x</kbd>), saving you from [ReDoS](https://en.wikipedia.org/wiki/ReDoS) via atomic groups `(?>…)`, and robust support for context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include letting you freely add whitespace and comments to your regexes (via implicit flag <kbd>x</kbd>), supporting atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and robustly supporting context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 📜 Contents
 
@@ -36,7 +36,7 @@ Highlights include freely spacing your regexes and adding comments (via implicit
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*no auto capture* mode) improves the readability and efficiency of your regexes.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- Atomic groups via `(?>…)` that can improve performance and save you from ReDoS.
+- Atomic groups via `(?>…)` that can dramatically improve performance and prevent ReDoS.
 - Context-aware and safe interpolation of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
   - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
@@ -210,8 +210,8 @@ Motivation: Requiring the syntactically clumsy `(?:…)` where you could just us
 
 > [!NOTE]
 > Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
->
-> Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
+
+> Aside: Flag <kbd>n</kbd>'s behavior enables `Regex.make` to emulate atomic groups and recursion.
 
 ## 🧩 Interpolation
 
