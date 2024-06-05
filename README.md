@@ -16,8 +16,6 @@ npm install regex
 ```js
 import Regex from 'regex';
 // Or: import {make, partial} from 'regex';
-
-Regex.make`^\w+$`.test('lovely');
 ```
 
 In browsers:
