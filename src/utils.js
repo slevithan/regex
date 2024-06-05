@@ -265,6 +265,41 @@ export function replaceUnescaped(pattern, needle, replacement, inRegexContext) {
   return result;
 }
 
+/**
+Check if an unescaped version of a pattern appears outside of a character class.
+Doesn't skip over complete multicharacter tokens (only `\` and folowing char) so must be used with
+knowledge of what's safe to do given regex syntax.
+Assumes flag v and doesn't worry about syntax errors that are caught by it.
+@param {string} pattern
+@param {string} needle Search as a regex pattern, with flags `su`
+@param {(match: RegExpExecArray) => void} [callback]
+@returns {boolean}
+*/
+export function hasUnescapedInDefaultRegexContext(pattern, needle, callback) {
+  // Quick partial test; avoid the loop if not needed
+  if (!(new RegExp(needle, 'su')).test(pattern)) {
+    return false;
+  }
+  const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
+  let numCharClassesOpen = 0;
+  for (const match of pattern.matchAll(regex)) {
+    const {0: m, groups: {found}} = match;
+    if (m === '[') {
+      numCharClassesOpen++;
+    } else if (!numCharClassesOpen) {
+      if (found) {
+        if (callback) {
+          callback(match);
+        }
+        return true;
+      }
+    } else if (m === ']') {
+      numCharClassesOpen--;
+    }
+  }
+  return false;
+}
+
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function countCaptures(pattern) {
   const regex = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\?./gsu;

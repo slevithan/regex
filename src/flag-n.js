@@ -12,7 +12,7 @@ export function flagNProcessor(value, runningContext) {
       if (m === '(') {
         transformed += '(?:';
       } else if (/^\\[1-9]/.test(m)) {
-        throw new Error(`Invalid delimal escape "${m}" with implicit flag n; replace with named backreference`);
+        throw new Error(`Invalid decimal escape "${m}" with implicit flag n; replace with named backreference`);
       } else {
         transformed += m;
       }

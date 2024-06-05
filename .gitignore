@@ -5,3 +5,6 @@ node_modules
 .DS_Store
 desktop.ini
 Thumbs.db
+
+# Temp work
+temp

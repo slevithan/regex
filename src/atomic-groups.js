@@ -1,4 +1,4 @@
-import {RegexContext, replaceUnescaped} from './utils.js';
+import {RegexContext, hasUnescapedInDefaultRegexContext, replaceUnescaped} from './utils.js';
 
 export function transformAtomicGroups(pattern) {
   if (!hasUnescapedInDefaultRegexContext(pattern, String.raw`\(\?>`)) {
@@ -49,7 +49,7 @@ export function transformAtomicGroups(pattern) {
           // used to emulate atomic groups) but it's probably not worth it. To trigger this, the
           // regex must contain both an atomic group and an interpolated RegExp instance with a
           // numbered backreference
-          throw new Error(`Invalid delimal escape "${m}" in interpolated regex used with atomic group`);
+          throw new Error(`Invalid decimal escape "${m}" in interpolated regex; cannot be used with atomic group`);
         }
       } else if (m === ']') {
         numCharClassesOpen--;
@@ -64,34 +64,4 @@ export function transformAtomicGroups(pattern) {
     RegexContext.DEFAULT
   );
   return pattern;
-}
-
-/**
-Check if an unescaped version of a pattern appears outside of a character class.
-Doesn't skip over complete multicharacter tokens (only `\` and folowing char) so must be used with
-knowledge of what's safe to do given regex syntax.
-Assumes flag v and doesn't worry about syntax errors that are caught by it.
-@param {string} pattern
-@param {string} needle Search as a regex pattern, with flags `su`
-@returns {boolean}
-*/
-function hasUnescapedInDefaultRegexContext(pattern, needle) {
-  // Quick partial test; avoid the loop if not needed
-  if (!(new RegExp(needle, 'su')).test(pattern)) {
-    return false;
-  }
-  const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
-  let numCharClassesOpen = 0;
-  for (const {0: m, groups: {found}} of pattern.matchAll(regex)) {
-    if (m === '[') {
-      numCharClassesOpen++;
-    } else if (!numCharClassesOpen) {
-      if (found) {
-        return true;
-      }
-    } else if (m === ']') {
-      numCharClassesOpen--;
-    }
-  }
-  return false;
 }
