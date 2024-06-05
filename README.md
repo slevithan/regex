@@ -5,7 +5,7 @@
 
 `Regex.make` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.5KB), has no dependencies, and supports all ES2024+ regex features.
 
-Highlights include letting you freely add whitespace and comments to your regexes, supporting atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and robustly supporting context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🕹️ Install and use
 
