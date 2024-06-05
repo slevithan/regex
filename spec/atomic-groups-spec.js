@@ -4,6 +4,21 @@ describe('atomic groups', () => {
     expect('abc').not.toMatch(Regex.make`a(?>bc|b)c`);
   });
 
+  it('should work when named capturing groups present', () => {
+    expect('abcc').toMatch(Regex.make`(?<n>)a(?>bc|b)c`);
+    expect('abc').not.toMatch(Regex.make`(?<n>)a(?>bc|b)c`);
+  });
+
+  it('should work when unnamed capturing groups present', () => {
+    expect('abcc').toMatch(Regex.make({__flagN: false})`()a(?>bc|b)c`);
+    expect('abc').not.toMatch(Regex.make({__flagN: false})`()a(?>bc|b)c`);
+  });
+
+  it('should work when capturing groups present via interpolation', () => {
+    expect('abcc').toMatch(Regex.make`${/()/}a(?>bc|b)c`);
+    expect('abc').not.toMatch(Regex.make`${/()/}a(?>bc|b)c`);
+  });
+
   it('should allow nested atomic groups', () => {
     expect('integerrr+').toMatch(Regex.make`\b(?>int(?>eger+)?|insert)\b(?>.)`);
     expect('integerrr+').not.toMatch(Regex.make`\b(?>int(?>eger+)??|insert)\b(?>.)`);

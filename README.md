@@ -75,7 +75,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture (and coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And everything is built on a foundation that gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. <!--and recursion via `(?R)` up to a specified max depth.--> <!--Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.-->
+`Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And everything is built on a foundation that gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. <!--Recursion via `(?R)` up to a specified max depth. Combine all this with the existing strengths of modern JavaScript regular expressions, and `Regex.make` lets you create powerful, readable, grammatical regexes like you might not have seen before.-->
 
 ## 🦾 New regex syntax
 
@@ -103,33 +103,6 @@ The following new regex syntax is planned for v1.1+:
 - Subexpressions as subroutines: `\g<name>`.
 - Definition blocks: `(?(DEFINE)…)`.
 - Recursion, up to a specified max depth: `(?R=N)`.
-
-<!--
-const palindrome = Regex.make('i')`
-  (?(DEFINE)
-    (?<alpha> [a-z] )
-  )
-
-  (?<char> \g<alpha> )
-  # Recursively match the regex up to max-depth 10
-  ( (?R=10) | \g<alpha>? )
-  \k<char>
-`;
-palindrome.test('Redivider'); // true
-
-const emoji = Regex.make`
-  (?<emojiPart> \p{Emoji_Modifier_Base} \p{Emoji_Modifier}?
-    | \p{Emoji_Presentation}
-    | \p{Emoji} \uFE0F
-  )
-  # Unnamed (…) is non-capturing, and \g<name> is a subroutine,
-  # not a backreference like \k<name>
-  ( \u200D  \g<emojiPart> )*
-  |
-  # Regional indicator symbol letters are used for flags
-  [🇦-🇿]{2}
-`;
--->
 
 ## 🚩 Flags
 
@@ -477,7 +450,7 @@ In browsers:
 
 ## 🪶 Compatibility
 
-- `Regex.make` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had near-universal browser support since mid-2023 and is available in Node.js 20+.
+- `Regex.make` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 and is available in Node.js 20+.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 - If you want `Regex.make` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` Regex.make.bind(RegExpSubclass)`…` ``.
 

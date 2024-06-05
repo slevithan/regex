@@ -4,9 +4,10 @@ export function transformAtomicGroups(pattern) {
   if (!hasUnescapedInDefaultRegexContext(pattern, String.raw`\(\?>`)) {
     return pattern;
   }
-  const token = new RegExp(String.raw`(?<groupStart>\(\?[:=!<>])|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
+  const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>]|<[=!]))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
   const aGDelimLen = '(?>'.length;
   let hasProcessedAG;
+  let capturingGroupCount = 0;
   let aGCount = 0;
   let aGPos = NaN;
   do {
@@ -14,25 +15,32 @@ export function transformAtomicGroups(pattern) {
     let numCharClassesOpen = 0;
     let numGroupsOpenInAG = 0;
     let inAG = false;
-    token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + aGDelimLen;
     let match;
+    token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + aGDelimLen;
     while (match = token.exec(pattern)) {
-      const {0: m, index: pos, groups: {backrefNum, groupStart}} = match;
+      const {0: m, index: pos, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
         if (m === '(?>' && !inAG) {
           aGPos = pos;
           inAG = true;
-        } else if (groupStart && inAG) {
+        } else if (inAG && noncapturingStart) {
           numGroupsOpenInAG++;
+        } else if (capturingStart) {
+          if (inAG) {
+            numGroupsOpenInAG++;
+          }
+          capturingGroupCount++;
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
             // Replace `pattern` and start over from the opening position of the atomic group, in
             // case the processed group contains additional atomic groups
-            pattern = `${pattern.slice(0, aGPos)}(?:(?=(${pattern.slice(aGPos + aGDelimLen, pos)}))\\k<${aGCount}>)${pattern.slice(pos + 1)}`;
+            pattern = `${pattern.slice(0, aGPos)}(?:(?=(${pattern.slice(aGPos + aGDelimLen, pos)}))\\k<${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
             hasProcessedAG = true;
+            // Subtract the capturing group we just added as part of emulating an atomic group
+            capturingGroupCount--;
             break;
           }
           numGroupsOpenInAG--;
@@ -68,7 +76,7 @@ Assumes flag v and doesn't worry about syntax errors that are caught by it.
 @returns {boolean}
 */
 function hasUnescapedInDefaultRegexContext(pattern, needle) {
-  // Quick partial test; avoids the loop in most cases
+  // Quick partial test; avoid the loop if not needed
   if (!(new RegExp(needle, 'su')).test(pattern)) {
     return false;
   }
