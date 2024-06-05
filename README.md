@@ -3,9 +3,9 @@
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
 
-`Regex.make` is a template tag for dynamically creating **readable, high performance, native JavaScript regular expressions** with advanced features. It's lightweight, has no dependencies, and supports all ES2024+ regex features.
+`Regex.make` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.5KB), has no dependencies, and supports all ES2024+ regex features.
 
-Highlights include letting you freely add whitespace and comments to your regexes (via implicit flag <kbd>x</kbd>), supporting atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and robustly supporting context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include letting you freely add whitespace and comments to your regexes, supporting atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and robustly supporting context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🕹️ Install and use
 
@@ -17,16 +17,13 @@ npm install regex
 import Regex from 'regex';
 // Or: import {make, partial} from 'regex';
 
-Regex.make`^\p{Alphabetic}+$`.test('こんにちは');
+Regex.make`^\w+$`.test('lovely');
 ```
 
 In browsers:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
-<script>
-  Regex.make`^\p{Alphabetic}+$`.test('Здраво');
-</script>
 ```
 
 ## 📜 Contents
@@ -66,7 +63,7 @@ In browsers:
 
 ```js
 const regex = Regex.make('gm')`
-  # The string is contextually escaped and repeated as an complete unit
+  # Strings are contextually escaped and repeated as complete units
   ^ ${'a.b'}+ $
   |
   # Only the inner regex is case insensitive (flag i)
@@ -76,7 +73,7 @@ const regex = Regex.make('gm')`
   # This string is contextually sandboxed but not escaped
   ${Regex.partial('^ a.b $')}
   |
-  # This is an atomic group
+  # An atomic group
   (?> \w+ \s? )+
 `;
 ```
@@ -94,7 +91,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture (and coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, no auto capture, and interpolation (coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
 `Regex.make` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -112,7 +109,7 @@ Regex.make`^(?>\w+\s?)+$`
 
 This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails to find a match if given a long list of words that end with something not allowed, like `'A target string that takes a long time or can even hang your browser!'`.
 
-Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it's taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `Regex.make` and atomic groups to the rescue!
+Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it has taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `Regex.make` and atomic groups to the rescue!
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
@@ -177,7 +174,7 @@ const date = Regex.make`
   # Partials are directly embedded, so they use free spacing
   ${Regex.partial`\d + | [a - z]`}
 
-  # Interpolated regexes use their own flags so they preserve their whitespace
+  # Interpolated regexes use their own flags, so they preserve their whitespace
   ${/^Hakuna matata$/m}
 `;
 ```
@@ -203,7 +200,7 @@ Flag <kbd>n</kbd> gives you *no auto capture* mode, which turns `(…)` into a n
 Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior in C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `Regex.make`, the implicit flag <kbd>n</kbd> also disables numbered backreferences to named groups in the outer regex, which follows the behavior of C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `Regex.make` to emulate atomic groups and recursion.
 
@@ -223,7 +220,7 @@ Regex.make('i')`hello-${/world/}`
 
 This is also true for other flags that can change how an inner regex is matched: `m` (`multiline`) and `s` (`dotAll`).
 
-> As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as complete units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex.
+> As with all interpolation in `Regex.make`, embedded regexes are sandboxed and treated as complete units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex. Numbered backreferences are adjusted to work within the overall pattern.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -283,7 +280,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
 
-For all of these cases, you can interpolate `Regex.partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` Regex.partial`…` `` as a tag, equivalent to ``Regex.partial(String.raw`…`)``.
+For all of these cases, you can interpolate `Regex.partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` Regex.partial`…` `` as a tag, as shorthand for ``Regex.partial(String.raw`…`)``.
 
 Apart from edge cases, `Regex.partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
