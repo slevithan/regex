@@ -1,11 +1,11 @@
 {
-  "name": "regex-make",
+  "name": "regex",
   "version": "1.0.0-beta",
   "description": "Context-aware regex template strings with batteries included",
   "exports": "./src/index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.js --bundle --minify --sourcemap --outfile=dist/regex-make.min.js --global-name=Regex",
+    "build": "esbuild src/index.js --bundle --minify --sourcemap --outfile=dist/regex.min.js --global-name=Regex",
     "pretest": "npm run build",
     "test": "jasmine",
     "prepublish": "npm test"
