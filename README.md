@@ -1,4 +1,4 @@
-# `Regex.make` 1.0.0 beta
+# `Regex.make`
 
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
