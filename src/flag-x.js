@@ -52,7 +52,9 @@ export function flagXProcessor(value, runningContext) {
       // Skip the separator prefix and connect the quantifier to the previous token. Add a
       // separator postfix if `m` is `?` to sandbox it from follwing tokens since `?` can be a
       // group-type marker. Ex: `( ?:)` becomes `(?(?:):)` and throws. The loop we're in matches
-      // valid group openings in one step, so we won't arrive here if matching e.g. `(?:`
+      // valid group openings in one step, so we won't arrive here if matching e.g. `(?:`. Flag n
+      // precludes the need for the postfix since bare `(` is converted to `(?:`, but flag n can be
+      // turned off
       transformed += update(m, {prefix: false, postfix: m === '?'});
     } else if (regexContext === RegexContext.DEFAULT) {
       if (ws.test(m)) {
@@ -76,7 +78,7 @@ export function flagXProcessor(value, runningContext) {
       } else if (charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
         // Need to handle this here since the main regex-parsing code wouldn't know where the token
         // ends if we removed ws after it that was followed by something that completes the token
-        throw new Error(`Invalid incomplete token in character class: ${m}`);
+        throw new Error(`Invalid incomplete token in character class: "${m}"`);
       } else if (
         escapedCharClassWs.test(m) &&
         (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.Q_TOKEN)
@@ -108,11 +110,11 @@ export function rakeSeparators(pattern) {
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
-  // - Before one of `()|\`.
-  // - After one of `()|>` or the opening of a non-capturing group or lookaround.
+  // - Before one of `()|$\`.
+  // - After one of `()|>^` or the opening of a non-capturing group or lookaround.
   pattern = replaceUnescaped(
     pattern,
-    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|\\])|(?<=[()|>]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|$\\])|(?<=[()|>^]|\(\?(?:[:=!]|<[=!]))${sep}`,
     '',
     RegexContext.DEFAULT
   );

@@ -175,7 +175,7 @@ const date = Regex.make`
   ${' '}+
 
   # Partials are directly embedded, so they use free spacing
-  ${Regex.partial('( \d+ | [a - z] )')}
+  ${Regex.partial`\d + | [a - z]`}
 
   # Interpolated regexes use their own flags so they preserve their whitespace
   ${/^Hakuna matata$/m}
@@ -229,7 +229,7 @@ This is also true for other flags that can change how an inner regex is matched:
   <summary>👉 <b>Show more details</b></summary>
 
 - Regexes can't be interpolated in the middle of a character class (so `` Regex.make`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
-- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. Ex: `RegExp(/./, 's')`.
+- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. Ex: `new RegExp(/./, 's')`.
 </details>
 
 ### Interpolating escaped strings

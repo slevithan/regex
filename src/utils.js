@@ -148,7 +148,7 @@ export const contextToken = new RegExp(String.raw`
   | 0 \d+
 )
 | \[\^
-| \(\?[:=!<>]
+| \(\?[:=!<>ims\-]
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
 | \\[1-9]\d*
 | --
@@ -221,7 +221,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
     regexContext,
     charClassContext,
     charClassDepth,
-    lastPos: partialPattern.length - 1,
+    lastPos: partialPattern.length,
   };
 }
 
