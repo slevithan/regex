@@ -1,4 +1,4 @@
-//! regex 1.1.0-dev; Steven Levithan; MIT License
+//! regex 1.1.0; Steven Levithan; MIT License
 
 import {transformAtomicGroups} from './atomic-groups.js';
 import {flagNProcessor} from './flag-n.js';

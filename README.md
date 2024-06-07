@@ -460,7 +460,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 `regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-Historical note: Version 1.0.0 was named Regex.make and used the tag name `make` instead of `regex`; hence the repo name.
+Version 1.0.0 was named Regex.make and used the tag name `make` instead of `regex`; hence the repo name.
 
 Crafted with ❤︎ (for developers and regular expressions) by Steven Levithan.<br>
 MIT License.
