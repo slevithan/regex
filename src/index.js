@@ -1,4 +1,4 @@
-//! Regex.make 1.0.0; Steven Levithan; MIT License
+//! regex 1.1.0-dev; Steven Levithan; MIT License
 
 import {transformAtomicGroups} from './atomic-groups.js';
 import {flagNProcessor} from './flag-n.js';
@@ -11,26 +11,26 @@ Template tag for constructing a UnicodeSets-mode RegExp with advanced features a
 interpolation of regexes, escaped strings, and partial patterns.
 
 Can be called in multiple ways:
-1. `` Regex.make`…` `` - Regex pattern as a raw string.
-2. `` Regex.make('gis')`…` `` - To specify flags.
-3. `` Regex.make({flags: 'gis'})`…` `` - With options.
-4. `` Regex.make.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
+1. `` regex`…` `` - Regex pattern as a raw string.
+2. `` regex('gis')`…` `` - To specify flags.
+3. `` regex({flags: 'gis'})`…` `` - With options.
+4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 @param {string | TemplateStringsArray} first Flags or a template.
 @param {...any} [values] Values to fill the template holes.
 @returns {RegExp | (TemplateStringsArray, ...any) => RegExp}
 */
-function make(first, ...values) {
+function regex(first, ...values) {
   // Allow binding to other constructors
   const constructor = this instanceof Function ? this : RegExp;
   // Given a template
   if (Array.isArray(first?.raw)) {
-    return makeFromTemplate(constructor, {flags: ''}, first, ...values);
+    return fromTemplate(constructor, {flags: ''}, first, ...values);
   // Given flags
   } else if ((typeof first === 'string' || first === undefined) && !values.length) {
-    return makeFromTemplate.bind(null, constructor, {flags: first});
+    return fromTemplate.bind(null, constructor, {flags: first});
   // Given an options object
   } else if ({}.toString.call(first) === '[object Object]' && !values.length) {
-    return makeFromTemplate.bind(null, constructor, first);
+    return fromTemplate.bind(null, constructor, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
 }
@@ -43,7 +43,7 @@ Makes a UnicodeSets-mode RegExp from a template and values to fill the template 
 @param {...any} values
 @returns {RegExp}
 */
-function makeFromTemplate(constructor, options, template, ...values) {
+function fromTemplate(constructor, options, template, ...values) {
   const {
     flags = '',
     __flagN = true,
@@ -153,39 +153,39 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
 }
 
 /**
-@param {RegExp} regex
+@param {RegExp} re
 @param {string} outerFlags
 @returns {Object}
 */
-function transformForLocalFlags(regex, outerFlags) {
+function transformForLocalFlags(re, outerFlags) {
   const modFlagsObj = {
     i: null,
     m: null,
     s: null,
   };
   const newlines = '\\n\\r\\u2028\\u2029';
-  let value = regex.source;
+  let value = re.source;
 
-  if (regex.ignoreCase !== outerFlags.includes('i')) {
+  if (re.ignoreCase !== outerFlags.includes('i')) {
     if (patternModsOn) {
-      modFlagsObj.i = regex.ignoreCase;
+      modFlagsObj.i = re.ignoreCase;
     } else {
       throw new Error('Pattern modifiers not supported, so the value of flag i on the interpolated RegExp must match the outer regex');
     }
   }
-  if (regex.dotAll !== outerFlags.includes('s')) {
+  if (re.dotAll !== outerFlags.includes('s')) {
     if (patternModsOn) {
-      modFlagsObj.s = regex.dotAll;
+      modFlagsObj.s = re.dotAll;
     } else {
-      value = replaceUnescaped(value, '\\.', (regex.dotAll ? '[^]' : `[^${newlines}]`), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\.', (re.dotAll ? '[^]' : `[^${newlines}]`), RegexContext.DEFAULT);
     }
   }
-  if (regex.multiline !== outerFlags.includes('m')) {
+  if (re.multiline !== outerFlags.includes('m')) {
     if (patternModsOn) {
-      modFlagsObj.m = regex.multiline;
+      modFlagsObj.m = re.multiline;
     } else {
-      value = replaceUnescaped(value, '\\^', (regex.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), RegexContext.DEFAULT);
-      value = replaceUnescaped(value, '\\$', (regex.multiline ? `(?=$|[${newlines}])` : '(?![^])'), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\^', (re.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\$', (re.multiline ? `(?=$|[${newlines}])` : '(?![^])'), RegexContext.DEFAULT);
     }
   }
 
@@ -206,10 +206,10 @@ function transformForLocalFlags(regex, outerFlags) {
   return {value};
 }
 
-const Regex = {
-  make,
-  partial,
-};
+// Alias for backcompat with v1.0.0; might be removed in v2
+const make = regex;
 
-export { make, partial };
-export default Regex;
+export {make, partial, regex};
+
+// The default export is deprecated and might be removed in v2
+export default {make, partial, regex};

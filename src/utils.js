@@ -64,9 +64,9 @@ export function sandboxLoneCharClassCaret(str) {
   return str.replace(/^\^/, '\\^^');
 }
 
-// Regex.make`[\0${0}]` and Regex.make`[${Regex.partial`\0`}0]` can't be guarded against via
-// nested `[…]` sandboxing in character classes if the interpolated value doesn't contain union
-// (since it might be placed on a range boundary). So escape \0 in character classes as \u{0}
+// regex`[\0${0}]` and regex`[${partial`\0`}0]` can't be guarded against via nested `[…]`
+// sandboxing in character classes if the interpolated value doesn't contain union (since it might
+// be placed on a range boundary). So escape \0 in character classes as \u{0}
 export function sandboxUnsafeNulls(str, inRegexContext) {
   return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', inRegexContext);
 }
@@ -242,10 +242,10 @@ replaceUnescaped(String.raw`.\.\\.\\\.[[\.].].`, '\\.', '~', RegexContext.DEFAUL
 // -> String.raw`~\.\\~\\\.[[\.].]~`
 */
 export function replaceUnescaped(pattern, needle, replacement, inRegexContext) {
-  const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
+  const re = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
   let numCharClassesOpen = 0;
   let result = '';
-  for (const match of pattern.matchAll(regex)) {
+  for (const match of pattern.matchAll(re)) {
     const {0: m, groups: {found}} = match;
     if (found && (!inRegexContext || (inRegexContext === RegexContext.DEFAULT) === !numCharClassesOpen)) {
       if (replacement instanceof Function) {
@@ -280,9 +280,9 @@ export function hasUnescapedInDefaultRegexContext(pattern, needle, callback) {
   if (!(new RegExp(needle, 'su')).test(pattern)) {
     return false;
   }
-  const regex = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
+  const re = new RegExp(String.raw`(?<found>${needle})|\\?.`, 'gsu');
   let numCharClassesOpen = 0;
-  for (const match of pattern.matchAll(regex)) {
+  for (const match of pattern.matchAll(re)) {
     const {0: m, groups: {found}} = match;
     if (m === '[') {
       numCharClassesOpen++;
@@ -302,12 +302,12 @@ export function hasUnescapedInDefaultRegexContext(pattern, needle, callback) {
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function countCaptures(pattern) {
-  const regex = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\?./gsu;
+  const re = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\?./gsu;
   // Don't worry about tracking if we're in a character class or other invalid context for an
   // unescaped `(`, because (given flag v) the unescaped `(` is invalid anyway. However, that means
   // backrefs in subsequent interpolated regexes might be adjusted using an incorrect count, which
   // is displayed in the error message about the overall regex being invalid
-  return Array.from(pattern.matchAll(regex)).filter(m => m.groups.capture).length;
+  return Array.from(pattern.matchAll(re)).filter(m => m.groups.capture).length;
 }
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
@@ -344,7 +344,7 @@ export function containsCharClassUnion(charClassPattern) {
   // Ranges with `-` create a single token.
   // Subtraction and intersection with `--` and `&&` create a single token.
   // Supports any number of nested classes
-  const regex = new RegExp(String.raw`
+  const re = new RegExp(String.raw`
 \\ (?:
     c [A-Za-z]
   | p \{ (?<pPropOfStr> ${propertiesOfStringsNames} ) \}
@@ -360,7 +360,7 @@ export function containsCharClassUnion(charClassPattern) {
   `.replace(/\s+/g, ''), 'gsu');
   let hasFirst = false;
   let lastM;
-  for (const {0: m, groups} of charClassPattern.matchAll(regex)) {
+  for (const {0: m, groups} of charClassPattern.matchAll(re)) {
     if (groups.pPropOfStr || groups.qPropOfStr) {
       return true;
     }

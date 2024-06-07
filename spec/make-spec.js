@@ -1,59 +1,59 @@
 describe('make', () => {
   it('should accept a template', () => {
-    expect(Regex.make``).toBeInstanceOf(RegExp);
-    expect(Regex.make`.`).toBeInstanceOf(RegExp);
-    expect(Regex.make`.`.source).toBe('.');
-    expect('a').toMatch(Regex.make`.`);
+    expect(regex``).toBeInstanceOf(RegExp);
+    expect(regex`.`).toBeInstanceOf(RegExp);
+    expect(regex`.`.source).toBe('.');
+    expect('a').toMatch(regex`.`);
   });
 
   it('should process templates as raw strings', () => {
-    expect(Regex.make`\\`.source).toBe('\\\\');
-    expect('a').toMatch(Regex.make`\w`);
+    expect(regex`\\`.source).toBe('\\\\');
+    expect('a').toMatch(regex`\w`);
   });
 
   it('should accept a flags string', () => {
-    expect(Regex.make('')``.global).toBeFalse();
-    expect(Regex.make('g')``.global).toBeTrue();
-    expect(Regex.make('imgs')``.global).toBeTrue();
+    expect(regex('')``.global).toBeFalse();
+    expect(regex('g')``.global).toBeTrue();
+    expect(regex('imgs')``.global).toBeTrue();
   });
 
   it('should accept empty arguments', () => {
-    expect(Regex.make()``).toBeInstanceOf(RegExp);
-    expect(Regex.make(undefined)``).toBeInstanceOf(RegExp);
+    expect(regex()``).toBeInstanceOf(RegExp);
+    expect(regex(undefined)``).toBeInstanceOf(RegExp);
   });
 
   it('should implicitly add flag v', () => {
-    expect(Regex.make``.flags).toContain('v');
-    expect(Regex.make``.unicodeSets).toBeTrue();
-    expect(Regex.make('g')``.unicodeSets).toBeTrue();
+    expect(regex``.flags).toContain('v');
+    expect(regex``.unicodeSets).toBeTrue();
+    expect(regex('g')``.unicodeSets).toBeTrue();
   });
 
   it('should not allow explicitly adding implicit flags', () => {
     // Flag `u` is not allowed due to `v`
     const flags = ['v', 'x', 'n', 'u'];
     flags.forEach(f => {
-      expect(() => Regex.make(f)``).toThrow();
-      expect(() => Regex.make(`i${f}m`)``).toThrow();
-      expect(() => Regex.make({flags: f})``).toThrow();
+      expect(() => regex(f)``).toThrow();
+      expect(() => regex(`i${f}m`)``).toThrow();
+      expect(() => regex({flags: f})``).toThrow();
     });
   });
 
   it('should allow binding to a RegExp subclass', () => {
     class SubRegExp extends RegExp {}
-    expect(Regex.make.bind(SubRegExp)`a`).toBeInstanceOf(SubRegExp);
-    expect('a').toMatch(Regex.make.bind(SubRegExp)`a`);
+    expect(regex.bind(SubRegExp)`a`).toBeInstanceOf(SubRegExp);
+    expect('a').toMatch(regex.bind(SubRegExp)`a`);
   });
 
   it('should allow binding to any constructor', () => {
     function fn(pattern, flags) {
       return new RegExp(pattern, flags);
     }
-    expect(Regex.make.bind(fn)`a`).toBeInstanceOf(RegExp);
-    expect('a').toMatch(Regex.make.bind(fn)`a`);
+    expect(regex.bind(fn)`a`).toBeInstanceOf(RegExp);
+    expect('a').toMatch(regex.bind(fn)`a`);
   });
 
   it('should clean up superfluous token separators in output', () => {
     // JS returns '(?:)' for `RegExp('').source`, but '' would also be a fine result
-    expect(['(?:)', '']).toContain(Regex.make`(?:)(?:)(?:)(?:)(?:)`.source);
+    expect(['(?:)', '']).toContain(regex`(?:)(?:)(?:)(?:)(?:)`.source);
   });
 });

@@ -1,3 +1,3 @@
-import Regex from '../../src/index.js';
+import {regex, partial} from '../../src/index.js';
 
-globalThis.Regex = Regex;
+Object.assign(globalThis, {regex, partial});
