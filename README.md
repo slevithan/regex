@@ -203,7 +203,7 @@ Flag <kbd>n</kbd> gives you *named capture only* mode, which prevents the groupi
 Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the `n` flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to named groups in the outer regex, which follows the behavior of C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to named groups in the outer regex, which follows the behavior of C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `regex` to emulate atomic groups and recursion.
 
@@ -460,7 +460,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 `regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-Version 1.0.0 was named Regex.make and used the tag name `make` instead of `regex`; hence the repo name.
+Version 1.0.0 was named Regex.make and used the tag name `make` instead of `regex`. `make` is still available as an alias.
 
 Crafted with ❤︎ (for developers and regular expressions) by Steven Levithan.<br>
 MIT License.
