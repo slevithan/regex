@@ -252,7 +252,7 @@ new RegExp(`^(?:${RegExp.escape(str)})+$`)
 regex`^${str}+$`
 
 // Instead of
-new RegExp(`[a-${RegExp.escape(str)}]`, 'u') // Flag u/v required to avoid bug
+new RegExp(`[a-${RegExp.escape(str)}]`, 'u') // Flag u/v required to avoid bugs
 // You can say
 regex`[a-${str}]`
 // Given the context at the end of a range, throws if more than one char in str
