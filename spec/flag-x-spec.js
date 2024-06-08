@@ -32,7 +32,7 @@ describe('flag x', () => {
       expect(() => regex`a | ?`).toThrow();
     });
 
-    it('should not allow quantifiers to repeat other quantifiers', function() {
+    it('should not allow quantifiers to follow other quantifiers', function() {
       expect(() => regex`a?? ?`).toThrow();
       expect(() => regex`a*? ?`).toThrow();
       expect(() => regex`a+? ?`).toThrow();
