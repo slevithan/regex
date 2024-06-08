@@ -12,6 +12,7 @@ export function flagXProcessor(value, runningContext) {
   let ignoringComment = false;
   let pattern = '';
   let transformed = '';
+  let lastSignificantToken = '';
   let lastSignificantCharClassContext = '';
   let divNeeded = false;
   const update = (str, {prefix = true, postfix = false} = {}) => {
@@ -55,7 +56,7 @@ export function flagXProcessor(value, runningContext) {
       // valid group openings in one step, so we won't arrive here if matching e.g. `(?:`. Flag n
       // precludes the need for the postfix since bare `(` is converted to `(?:`, but flag n can be
       // turned off
-      transformed += update(m, {prefix: false, postfix: m === '?'});
+      transformed += update(m, {prefix: false, postfix: lastSignificantToken === '('});
     } else if (regexContext === RegexContext.DEFAULT) {
       if (ws.test(m)) {
         ignoringWs = true;
@@ -93,6 +94,7 @@ export function flagXProcessor(value, runningContext) {
       transformed += update(m);
     }
     if (!(ignoringWs || ignoringCharClassWs || ignoringComment)) {
+      lastSignificantToken = m;
       lastSignificantCharClassContext = charClassContext;
     }
   }

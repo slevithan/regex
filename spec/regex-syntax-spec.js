@@ -45,12 +45,12 @@ describe('regex syntax', () => {
       '^^',
     ];
     reservedDoublePunctuators.forEach(dp => {
-      expect(() => regex({raw: [`[a${dp}b]`]}, [])).withContext(dp).toThrow();
+      expect(() => regex({raw: [`[a${dp}b]`]})).withContext(dp).toThrow();
     });
     allDoublePunctuatorsExcludingCaret.forEach(dp => {
-      expect(() => regex({raw: [`[${dp}]`]}, [])).withContext(dp).toThrow();
-      expect(() => regex({raw: [`[${dp}b]`]}, [])).withContext(dp).toThrow();
-      expect(() => regex({raw: [`[a${dp}]`]}, [])).withContext(dp).toThrow();
+      expect(() => regex({raw: [`[${dp}]`]})).withContext(dp).toThrow();
+      expect(() => regex({raw: [`[${dp}b]`]})).withContext(dp).toThrow();
+      expect(() => regex({raw: [`[a${dp}]`]})).withContext(dp).toThrow();
     });
     expect(() => regex`[^^^]`).withContext('^^').toThrow();
     expect(() => regex`[^^^b]`).withContext('^^').toThrow();

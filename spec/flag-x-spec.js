@@ -2,7 +2,7 @@ describe('flag x', () => {
   describe('in default context', () => {
     it('should treat whitespace as insignificant', () => {
       const ws = '\t\n\v\f\r \xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF';
-      expect('ab').toMatch(regex({raw: [`^a${ws}b$`]}, []));
+      expect('ab').toMatch(regex({raw: [`^a${ws}b$`]}));
     });
 
     it('should start line comments with # that continue until the next \\n', () => {
@@ -12,7 +12,7 @@ describe('flag x', () => {
     it('should not end line comments with newlines other than \\n', () => {
       const newlines = ['\r', '\u2028', '\u2029'];
       newlines.forEach(n => {
-        expect('ab').not.toMatch(regex({raw: [`^a#comment${n}b\n$`]}, []));
+        expect('ab').not.toMatch(regex({raw: [`^a#comment${n}b\n$`]}));
       });
     });
 
@@ -21,19 +21,43 @@ describe('flag x', () => {
     });
 
     it('should allow mixing whitespace and line comments', function() {
-      expect('ab').toMatch(regex({raw: ['\f^ a \t\n ##comment\n #\nb $ # ignored']}, []));
+      expect('ab').toMatch(regex({raw: ['\f^ a \t\n ##comment\n #\nb $ # ignored']}));
     });
 
     it('should apply a quantifier following whitespace or line comments to the preceding token', function() {
       expect('aaa').toMatch(regex`^a +$`);
-      expect('aaa').toMatch(regex({raw: ['^a#comment\n+$']}, []));
-      expect('aaa').toMatch(regex({raw: ['^a  #comment\n +$']}, []));
+      expect('aaa').toMatch(regex`^(a) +$`);
+      expect('aaa').toMatch(regex({raw: ['^a#comment\n+$']}));
+      expect('aaa').toMatch(regex({raw: ['^a  #comment\n +$']}));
+      expect(() => regex`a | ?`).toThrow();
     });
 
-    it('should not let the token following whitespace or line comments modify the preceding token', () => {
-        expect('\u{0}0').toMatch(regex`\0 0`);
-        expect('\u{0}1').toMatch(regex`\0 1`);
-        expect('\u{0}1').toMatch(regex({raw: ['\0#\n1']}, []));
+    it('should not allow quantifiers to repeat other quantifiers', function() {
+      expect(() => regex`a?? ?`).toThrow();
+      expect(() => regex`a*? ?`).toThrow();
+      expect(() => regex`a+? ?`).toThrow();
+      expect(() => regex`a{2}? ?`).toThrow();
+      expect(() => regex`a* *`).toThrow();
+      expect(() => regex`a+ +`).toThrow();
+      expect(() => regex`a{2} {2}`).toThrow();
+    });
+
+    // Follows Perl, PCRE, .NET, Java
+    // Not allowed in Python
+    it('should allow whitespace between a quantifier and the ? that makes it lazy', function() {
+      expect(regex`^aa? ?`.exec('aaa')[0]).toBe('a');
+      expect(regex`^aa* ?`.exec('aaa')[0]).toBe('a');
+      expect(regex`^aa+ ?`.exec('aaa')[0]).toBe('aa');
+      expect(regex`^aa{1,2} ?`.exec('aaa')[0]).toBe('aa');
+    });
+
+    it('should not let the token following whitespace modify the preceding token', () => {
+      expect('\u{0}0').toMatch(regex`^\0 0$`);
+      expect('\u{0}1').toMatch(regex`^\0 1$`);
+    });
+
+    it('should not let the token following a line comment modify the preceding token', () => {
+      expect('\u{0}1').toMatch(regex({raw: ['^\0#\n1$']}));
     });
 
     it('should preserve the error status of incomplete tokens separated from their completing chars by whitespace', () => {
@@ -45,33 +69,51 @@ describe('flag x', () => {
         '\\u000 0',
         '\\x 00',
         '\\x0 0',
+        '(? :)',
       ];
       values.forEach(v => {
-        expect(() => regex({raw: [v]}, [])).withContext(v).toThrow();
+        expect(() => regex({raw: [v]})).withContext(v).toThrow();
       });
     });
 
+    it('should not allow quantifying ( with ? when separated by whitespace and followed by group type char', () => {
+      expect(() => regex`( ?:)`).toThrow();
+      expect(() => regex`( ?=)`).toThrow();
+      expect(() => regex`( ? : )`).toThrow();
+      expect(() => regex`( ? = )`).toThrow();
+    });
+
     it('should allow escaping whitespace to make it significant', () => {
-      expect(' ').toMatch(regex`\ `);
-      expect('  ').toMatch(regex` \ \  `);
+      expect(' ').toMatch(regex`^\ $`);
+      expect('  ').toMatch(regex`^ \ \  $`);
+      expect(' t').toMatch(regex`^\ t$`);
     });
 
     it('should allow escaping # to make it significant', () => {
       expect('#').toMatch(regex`\#`);
       expect('##').toMatch(regex` \# \# `);
     });
+
+    it('should treat whitespace in enclosed tokens as significant', () => {
+      expect(() => regex`a{ 6 }`).toThrow();
+      expect(() => regex`\p{ L }`).toThrow();
+      expect(() => regex`\P{ L }`).toThrow();
+      expect(() => regex`\u{ 0 }`).toThrow();
+      expect(() => regex`(?< n >)`).toThrow();
+      expect(() => regex`(?<n>)\k< n >`).toThrow();
+    });
   });
 
   describe('in character class context', () => {
     it('should treat space and tab characters as insignificant', () => {
       expect(' ').not.toMatch(regex`[ a]`);
-      expect('\t').not.toMatch(regex({raw: ['[\ta]']}, []));
+      expect('\t').not.toMatch(regex({raw: ['[\ta]']}));
     });
 
     it('should not treat whitespace characters apart from space and tab as insignificant', () => {
-      expect('\n').toMatch(regex({raw: ['[\na]']}, []));
-      expect('\xA0').toMatch(regex({raw: ['[\xA0a]']}, []));
-      expect('\u2028').toMatch(regex({raw: ['[\u2028a]']}, []));
+      expect('\n').toMatch(regex({raw: ['[\na]']}));
+      expect('\xA0').toMatch(regex({raw: ['[\xA0a]']}));
+      expect('\u2028').toMatch(regex({raw: ['[\u2028a]']}));
     });
 
     it('should not start comments with #', () => {
@@ -86,8 +128,8 @@ describe('flag x', () => {
     });
 
     it('should not let the token following whitespace modify the preceding token', () => {
-        expect('0').toMatch(regex`[\0 0]`);
-        expect('1').toMatch(regex`[\0 1]`);
+        expect('0').toMatch(regex`^[\0 0]$`);
+        expect('1').toMatch(regex`^[\0 1]$`);
     });
 
     it('should preserve the error status of incomplete tokens separated from their completing chars by whitespace', () => {
@@ -101,7 +143,7 @@ describe('flag x', () => {
         '[\\x0 0]',
       ];
       values.forEach(v => {
-        expect(() => regex({raw: [v]}, [])).withContext(v).toThrow();
+        expect(() => regex({raw: [v]})).withContext(v).toThrow();
       });
     });
 
@@ -121,7 +163,7 @@ describe('flag x', () => {
         '[a - - b]',
       ];
       values.forEach(v => {
-        expect(() => regex({raw: [v]}, [])).withContext(v).toThrow();
+        expect(() => regex({raw: [v]})).withContext(v).toThrow();
       });
     });
 
@@ -157,16 +199,33 @@ describe('flag x', () => {
         '~',
       ];
       doublePunctuatorChars.forEach(c => {
-        expect(c).withContext(`[a${c} ${c}b]`).toMatch(regex({raw: [`[a${c} ${c}b]`]}, []));
-        expect(c).withContext(`[a${c} ${c} b]`).toMatch(regex({raw: [`[a${c} ${c} b]`]}, []));
-        expect(c).withContext(`[a ${c} ${c}b]`).toMatch(regex({raw: [`[a ${c} ${c}b]`]}, []));
-        expect(c).withContext(`[a ${c} ${c} b]`).toMatch(regex({raw: [`[a ${c} ${c} b]`]}, []));
+        expect(c).withContext(`[a${c} ${c}b]`).toMatch(regex({raw: [`[a${c} ${c}b]`]}));
+        expect(c).withContext(`[a${c} ${c} b]`).toMatch(regex({raw: [`[a${c} ${c} b]`]}));
+        expect(c).withContext(`[a ${c} ${c}b]`).toMatch(regex({raw: [`[a ${c} ${c}b]`]}));
+        expect(c).withContext(`[a ${c} ${c} b]`).toMatch(regex({raw: [`[a ${c} ${c} b]`]}));
       });
     });
 
     it('should allow escaping whitespace to make it significant', () => {
-      expect(' ').toMatch(regex`[ \ ]`);
-      expect(' ').toMatch(regex`[\q{ \ }]`);
+      expect(' ').toMatch(regex`^[ \ ]$`);
+      expect(' ').toMatch(regex`^[\q{ \ }]$`);
+      expect('t ').toMatch(regex`^[\ t]{2}$`);
+    });
+
+    it('should treat whitespace in enclosed tokens as significant', () => {
+      expect(() => regex`[\p{ L }]`).toThrow();
+      expect(() => regex`[\P{ L }]`).toThrow();
+      expect(() => regex`[\u{ 0 }]`).toThrow();
+    });
+
+    it('should treat whitespace in [\\q{}] as insignificant', () => {
+      expect('ab').toMatch(regex`^[\q{ a b | c }]$`);
+    });
+
+    it('should handle empty character classes with insignificant whitespace', () => {
+      expect(/[]/v.test('a')).toBe(regex`[ ]`.test('a'));
+      expect(/[^]/v.test('a')).toBe(regex`[^ ]`.test('a'));
+      expect(/[\q{}]/v.test('a')).toBe(regex`[ \q{ } ]`.test('a'));
     });
   });
 
