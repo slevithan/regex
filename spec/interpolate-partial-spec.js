@@ -47,6 +47,11 @@ describe('interpolation: partial patterns', () => {
       expect(() => regex`.{{${partial`0\}`}}`).toThrow();
     });
 
+    it('should not let > end an enclosed token', () => {
+      expect(() => regex`(?<n>)\k<${partial`n>`}`).toThrow();
+      expect(() => regex`(?<${partial`n>`}>)`).toThrow();
+    });
+
     it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `\${'w'}` since the raw \ escapes the $
       expect(() => regex({raw: ['\\', '']}, partial`w`)).toThrow();

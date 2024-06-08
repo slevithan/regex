@@ -15,6 +15,11 @@ describe('interpolation: escaped strings', () => {
       expect(str.repeat(2)).toMatch(regex`${str}{2}`);
     });
 
+    it('should not let > end an enclosed token', () => {
+      expect(() => regex`(?<n>)\k<${'n>'}`).toThrow();
+      expect(() => regex`(?<${'n>'}>)`).toThrow();
+    });
+
     it('should not let a preceding unescaped \\ change the first character inside the interpolation', () => {
       // Raw string syntax prevents `\${'w'}` since the raw \ escapes the $
       expect(() => regex({raw: ['\\', '']}, 'w')).toThrow();

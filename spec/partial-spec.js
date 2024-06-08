@@ -1,14 +1,14 @@
 describe('partial', () => {
+  it('should coerce non-string values', () => {
+    expect(String(partial('1'))).toBe('1');
+    expect(String(partial(1))).toBe('1');
+    expect(String(partial(NaN))).toBe('NaN');
+  });
+
   describe('strings', () => {
     it('should accept empty arguments', () => {
       expect(String(partial())).toBe('');
       expect(String(partial(undefined))).toBe('');
-    });
-
-    it('should coerce to string', () => {
-      expect(String(partial('1'))).toBe('1');
-      expect(String(partial(1))).toBe('1');
-      expect(String(partial(NaN))).toBe('NaN');
     });
   });
 

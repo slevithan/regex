@@ -94,7 +94,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw template strings, insignificant whitespace, comments, *named capture only* mode, and interpolation (coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, *named capture only* mode, and interpolation (coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -347,7 +347,7 @@ But again, changing the meaning or error status of characters outside the interp
 
 These last examples are all errors due to the corresponding reasons below:
 
-1. This is an uncompleted `\u` token (which is an error) followed by the tokens `0`, `0`, `0`, `A`. That's because the interpolation does not happen within an enclosed `\u{…}` context.
+1. This is an uncompleted `\u` token (which is an error) followed by the tokens `0`, `0`, `0`, `A`. That's because the interpolation doesn't happen within an enclosed `\u{…}` context.
 2. The unescaped `}` within the partial is not allowed to break out of its interpolation sandbox.
 3. The group opening `(` can't be quantified with `?`.
 
@@ -460,7 +460,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 `regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-Version 1.0.0 was named Regex.make and used the tag name `make` instead of `regex`. `make` is still available as an alias.
+Version 1.0.0 was named Regex.make and used tag name `make` instead of `regex`. `make` is still available as an alias.
 
 Crafted with ❤︎ (for developers and regular expressions) by Steven Levithan.<br>
 MIT License.

@@ -1,4 +1,4 @@
-describe('make', () => {
+describe('regex', () => {
   it('should accept a template', () => {
     expect(regex``).toBeInstanceOf(RegExp);
     expect(regex`.`).toBeInstanceOf(RegExp);
@@ -15,6 +15,11 @@ describe('make', () => {
     expect(regex('')``.global).toBeFalse();
     expect(regex('g')``.global).toBeTrue();
     expect(regex('imgs')``.global).toBeTrue();
+    expect(regex('d')``.hasIndices).toBeTrue();
+    expect(regex('i')``.ignoreCase).toBeTrue();
+    expect(regex('m')``.multiline).toBeTrue();
+    expect(regex('s')``.dotAll).toBeTrue();
+    expect(regex('y')``.sticky).toBeTrue();
   });
 
   it('should accept empty arguments', () => {
@@ -36,6 +41,10 @@ describe('make', () => {
       expect(() => regex(`i${f}m`)``).toThrow();
       expect(() => regex({flags: f})``).toThrow();
     });
+  });
+
+  it('should coerce non-string values in raw array', () => {
+    expect('1aNaN').toMatch(regex({raw: ['^', 1, NaN, '$']}, '', 'a', ''));
   });
 
   it('should allow binding to a RegExp subclass', () => {

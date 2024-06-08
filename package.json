@@ -1,7 +1,7 @@
 {
   "name": "regex",
   "version": "1.1.0",
-  "description": "Context-aware regex template strings with batteries included",
+  "description": "Context-aware regex template tag with best practices built-in and advanced features",
   "exports": "./src/index.js",
   "type": "module",
   "scripts": {
@@ -18,8 +18,7 @@
   },
   "keywords": [
     "regex",
-    "regexp",
-    "template"
+    "regexp"
   ],
   "devDependencies": {
     "esbuild": "^0.21.4",
