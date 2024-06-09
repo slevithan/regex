@@ -7,6 +7,15 @@ import {PartialPattern, partial} from './partial.js';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues} from './utils.js';
 
 /**
+@typedef {Object} RegexTagOptions
+@prop {string} [flags]
+@prop {Array<Function>} [postprocessors]
+@prop {boolean} [__flagN]
+@prop {boolean} [__flagX]
+@prop {boolean} [__rake]
+*/
+
+/**
 Template tag for constructing a UnicodeSets-mode RegExp with advanced features and context-aware
 interpolation of regexes, escaped strings, and partial patterns.
 
@@ -15,11 +24,14 @@ Can be called in multiple ways:
 2. `` regex('gis')`…` `` - To specify flags.
 3. `` regex({flags: 'gis'})`…` `` - With options.
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
-@param {string | TemplateStringsArray} first Flags or a template.
-@param {...any} [values] Values to fill the template holes.
-@returns {RegExp | (TemplateStringsArray, ...any) => RegExp}
+
+@type {{
+  (flags?: string) => (TemplateStringsArray, ...values) => RegExp;
+  (options: RegexTagOptions) => (TemplateStringsArray, ...values) => RegExp;
+  (template: TemplateStringsArray, ...values) => RegExp;
+}}
 */
-function regex(first, ...values) {
+const regex = function(first, ...values) {
   // Allow binding to other constructors
   const constructor = this instanceof Function ? this : RegExp;
   // Given a template
@@ -33,12 +45,12 @@ function regex(first, ...values) {
     return fromTemplate.bind(null, constructor, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
-}
+};
 
 /**
 Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
-@param {RegExpConstructor} constructor
-@param {Object} options
+@param {RegExpConstructor | Function} constructor
+@param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...any} values
 @returns {RegExp}
@@ -46,9 +58,10 @@ Makes a UnicodeSets-mode RegExp from a template and values to fill the template 
 function fromTemplate(constructor, options, template, ...values) {
   const {
     flags = '',
+    postprocessors = [],
     __flagN = true,
     __flagX = true,
-    __rake = options.__flagX ?? true,
+    __rake = true,
   } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
@@ -83,8 +96,14 @@ function fromTemplate(constructor, options, template, ...values) {
     }
   });
 
-  pattern = transformAtomicGroups(pattern);
-  return new constructor(__rake ? rakeSeparators(pattern) : pattern, `v${flags}`);
+  const postp = [transformAtomicGroups, ...postprocessors];
+  if (__rake) {
+    postp.push(rakeSeparators);
+  }
+  for (const p of postp) {
+    pattern = p(pattern);
+  }
+  return new constructor(pattern, `v${flags}`);
 }
 
 function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures) {

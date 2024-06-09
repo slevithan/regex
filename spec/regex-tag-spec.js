@@ -62,7 +62,17 @@ describe('regex', () => {
   });
 
   it('should clean up superfluous token separators in output', () => {
-    // JS returns '(?:)' for `RegExp('').source`, but '' would also be a fine result
-    expect(['(?:)', '']).toContain(regex`(?:)(?:)(?:)(?:)(?:)`.source);
+    // JS returns '(?:)' for `new RegExp('').source`, but '' would also be a fine result
+    expect(['(?:)', '']).toContain(regex`(?:)(?:)(?:)`.source);
+  });
+
+  it('should not remove superfluous token separators in output with an experimental option', () => {
+    expect(regex({__rake: false})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
+  });
+
+  it('should allow adding postprocessors', () => {
+    const wiggle = pattern => pattern.replace(/~/g, 'wiggle');
+    const removeDoubleChars = pattern => pattern.replace(/(\w)\1/g, '$1');
+    expect('wigle').toMatch(regex({postprocessors: [wiggle, removeDoubleChars]})`^~$`);
   });
 });
