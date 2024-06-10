@@ -1,4 +1,4 @@
-//! regex 1.1.0; Steven Levithan; MIT License
+//! regex 1.1.1; Steven Levithan; MIT License
 
 import {Context, replaceUnescaped} from 'regex-utilities';
 import {transformAtomicGroups} from './atomic-groups.js';
