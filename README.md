@@ -34,6 +34,7 @@ In browsers:
 - [Context](#-context)
 - [New regex syntax](#-new-regex-syntax)
   - [Atomic groups](#atomic-groups)
+  - [Recursion](#recursion)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
   - [Flag <kbd>v</kbd>](#flag-v)
@@ -117,13 +118,16 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
 
+### Recursion
+
+You can add support for matching recursive patterns via the [regex-recursion](https://github.com/slevithan/regex-recursion) extension.
+
 ### Coming soon
 
 The following new regex syntax is planned for upcoming versions:
 
 - Subexpressions as subroutines: `\g<name>`.
 - Definition blocks: `(?(DEFINE)…)`.
-- Recursion, up to a specified max depth: `(?R=N)`.
 
 ## 🚩 Flags
 
