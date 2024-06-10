@@ -1,5 +1,6 @@
 import {RegexContext, contextToken, getEndContextForIncompletePattern} from './utils.js';
 
+// Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
 export function flagNProcessor(value, runningContext) {
   value = String(value);
   let pattern = '';

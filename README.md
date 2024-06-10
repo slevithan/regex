@@ -452,7 +452,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## 🪶 Compatibility
 
-- `regex` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. But it's possible to extend support to older browsers (see [#2](https://github.com/slevithan/regex/issues/2)).
+- `regex` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 (see [compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. But it's possible to extend support to older browsers (see [#2](https://github.com/slevithan/regex/issues/2)).
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
 - If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 

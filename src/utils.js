@@ -148,7 +148,7 @@ export const contextToken = new RegExp(String.raw`
   | 0 \d+
 )
 | \[\^
-| \(\?[:=!<>ims\-]
+| \(\? [:=!<>A-Za-z\-]
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
 | \\[1-9]\d*
 | --

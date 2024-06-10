@@ -5,6 +5,7 @@ const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
 
+// Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
 export function flagXProcessor(value, runningContext) {
   value = String(value);
   let ignoringWs = false;

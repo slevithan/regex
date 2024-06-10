@@ -4,7 +4,7 @@ export function transformAtomicGroups(pattern) {
   if (!hasUnescapedInDefaultRegexContext(pattern, String.raw`\(\?>`)) {
     return pattern;
   }
-  const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>]|<[=!]|[ims\-]+:))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
+  const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>A-Za-z\-]|<[=!]))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
   const aGDelimLen = '(?>'.length;
   let hasProcessedAG;
   let capturingGroupCount = 0;

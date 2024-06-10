@@ -49,7 +49,7 @@ const regex = function(first, ...values) {
 
 /**
 Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
-@param {RegExpConstructor | Function} constructor
+@param {RegExpConstructor | (pattern: string, flags: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...any} values
