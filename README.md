@@ -244,7 +244,7 @@ This is also true for other flags that can change how an inner regex is matched:
 
 `regex` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the whole unit rather than just the last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
+> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
 As a result, `regex` is a safe and context-aware alternative to JavaScript proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
 
@@ -315,7 +315,7 @@ Both of these examples therefore match a literal `^`. They don't change the mean
 
 > If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the partial.
 
-Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of the surrounding patterns:
+Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of their surrounding patterns:
 
 ```js
 regex`(${partial(')')})`
@@ -365,7 +365,7 @@ And since interpolated values are handled as complete units, consider the follow
 
 ```js
 // This works fine
-regex`[\0-${partial('\\cZ')}]`
+regex`[\0-${partial`\cZ`}]`
 
 // But this is an error since you can't create a range from 'a' to the set 'de'
 regex`[a-${'de'}]`
@@ -425,7 +425,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td><code>regex`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Own flags apply locally</td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Flags localized</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
@@ -470,5 +470,5 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 Version 1.0.0 was named Regex.make and used tag name `make` instead of `regex`. `make` is still available as an alias.
 
-Crafted with ❤︎ (for developers and regular expressions) by Steven Levithan.<br>
+Crafted by Steven Levitrhan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.
