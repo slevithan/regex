@@ -1,10 +1,11 @@
 //! regex 1.1.0; Steven Levithan; MIT License
 
+import {Context, replaceUnescaped} from 'regex-utilities';
 import {transformAtomicGroups} from './atomic-groups.js';
 import {flagNProcessor} from './flag-n.js';
 import {flagXProcessor, rakeSeparators} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, replaceUnescaped, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues} from './utils.js';
 
 /**
 @typedef {Object} RegexTagOptions
@@ -86,7 +87,7 @@ function fromTemplate(constructor, options, template, ...values) {
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
     // cases a following interpolated value would always be atomized
-    pattern += sandboxUnsafeNulls(raw, RegexContext.CHAR_CLASS);
+    pattern += sandboxUnsafeNulls(raw, Context.CHAR_CLASS);
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
@@ -196,15 +197,15 @@ function transformForLocalFlags(re, outerFlags) {
     if (patternModsOn) {
       modFlagsObj.s = re.dotAll;
     } else {
-      value = replaceUnescaped(value, '\\.', (re.dotAll ? '[^]' : `[^${newlines}]`), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\.', (re.dotAll ? '[^]' : `[^${newlines}]`), Context.DEFAULT);
     }
   }
   if (re.multiline !== outerFlags.includes('m')) {
     if (patternModsOn) {
       modFlagsObj.m = re.multiline;
     } else {
-      value = replaceUnescaped(value, '\\^', (re.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), RegexContext.DEFAULT);
-      value = replaceUnescaped(value, '\\$', (re.multiline ? `(?=$|[${newlines}])` : '(?![^])'), RegexContext.DEFAULT);
+      value = replaceUnescaped(value, '\\^', (re.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), Context.DEFAULT);
+      value = replaceUnescaped(value, '\\$', (re.multiline ? `(?=$|[${newlines}])` : '(?![^])'), Context.DEFAULT);
     }
   }
 

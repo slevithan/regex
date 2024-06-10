@@ -75,4 +75,9 @@ describe('regex', () => {
     const removeDoubleChars = pattern => pattern.replace(/(\w)\1/g, '$1');
     expect('wigle').toMatch(regex({postprocessors: [wiggle, removeDoubleChars]})`^~$`);
   });
+
+  it('should not allow unexpected arguments', () => {
+    expect(() => regex([''])).toThrow();
+    expect(() => regex({}, {raw: ['']})).toThrow();
+  });
 });

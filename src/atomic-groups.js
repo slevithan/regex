@@ -1,7 +1,7 @@
-import {RegexContext, hasUnescapedInDefaultRegexContext, replaceUnescaped} from './utils.js';
+import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 export function transformAtomicGroups(pattern) {
-  if (!hasUnescapedInDefaultRegexContext(pattern, String.raw`\(\?>`)) {
+  if (!hasUnescaped(pattern, String.raw`\(\?>`, Context.DEFAULT)) {
     return pattern;
   }
   const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>A-Za-z\-]|<[=!]))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
@@ -61,7 +61,7 @@ export function transformAtomicGroups(pattern) {
     pattern,
     String.raw`\\k<(?<backrefNum>\d+)>`,
     ({groups: {backrefNum}}) => `\\${backrefNum}`,
-    RegexContext.DEFAULT
+    Context.DEFAULT
   );
   return pattern;
 }

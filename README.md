@@ -3,7 +3,7 @@
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
 
-`regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.5KB), has no dependencies, and supports all ES2024+ regex features.
+`regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.6KB) and supports all ES2024+ regex features.
 
 Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -428,7 +428,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Flags localized</td>
   </tr>
   <tr>
-    <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[…[…]]</code>, etc.</td>
+    <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[[…]]</code>, etc.</td>
     <td><code>regex`[${'a-z'}]`</code><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br></td>

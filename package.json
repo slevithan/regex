@@ -20,6 +20,9 @@
     "regex",
     "regexp"
   ],
+  "dependencies": {
+    "regex-utilities": "^1.0.0"
+  },
   "devDependencies": {
     "esbuild": "^0.21.4",
     "jasmine": "^5.1.0"

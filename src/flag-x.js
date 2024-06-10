@@ -1,4 +1,5 @@
-import {CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, replaceUnescaped, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {Context, replaceUnescaped} from 'regex-utilities';
+import {CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -109,7 +110,7 @@ export function flagXProcessor(value, runningContext) {
 export function rakeSeparators(pattern) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
-  pattern = replaceUnescaped(pattern, `${sep}(?:${sep})+`, '(?:)', RegexContext.DEFAULT);
+  pattern = replaceUnescaped(pattern, `${sep}(?:${sep})+`, '(?:)', Context.DEFAULT);
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
@@ -119,7 +120,7 @@ export function rakeSeparators(pattern) {
     pattern,
     String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|$\\])|(?<=[()|>^]|\(\?(?:[:=!]|<[=!]))${sep}`,
     '',
-    RegexContext.DEFAULT
+    Context.DEFAULT
   );
   return pattern;
 }
