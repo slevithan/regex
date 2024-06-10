@@ -236,7 +236,7 @@ This is also true for other flags that can change how an inner regex is matched:
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Regexes can't be interpolated in the middle of a character class (so `` regex`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
+- Regexes can't be interpolated inside character classes (so `` regex`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
 - To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. Ex: `new RegExp(/./, 's')`.
 </details>
 
@@ -287,7 +287,7 @@ These and other issues (including the effects of current and future flags like `
 As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Some example use cases:
 
 - Composing a dynamic number of strings.
-- Adding a pattern in the middle of a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
+- Adding a pattern inside a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
 
@@ -470,5 +470,5 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 Version 1.0.0 was named Regex.make and used tag name `make` instead of `regex`. `make` is still available as an alias.
 
-Crafted by Steven Levitrhan with ❤︎ for regular expressions and their enthusiasts.<br>
+Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.
