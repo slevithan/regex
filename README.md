@@ -46,6 +46,7 @@ In browsers:
   - [Partial patterns](#interpolating-partial-patterns)
   - [Interpolation principles](#interpolation-principles)
   - [Interpolation contexts](#interpolation-contexts)
+- [Performance](#-performance)
 - [Compatibility](#-compatibility)
 - [About](#️-about)
 
@@ -120,7 +121,7 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Recursion
 
-You can add support for matching recursive patterns via the [regex-recursion](https://github.com/slevithan/regex-recursion) extension.
+The `regex` extension library [regex-recursion](https://github.com/slevithan/regex-recursion) is available for matching recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ### Coming soon
 
@@ -461,6 +462,12 @@ The above descriptions of interpolation might feel complex. But there are three 
 - Character classes have a sub-context on the borders of ranges, explained in [*Interpolating partial patterns*](#interpolating-partial-patterns). Only one character node (ex: `a` or `\u0061`) can be interpolated at these positions.
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
+
+## ⚡ Performance
+
+`regex` compiles to native `RegExp` instances. Therefore regexes built with `regex` perform just as fast as native regular expressions. There is a tiny extra cost when compiling a pattern.
+
+For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
 
 ## 🪶 Compatibility
 
