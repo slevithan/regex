@@ -48,7 +48,7 @@ export function flagXProcessor(value, runningContext) {
     const {regexContext, charClassContext} = runningContext;
     if (m === '-' && regexContext === RegexContext.CHAR_CLASS && lastSignificantCharClassContext === CharClassContext.RANGE) {
       // Need to handle this here since the main regex-parsing code would think the hyphen forms
-      // part of a subtraction operator since we've removed preceding ws
+      // part of a subtraction operator since we've removed preceding whitespace
       throw new Error('Invalid unescaped hyphen as the end value for a range');
     }
     if ((regexContext === RegexContext.DEFAULT && /^[?*+]\??$/.test(m)) || (regexContext === RegexContext.INTERVAL_QUANTIFIER && m === '{')) {

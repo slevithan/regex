@@ -121,7 +121,7 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Recursion
 
-The `regex` extension library [regex-recursion](https://github.com/slevithan/regex-recursion) is available for matching recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
+You can use the `regex` extension [regex-recursion](https://github.com/slevithan/regex-recursion) for matching recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ### Coming soon
 

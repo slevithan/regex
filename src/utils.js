@@ -2,7 +2,8 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
-  ...Context,
+  DEFAULT: 'DEFAULT',
+  CHAR_CLASS: 'CHAR_CLASS',
   GROUP_NAME: 'GROUP_NAME',
   ENCLOSED_TOKEN: 'ENCLOSED_TOKEN',
   INTERVAL_QUANTIFIER: 'INTERVAL_QUANTIFIER',
@@ -30,12 +31,13 @@ export const patternModsOn = (() => {
 const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
 /**
-@param {string} str
-@param {'DEFAULT' | 'CHAR_CLASS'} regexContext
-@returns {string}
+Escape special characters for the given context, assuming flag v.
+@param {string} str String to escape
+@param {'DEFAULT' | 'CHAR_CLASS'} context `Context` option from lib `regex-utilities`
+@returns {string} Escaped string
 */
-export function escapeV(str, regexContext) {
-  if (regexContext === RegexContext.CHAR_CLASS) {
+export function escapeV(str, context) {
+  if (context === Context.CHAR_CLASS) {
     // Escape all double punctuators (including ^, which is special on its own in the first
     // position) in case they're bordered by the same character in or outside of the escaped string
     return str.replace(new RegExp(String.raw`[()\[\]{}|\\/\-${doublePunctuatorChars}]`, 'g'), '\\$&');
@@ -64,17 +66,23 @@ export function sandboxLoneCharClassCaret(str) {
   return str.replace(/^\^/, '\\^^');
 }
 
-// regex`[\0${0}]` and regex`[${partial`\0`}0]` can't be guarded against via nested `[…]`
-// sandboxing in character classes if the interpolated value doesn't contain union (since it might
-// be placed on a range boundary). So escape \0 in character classes as \u{0}
-export function sandboxUnsafeNulls(str, inContext) {
-  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', inContext);
+/**
+Converts `\0` tokens to `\u{0}` in the given context.
+@param {string} str
+@param {'DEFAULT' | 'CHAR_CLASS'} [context] `Context` option from lib `regex-utilities`
+@returns {string}
+*/
+export function sandboxUnsafeNulls(str, context) {
+  // regex`[\0${0}]` and regex`[${partial`\0`}0]` can't be guarded against via nested `[…]`
+  // sandboxing in character classes if the interpolated value doesn't contain union (since it
+  // might be placed on a range boundary). So escape \0 in character classes as \u{0}
+  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', context);
 }
 
 // No special handling for escaped versions of the characters
 function getUnbalancedChar(pattern, leftChar, rightChar) {
   let numOpen = 0;
-  for (const [m] of pattern.matchAll(new RegExp(`[${escapeV(leftChar + rightChar)}]`, 'g'))) {
+  for (const [m] of pattern.matchAll(new RegExp(`[${escapeV(leftChar + rightChar, Context.CHAR_CLASS)}]`, 'g'))) {
     numOpen += m === leftChar ? 1 : -1;
     if (numOpen < 0) {
       return rightChar;

@@ -56,7 +56,7 @@ export function transformAtomicGroups(pattern) {
       }
     }
   } while (hasProcessedAG);
-  // Replace the `\k<…>` added as a shield from the check for invalid numbered backreferences
+  // Replace `\k<…>` added as a shield from the check for invalid numbered backreferences
   pattern = replaceUnescaped(
     pattern,
     String.raw`\\k<(?<backrefNum>\d+)>`,

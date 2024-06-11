@@ -121,7 +121,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
   if (!(value instanceof RegExp)) {
     value = String(value);
     if (!isPartial) {
-      escapedValue = escapeV(value, regexContext);
+      escapedValue = escapeV(value, regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT);
     }
     // Check within escaped values (not just partials) since possible breakout char > isn't escaped
     const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
