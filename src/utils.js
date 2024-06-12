@@ -248,7 +248,8 @@ export function adjustNumberedBackrefs(pattern, precedingCaptures) {
   );
 }
 
-const propertiesOfStringsNames = [
+// Properties of strings as of ES2024
+const stringPropertyNames = [
   'Basic_Emoji',
   'Emoji_Keycap_Sequence',
   'RGI_Emoji_Modifier_Sequence',
@@ -257,6 +258,21 @@ const propertiesOfStringsNames = [
   'RGI_Emoji_ZWJ_Sequence',
   'RGI_Emoji',
 ].join('|');
+
+const charClassUnionToken = new RegExp(String.raw`
+\\ (?:
+    c [A-Za-z]
+  | p \{ (?<pStrProp> ${stringPropertyNames} ) \}
+  | [pP] \{ [^\}]+ \}
+  | (?<qStrProp> q )
+  | u (?: [A-Fa-f\d]{4} | \{ [A-Fa-f\d]+ \} )
+  | x [A-Fa-f\d]{2}
+  | .
+)
+| --
+| &&
+| .
+`.replace(/\s+/g, ''), 'gsu');
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function containsCharClassUnion(charClassPattern) {
@@ -270,24 +286,10 @@ export function containsCharClassUnion(charClassPattern) {
   // Ranges with `-` create a single token.
   // Subtraction and intersection with `--` and `&&` create a single token.
   // Supports any number of nested classes
-  const re = new RegExp(String.raw`
-\\ (?:
-    c [A-Za-z]
-  | p \{ (?<pPropOfStr> ${propertiesOfStringsNames} ) \}
-  | [pP] \{ [^\}]+ \}
-  | (?<qPropOfStr> q )
-  | u (?: [A-Fa-f\d]{4} | \{ [A-Fa-f\d]+ \} )
-  | x [A-Fa-f\d]{2}
-  | .
-)
-| --
-| &&
-| .
-  `.replace(/\s+/g, ''), 'gsu');
   let hasFirst = false;
   let lastM;
-  for (const {0: m, groups} of charClassPattern.matchAll(re)) {
-    if (groups.pPropOfStr || groups.qPropOfStr) {
+  for (const {0: m, groups} of charClassPattern.matchAll(charClassUnionToken)) {
+    if (groups.pStrProp || groups.qStrProp) {
       return true;
     }
     if (m === '[' && hasFirst) {

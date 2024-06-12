@@ -25,7 +25,7 @@
     "regexp"
   ],
   "dependencies": {
-    "regex-utilities": "^1.1.0"
+    "regex-utilities": "^1.1.1"
   },
   "devDependencies": {
     "esbuild": "^0.21.5",
