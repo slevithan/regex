@@ -1,6 +1,6 @@
 //! regex 1.1.1; Steven Levithan; MIT License
 
-import {Context, replaceUnescaped} from 'regex-utilities';
+import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {transformAtomicGroups} from './atomic-groups.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, rakeSeparators} from './flag-x.js';
@@ -92,7 +92,7 @@ function fromTemplate(constructor, options, template, ...values) {
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
       const interpolated = interpolate(values[i], flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
-      precedingCaptures += interpolated.capturesAdded || 0;
+      precedingCaptures += interpolated.capturesAdded ?? 0;
       pattern += interpolated.value;
     }
   });
@@ -121,9 +121,12 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
   if (!(value instanceof RegExp)) {
     value = String(value);
     if (!isPartial) {
-      escapedValue = escapeV(value, regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT);
+      escapedValue = escapeV(
+        value,
+        regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT
+      );
     }
-    // Check within escaped values (not just partials) since possible breakout char > isn't escaped
+    // Check escaped values (not just partials) since possible breakout char `>` isn't escaped
     const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
     if (breakoutChar) {
       throw new Error(`Unescaped stray "${breakoutChar}" in the interpolated value would have side effects outside it`);
@@ -140,11 +143,10 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     return {value: isPartial ? value : escapedValue};
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPartial) {
-      const boundaryOperatorsRemoved = replaceUnescaped(value, '^-|^&&|-$|&&$', '');
-      if (boundaryOperatorsRemoved !== value) {
+      if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
         // Sandboxing so we don't change the chars outside the partial into being part of an
-        // operation they didn't initiate. Same as starting a partial with a quantifier
-        throw new Error('In character classes, a partial cannot use a range/set operator at its boundary; move the operation into the partial or the operator outside of it');
+        // operation they didn't initiate. Same problem as starting a partial with a quantifier
+        throw new Error('In character classes, a partial cannot use a range or set operator at its boundary; move the operation into the partial or the operator outside of it');
       }
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check

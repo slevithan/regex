@@ -283,7 +283,7 @@ Some examples of where context awareness comes into play:
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
 
-These and other issues (including the effects of current and future flags like `x`) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries generally use minimal escaping and do not even attempt to handle the edge cases that would enable an escaped string to be used reliably.
+These and other issues (including the effects of current and future flags like `x`) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle the edge cases that would allow an escaped string to be used reliably.
 
 `regex` solves this via context awareness. So instead of remembering anything above, you should just switch to always safely escaping regex syntax via `regex`.
 
