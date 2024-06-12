@@ -1,4 +1,4 @@
-import {Context, replaceUnescaped} from 'regex-utilities';
+import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
@@ -233,25 +233,18 @@ export function getEndContextForIncompletePattern(partialPattern, {
   };
 }
 
-// Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function countCaptures(pattern) {
-  const re = /(?<capture>\((?:(?!\?)|\?<[^>]+>))|\\?./gsu;
-  // Don't worry about tracking if we're in a character class or other invalid context for an
-  // unescaped `(`, because (given flag v) the unescaped `(` is invalid anyway. However, that means
-  // backrefs in subsequent interpolated regexes might be adjusted using an incorrect count, which
-  // is displayed in the error message about the overall regex being invalid
-  return Array.from(pattern.matchAll(re)).filter(m => m.groups.capture).length;
+  let num = 0;
+  forEachUnescaped(pattern, String.raw`\((?:(?!\?)|\?<[^>]+>)`, () => num++, Context.DEFAULT);
+  return num;
 }
 
-// Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function adjustNumberedBackrefs(pattern, precedingCaptures) {
-  // Note: Because this doesn't track whether matches are in a character class, it renumbers
-  // regardless. That's not a significant issue because the regex would be invalid even without
-  // renumbering (given flag v), but the error is more confusing when e.g. an invalid `[\1]` is
-  // shown as `[\2]`
-  return pattern.replace(
-    /\\([1-9]\d*)|\\?./gsu,
-    (m, b1) => b1 ? '\\' + (Number(b1) + precedingCaptures) : m
+  return replaceUnescaped(
+    pattern,
+    String.raw`\\(?<num>[1-9]\d*)`,
+    ({groups: {num}}) => `\\${+num + precedingCaptures}`,
+    Context.DEFAULT
   );
 }
 

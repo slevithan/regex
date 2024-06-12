@@ -10,7 +10,7 @@ import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClas
 /**
 @typedef {Object} RegexTagOptions
 @prop {string} [flags]
-@prop {Array<Function>} [postprocessors]
+@prop {Array<(pattern: string) => string>} [postprocessors]
 @prop {boolean} [__flagN]
 @prop {boolean} [__flagX]
 @prop {boolean} [__rake]
