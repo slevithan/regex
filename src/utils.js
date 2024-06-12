@@ -186,8 +186,6 @@ export function getEndContextForIncompletePattern(partialPattern, {
       if (!charClassDepth) {
         regexContext = RegexContext.DEFAULT;
       }
-      // Reset for accuracy, but it will end up being an error if there is an unclosed context
-      // (ex: `\q{…` without closing `}`) in the character class
       charClassContext = CharClassContext.DEFAULT;
     } else if (regexContext === RegexContext.CHAR_CLASS) {
       if (incompleteT) {
@@ -200,7 +198,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
         charClassContext = CharClassContext.Q_TOKEN;
       } else if (
         (m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)) ||
-        // Don't want to continue in these contexts if we've advanced another token
+        // Don't continue in these contexts since we've advanced another token
         charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN ||
         charClassContext === CharClassContext.RANGE
       ) {
@@ -218,7 +216,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
       } else if (
         (m === '>' && regexContext === RegexContext.GROUP_NAME) ||
         (m === '}' && (regexContext === RegexContext.ENCLOSED_TOKEN || regexContext === RegexContext.INTERVAL_QUANTIFIER)) ||
-        // Don't want to continue in this context if we've advanced another token
+        // Don't continue in this context since we've advanced another token
         regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN
        ) {
         regexContext = RegexContext.DEFAULT;
