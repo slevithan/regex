@@ -5,24 +5,25 @@ export function transformAtomicGroups(pattern) {
     return pattern;
   }
   const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>A-Za-z\-]|<[=!]))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
-  const aGDelimLen = '(?>'.length;
-  let hasProcessedAG;
+  const aGDelim = '(?>';
+  const emulatedAGDelim = '(?:(?=(';
   let capturingGroupCount = 0;
   let aGCount = 0;
   let aGPos = NaN;
+  let hasProcessedAG;
   do {
     hasProcessedAG = false;
     let numCharClassesOpen = 0;
     let numGroupsOpenInAG = 0;
     let inAG = false;
     let match;
-    token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + aGDelimLen;
+    token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
     while (match = token.exec(pattern)) {
       const {0: m, index: pos, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
-        if (m === '(?>' && !inAG) {
+        if (m === aGDelim && !inAG) {
           aGPos = pos;
           inAG = true;
         } else if (inAG && noncapturingStart) {
@@ -35,28 +36,28 @@ export function transformAtomicGroups(pattern) {
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
-            // Replace `pattern` and start over from the opening position of the atomic group, in
-            // case the processed group contains additional atomic groups
-            pattern = `${pattern.slice(0, aGPos)}(?:(?=(${pattern.slice(aGPos + aGDelimLen, pos)}))\\k<${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
+            // Replace pattern and use `\k<…>` as a temporary shield for the backref since numbered
+            // backrefs are prevented separately
+            pattern = `${pattern.slice(0, aGPos)}${emulatedAGDelim}${pattern.slice(aGPos + aGDelim.length, pos)}))\\k<${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
             hasProcessedAG = true;
-            // Subtract the capturing group we just added as part of emulating an atomic group
-            capturingGroupCount--;
             break;
           }
           numGroupsOpenInAG--;
         } else if (backrefNum) {
-          // Could allow this with extra effort (adjusting both the backreferences found and those
-          // used to emulate atomic groups) but it's probably not worth it. To trigger this, the
-          // regex must contain both an atomic group and an interpolated RegExp instance with a
-          // numbered backreference
+          // Could allow this with extra effort (adjusting both the backrefs found and those used
+          // to emulate atomic groups) but it's probably not worth it. To trigger this, the regex
+          // must contain both an atomic group and an interpolated regex with a numbered backref
+          // (since numbered backrefs outside regex interpolation are prevented by implicit flag n)
           throw new Error(`Invalid decimal escape "${m}" in interpolated regex; cannot be used with atomic group`);
         }
       } else if (m === ']') {
         numCharClassesOpen--;
       }
     }
+  // Start over from the beginning of the last atomic group's contents, in case the processed group
+  // contains additional atomic groups
   } while (hasProcessedAG);
-  // Replace `\k<…>` added as a shield from the check for invalid numbered backreferences
+  // Replace `\k<…>` added as a shield from the check for invalid numbered backrefs
   pattern = replaceUnescaped(
     pattern,
     String.raw`\\k<(?<backrefNum>\d+)>`,
