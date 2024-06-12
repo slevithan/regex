@@ -7,7 +7,7 @@ const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
 
 // Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
-export function flagXProcessor(value, runningContext) {
+export function flagXPreprocessor(value, runningContext) {
   value = String(value);
   let ignoringWs = false;
   let ignoringCharClassWs = false;

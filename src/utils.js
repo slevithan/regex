@@ -307,24 +307,25 @@ export function containsCharClassUnion(charClassPattern) {
 }
 
 /**
-The template's `raw` array is processed, along with (only) values that are instanceof `PartialPattern`.
+Returns transformed versions of a template and values, using the given preprocessor. Expects the
+template to contain a `raw` array, and only processes values that are instanceof `PartialPattern`.
 @param {TemplateStringsArray} template
 @param {any[]} values
-@param {(value, runningContext) => {transformed: string; runningContext: Object}} processor
+@param {(value, runningContext) => {transformed: string; runningContext: Object}} preprocessor
 @returns {{template: TemplateStringsArray; values: any[]}}
 */
-export function transformTemplateAndValues(template, values, processor) {
+export function preprocess(template, values, preprocessor) {
   let newTemplate = {raw: []};
   let newValues = [];
   let runningContext = {};
   template.raw.forEach((raw, i) => {
-    const result = processor(raw, {...runningContext, lastPos: 0});
+    const result = preprocessor(raw, {...runningContext, lastPos: 0});
     newTemplate.raw.push(result.transformed);
     runningContext = result.runningContext;
     if (i < template.raw.length - 1) {
       const value = values[i];
       if (value instanceof PartialPattern) {
-        const result = processor(value, {...runningContext, lastPos: 0});
+        const result = preprocessor(value, {...runningContext, lastPos: 0});
         newValues.push(partial(result.transformed));
         runningContext = result.runningContext;
       } else {

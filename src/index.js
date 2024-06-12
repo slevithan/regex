@@ -2,10 +2,10 @@
 
 import {Context, replaceUnescaped} from 'regex-utilities';
 import {transformAtomicGroups} from './atomic-groups.js';
-import {flagNProcessor} from './flag-n.js';
-import {flagXProcessor, rakeSeparators} from './flag-x.js';
+import {flagNPreprocessor} from './flag-n.js';
+import {flagXPreprocessor, rakeSeparators} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls, transformTemplateAndValues} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 /**
 @typedef {Object} RegexTagOptions
@@ -71,10 +71,10 @@ function fromTemplate(constructor, options, template, ...values) {
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
   if (__flagX) {
-    ({template, values} = transformTemplateAndValues(template, values, flagXProcessor));
+    ({template, values} = preprocess(template, values, flagXPreprocessor));
   }
   if (__flagN) {
-    ({template, values} = transformTemplateAndValues(template, values, flagNProcessor));
+    ({template, values} = preprocess(template, values, flagNPreprocessor));
   }
 
   let precedingCaptures = 0;
