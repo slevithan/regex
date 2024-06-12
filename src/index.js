@@ -91,9 +91,11 @@ function fromTemplate(constructor, options, template, ...values) {
     runningContext = getEndContextForIncompletePattern(pattern, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
-      const interpolated = interpolate(values[i], flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
-      precedingCaptures += interpolated.capturesAdded ?? 0;
-      pattern += interpolated.value;
+      const value = values[i];
+      pattern += interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+      if (value instanceof RegExp || value instanceof PartialPattern) {
+        precedingCaptures += countCaptures(value.source || String(value));
+      }
     }
   });
 
@@ -140,7 +142,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     charClassContext === CharClassContext.ENCLOSED_TOKEN ||
     charClassContext === CharClassContext.Q_TOKEN
   ) {
-    return {value: isPartial ? value : escapedValue};
+    return isPartial ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPartial) {
       if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
@@ -151,27 +153,24 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check
       // the unadjusted value)
-      return {value: containsCharClassUnion(value) ? `[${sandboxedValue}]` : sandboxUnsafeNulls(sandboxedValue)};
+      return containsCharClassUnion(value) ? `[${sandboxedValue}]` : sandboxUnsafeNulls(sandboxedValue);
     }
     // Atomize via nested character class `[…]` if more than one node
-    return {value: containsCharClassUnion(escapedValue) ? `[${escapedValue}]` : escapedValue};
+    return containsCharClassUnion(escapedValue) ? `[${escapedValue}]` : escapedValue;
   }
   // `RegexContext.DEFAULT`
   if (value instanceof RegExp) {
     const transformed = transformForLocalFlags(value, flags);
     const backrefsAdjusted = adjustNumberedBackrefs(transformed.value, precedingCaptures);
     // Sandbox and atomize; if we used a pattern modifier it has the same effect
-    return {
-      value: transformed.usedModifier ? backrefsAdjusted : `(?:${backrefsAdjusted})`,
-      capturesAdded: countCaptures(value.source),
-    };
+    return transformed.usedModifier ? backrefsAdjusted : `(?:${backrefsAdjusted})`;
   }
   if (isPartial) {
     // Sandbox and atomize
-    return {value: `(?:${value})`};
+    return `(?:${value})`;
   }
   // Sandbox and atomize
-  return {value: wrapEscapedStr ? `(?:${escapedValue})` : escapedValue};
+  return wrapEscapedStr ? `(?:${escapedValue})` : escapedValue;
 }
 
 /**

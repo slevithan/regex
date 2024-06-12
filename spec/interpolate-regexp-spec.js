@@ -56,15 +56,21 @@ describe('interpolation: regexes', () => {
       expect('\nxa\n\n').not.toMatch(regex('m')`^.${/a.$/s}`);
     });
 
-    it('should adjust the backreferences of interpolated regexes', function() {
-      const re = /(.)\1/;
-      expect('aaba').not.toMatch(regex`^${re}${re}$`);
-      expect('aabb').toMatch(regex`^${re}${re}$`);
-      expect('aabb').toMatch(regex`^(?<n1>)(?<n2>${re}${re})$`);
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in the outer regex', function() {
+      expect('aabb').toMatch(regex`^(?<n1>)(?<n2>${/(.)\1/}${/(.)\1/})$`);
       expect('aa').toMatch(regex`^(?<outer>)${/(?<inner>.)\1/}$`);
       // These rely on the backref adjustments to make them into errors
       expect(() => regex`(?<n>)${/\1/}`).toThrow();
       expect(() => regex`(?<n>)${/()\2/}`).toThrow();
+    });
+
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated regex', function() {
+      expect('aaba').not.toMatch(regex`^${/(.)\1/}${/(.)\1/}$`);
+      expect('aabb').toMatch(regex`^${/(.)\1/}${/(.)\1/}$`);
+    });
+
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in a partial', function() {
+      expect('aa').toMatch(regex`^${partial`(?<n>)`}${/(.)\1/}$`);
     });
   });
 
