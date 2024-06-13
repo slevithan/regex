@@ -1,7 +1,8 @@
-import {RegexContext, getEndContextForIncompletePattern} from './utils.js';
+import {RegexContext, getEndContextForIncompletePattern, noncapturingStart} from './utils.js';
 
 const token = new RegExp(String.raw`
-  \(\? [:=!<>A-Za-z\-]
+  ${noncapturingStart}
+| \(\?<
 | (?<backrefNum> \\[1-9]\d* )
 | \\? .
 `.replace(/\s+/g, ''), 'gsu');

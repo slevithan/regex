@@ -1,5 +1,5 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompletePattern, noncapturingStart, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -15,7 +15,8 @@ const token = new RegExp(String.raw`
   | 0 \d+
 )
 | \[\^
-| \(\? [:=!<>A-Za-z\-]
+| ${noncapturingStart}
+| \(\?<
 | (?<dp> [${doublePunctuatorChars}] ) \k<dp>
 | --
 | \\? .

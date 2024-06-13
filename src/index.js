@@ -5,7 +5,7 @@ import {atomicGroupsPostprocessor} from './atomic-groups.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 /**
 @typedef {Object} RegexTagOptions
@@ -186,21 +186,21 @@ function transformForLocalFlags(re, outerFlags) {
   let value = re.source;
 
   if (re.ignoreCase !== outerFlags.includes('i')) {
-    if (patternModsOn) {
+    if (patternModsSupported) {
       modFlagsObj.i = re.ignoreCase;
     } else {
       throw new Error('Pattern modifiers not supported, so the value of flag i on the interpolated RegExp must match the outer regex');
     }
   }
   if (re.dotAll !== outerFlags.includes('s')) {
-    if (patternModsOn) {
+    if (patternModsSupported) {
       modFlagsObj.s = re.dotAll;
     } else {
       value = replaceUnescaped(value, '\\.', (re.dotAll ? '[^]' : `[^${newlines}]`), Context.DEFAULT);
     }
   }
   if (re.multiline !== outerFlags.includes('m')) {
-    if (patternModsOn) {
+    if (patternModsSupported) {
       modFlagsObj.m = re.multiline;
     } else {
       value = replaceUnescaped(value, '\\^', (re.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), Context.DEFAULT);
@@ -208,7 +208,7 @@ function transformForLocalFlags(re, outerFlags) {
     }
   }
 
-  if (patternModsOn) {
+  if (patternModsSupported) {
     const keys = Object.keys(modFlagsObj);
     let modifier = keys.filter(k => modFlagsObj[k] === true).join('');
     const modOff = keys.filter(k => modFlagsObj[k] === false).join('');

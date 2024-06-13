@@ -1,22 +1,22 @@
 describe('atomic groups', () => {
   it('should not remember backtracking positions within atomic groups', () => {
-    expect('abcc').toMatch(regex`a(?>bc|b)c`);
-    expect('abc').not.toMatch(regex`a(?>bc|b)c`);
+    expect('abcc').toMatch(regex`^a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex`^a(?>bc|b)c$`);
   });
 
   it('should work when named capturing groups present', () => {
-    expect('abcc').toMatch(regex`(?<n>)a(?>bc|b)c`);
-    expect('abc').not.toMatch(regex`(?<n>)a(?>bc|b)c`);
+    expect('abcc').toMatch(regex`^(?<n>)a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex`^(?<n>)a(?>bc|b)c$`);
   });
 
   it('should work when unnamed capturing groups present', () => {
-    expect('abcc').toMatch(regex({__flagN: false})`()a(?>bc|b)c`);
-    expect('abc').not.toMatch(regex({__flagN: false})`()a(?>bc|b)c`);
+    expect('abcc').toMatch(regex({__flagN: false})`^()a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex({__flagN: false})`^()a(?>bc|b)c$`);
   });
 
   it('should work when capturing groups present via interpolation', () => {
-    expect('abcc').toMatch(regex`${/()/}a(?>bc|b)c`);
-    expect('abc').not.toMatch(regex`${/()/}a(?>bc|b)c`);
+    expect('abcc').toMatch(regex`^${/()/}a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex`^${/()/}a(?>bc|b)c$`);
   });
 
   it('should allow nested atomic groups', () => {

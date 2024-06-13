@@ -1,10 +1,11 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
+import {noncapturingStart} from './utils.js';
 
 export function atomicGroupsPostprocessor(pattern) {
   if (!hasUnescaped(pattern, String.raw`\(\?>`, Context.DEFAULT)) {
     return pattern;
   }
-  const token = new RegExp(String.raw`(?<noncapturingStart>\(\?(?:[:=!>A-Za-z\-]|<[=!]))|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
+  const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingStart})|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
   const aGDelim = '(?>';
   const emulatedAGDelim = '(?:(?=(';
   let capturingGroupCount = 0;

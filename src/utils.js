@@ -18,7 +18,7 @@ export const CharClassContext = {
   INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
 };
 
-export const patternModsOn = (() => {
+export const patternModsSupported = (() => {
   let supported = true;
   try {
     new RegExp('(?i-ms:)');
@@ -29,6 +29,8 @@ export const patternModsOn = (() => {
 })();
 
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
+
+export const noncapturingStart = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!])`;
 
 /**
 Escape special characters for the given context, assuming flag v.

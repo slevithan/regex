@@ -8,18 +8,8 @@ describe('interpolation: regexes', () => {
       expect('abd').toMatch(regex`^a${/b|c/}d$`);
     });
 
-    const patternModsOn = (() => {
-      let supported = true;
-      try {
-        new RegExp('(?i-ms:)');
-      } catch (e) {
-        supported = false;
-      }
-      return supported;
-    })();
-
     it('should preserve local flag i or its absense, or throw if support is unavailable', () => {
-      if (patternModsOn) {
+      if (patternModsSupported) {
         expect('foo-BAR').    toMatch(regex     `foo-${/bar/i}`);
         expect('FOO-BAR').not.toMatch(regex     `foo-${/bar/i}`);
         expect('FOO-bar').    toMatch(regex('i')`foo-${/bar/}`);
@@ -45,7 +35,7 @@ describe('interpolation: regexes', () => {
     });
 
     it('should preserve multiple flag differences on outer/inner regex', () => {
-      if (patternModsOn) {
+      if (patternModsSupported) {
         expect('AAa\n').     toMatch(regex('i')`a.${/a./s}`);
         expect('AAA\n'). not.toMatch(regex('i')`a.${/a./s}`);
         expect('A\na\n').not.toMatch(regex('i')`a.${/a./s}`);
@@ -71,6 +61,14 @@ describe('interpolation: regexes', () => {
 
     it('should adjust the backreferences of interpolated regexes based on preceding captures in a partial', function() {
       expect('aa').toMatch(regex`^${partial`(?<n>)`}${/(.)\1/}$`);
+    });
+
+    it('should treat pattern modifiers as noncapturing', () => {
+      if (patternModsSupported) {
+        expect('abb').toMatch(regex`^(?i:a)${/(b)\1/}$`);
+      } else {
+        // Will throw a SyntaxError either way in environments that don't support pattern modifiers
+      }
     });
   });
 
