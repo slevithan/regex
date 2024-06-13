@@ -1,9 +1,9 @@
 //! regex 1.1.1; Steven Levithan; MIT License
 
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {transformAtomicGroups} from './atomic-groups.js';
+import {atomicGroupsPostprocessor} from './atomic-groups.js';
 import {flagNPreprocessor} from './flag-n.js';
-import {flagXPreprocessor, rakeSeparators} from './flag-x.js';
+import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsOn, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
@@ -99,13 +99,11 @@ function fromTemplate(constructor, options, template, ...values) {
     }
   });
 
-  const postp = [transformAtomicGroups, ...postprocessors];
-  if (__rake) {
-    postp.push(rakeSeparators);
-  }
-  for (const p of postp) {
-    pattern = p(pattern);
-  }
+  const builtInPostprocessors = [
+    atomicGroupsPostprocessor,
+    ...(__rake ? [rakePostprocessor] : []),
+  ];
+  [...postprocessors, ...builtInPostprocessors].forEach(pp => pattern = pp(pattern));
   return new constructor(pattern, `v${flags}`);
 }
 

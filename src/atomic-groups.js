@@ -1,6 +1,6 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
-export function transformAtomicGroups(pattern) {
+export function atomicGroupsPostprocessor(pattern) {
   if (!hasUnescaped(pattern, String.raw`\(\?>`, Context.DEFAULT)) {
     return pattern;
   }

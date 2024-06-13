@@ -35,4 +35,8 @@ describe('atomic groups', () => {
     expect(() => regex`(?>${/()/})`).not.toThrow();
     expect(() => regex`(?>${/(?<n>)\k<n>/})`).not.toThrow();
   });
+
+  it('should handle atomic groups added by postprocessors', () => {
+    expect('aabb').toMatch(regex({postprocessors: [p => p.replace(/\$$/, '(?>b)+$')]})`^(?>a)+$`);
+  });
 });

@@ -132,7 +132,7 @@ export function flagXPreprocessor(value, runningContext) {
 }
 
 // Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
-export function rakeSeparators(pattern) {
+export function rakePostprocessor(pattern) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
   pattern = replaceUnescaped(pattern, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
