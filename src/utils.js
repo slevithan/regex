@@ -2,12 +2,12 @@ import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
-  DEFAULT: 'DEFAULT',
-  CHAR_CLASS: 'CHAR_CLASS',
-  GROUP_NAME: 'GROUP_NAME',
-  ENCLOSED_TOKEN: 'ENCLOSED_TOKEN',
-  INTERVAL_QUANTIFIER: 'INTERVAL_QUANTIFIER',
-  INVALID_INCOMPLETE_TOKEN: 'INVALID_INCOMPLETE_TOKEN',
+  DEFAULT: 'R_DEFAULT',
+  CHAR_CLASS: 'R_CHAR_CLASS',
+  GROUP_NAME: 'R_GROUP_NAME',
+  ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
+  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
+  INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
 };
 
 export const CharClassContext = {
