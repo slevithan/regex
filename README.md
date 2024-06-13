@@ -96,7 +96,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, *named capture only* mode, and interpolation (coming soon: definition blocks and subexpressions as subroutines) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, *named capture only* mode, and interpolation (coming soon: subroutines and definition blocks) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -127,7 +127,7 @@ You can use the `regex` extension [regex-recursion](https://github.com/slevithan
 
 The following new regex syntax is planned for upcoming versions:
 
-- Subexpressions as subroutines: `\g<name>`.
+- Subroutines: `\g<name>`.
 - Definition blocks: `(?(DEFINE)…)`.
 
 ## 🚩 Flags

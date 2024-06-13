@@ -28,7 +28,7 @@ export const patternModsOn = (() => {
   return supported;
 })();
 
-const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
+export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
 /**
 Escape special characters for the given context, assuming flag v.
@@ -126,18 +126,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
   return '';
 }
 
-// To support flag x handling (where this regex is reused as a tokenizer, which isn't really its
-// purpose in `getEndContextForIncompletePattern`), the following tokens are added which would
-// otherwise not need special handling here:
-// - Partial token versions of `\\[cux]`. Without serving dual purpose for flag x, `incompleteT`
-//   would only *need* to know about trailing unescaped `\\`.
-// - Complete token versions of `\\[cux0]`.
-// - Negated character class opener `[^`.
-// - Group openings, so they can be stepped past (also relied on by flag n).
-// - Double-punctuators.
-// To support flag n, complete backreference numbers were also added so they can be shown in error
-// messages. To support atomic groups, `(?>` was added
-export const contextToken = new RegExp(String.raw`
+const contextToken = new RegExp(String.raw`
   (?<groupN> \(\?< (?! [=!] ) | \\k< )
 | (?<enclosedT> \\[pPu]\{ )
 | (?<qT> \\q\{ )
@@ -149,16 +138,6 @@ export const contextToken = new RegExp(String.raw`
   | x (?! [A-Fa-f\d]{2} ) [A-Fa-f\d]?
   )
 )
-| \\ (?:
-    c [A-Za-z]
-  | u [A-Fa-f\d]{4}
-  | x [A-Fa-f\d]{2}
-  | 0 \d+
-)
-| \[\^
-| \(\? [:=!<>A-Za-z\-]
-| (?<dp> [${doublePunctuatorChars}] ) \k<dp>
-| \\[1-9]\d*
 | --
 | \\? .
 `.replace(/\s+/g, ''), 'gsu');
@@ -175,7 +154,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
   let match;
   while (match = contextToken.exec(partialPattern)) {
     const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
-    if (m === '[' || m === '[^') {
+    if (m === '[') {
       charClassDepth++;
       regexContext = RegexContext.CHAR_CLASS;
       charClassContext = CharClassContext.DEFAULT;

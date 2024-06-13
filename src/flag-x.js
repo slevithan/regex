@@ -1,10 +1,25 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, contextToken, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompletePattern, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
+const token = new RegExp(String.raw`
+\\ (?:
+    k <
+  | [pPu] \{
+  | c [A-Za-z]
+  | u [A-Fa-f\d]{4}
+  | x [A-Fa-f\d]{2}
+  | 0 \d+
+)
+| \[\^
+| \(\? [:=!<>A-Za-z\-]
+| (?<dp> [${doublePunctuatorChars}] ) \k<dp>
+| --
+| \\? .
+`.replace(/\s+/g, ''), 'gsu');
 
 // Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
 export function flagXPreprocessor(value, runningContext) {
@@ -16,17 +31,17 @@ export function flagXPreprocessor(value, runningContext) {
   let transformed = '';
   let lastSignificantToken = '';
   let lastSignificantCharClassContext = '';
-  let divNeeded = false;
+  let separatorNeeded = false;
   const update = (str, {prefix = true, postfix = false} = {}) => {
-    str = (divNeeded && prefix ? '(?:)' : '') + str + (postfix ? '(?:)' : '');
-    divNeeded = false;
+    str = (separatorNeeded && prefix ? '(?:)' : '') + str + (postfix ? '(?:)' : '');
+    separatorNeeded = false;
     return str;
   };
-  for (const [m] of value.matchAll(contextToken)) {
+  for (const [m] of value.matchAll(token)) {
     if (ignoringComment) {
       if (m === '\n') {
         ignoringComment = false;
-        divNeeded = true;
+        separatorNeeded = true;
       }
       continue;
     }
@@ -35,7 +50,7 @@ export function flagXPreprocessor(value, runningContext) {
         continue;
       }
       ignoringWs = false;
-      divNeeded = true;
+      separatorNeeded = true;
     } else if (ignoringCharClassWs) {
       if (charClassWs.test(m)) {
         continue;
@@ -56,12 +71,13 @@ export function flagXPreprocessor(value, runningContext) {
       throw new Error('Invalid unescaped hyphen as the end value for a range');
     }
     if (
-      (regexContext === RegexContext.DEFAULT && /^[?*+]\??$/.test(m)) ||
+      // `??` is matched in one step by the double punctuator token
+      (regexContext === RegexContext.DEFAULT && /^(?:[?*+]|\?\?)$/.test(m)) ||
       (regexContext === RegexContext.INTERVAL_QUANTIFIER && m === '{')
     ) {
       // Skip the separator prefix and connect the quantifier to the previous token. This also
       // allows whitespace between a quantifier and the `?` that makes it lazy. Add a postfix
-      // separator if `m` is `?` and we're following token `(`, to sandbox the `?` from follwing
+      // separator if `m` is `?` and we're following token `(`, to sandbox the `?` from following
       // tokens (since `?` can be a group-type marker). Ex: `( ?:)` becomes `(?(?:):)` and throws.
       // The loop we're in matches valid group openings in one step, so we won't arrive here if
       // matching e.g. `(?:`. Flag n could prevent the need for the postfix since bare `(` is
@@ -88,7 +104,8 @@ export function flagXPreprocessor(value, runningContext) {
         ignoringCharClassWs = true;
       } else if (charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
         // Need to handle this here since the main regex-parsing code wouldn't know where the token
-        // ends if we removed ws after it that was followed by something that completes the token
+        // ends if we removed whitespace after an incomplete token that is followed by something
+        // that completes the token
         throw new Error(`Invalid incomplete token in character class: "${m}"`);
       } else if (
         escapedCharClassWs.test(m) &&
@@ -118,12 +135,12 @@ export function flagXPreprocessor(value, runningContext) {
 export function rakeSeparators(pattern) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
-  pattern = replaceUnescaped(pattern, `${sep}(?:${sep})+`, '(?:)', Context.DEFAULT);
+  pattern = replaceUnescaped(pattern, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
   // - Before one of `()|$\`.
-  // - After one of `()|>^` or the opening of a non-capturing group or lookaround.
+  // - After one of `()|>^`, `(?:`, or a lookaround opening.
   pattern = replaceUnescaped(
     pattern,
     String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|$\\])|(?<=[()|>^]|\(\?(?:[:=!]|<[=!]))${sep}`,
