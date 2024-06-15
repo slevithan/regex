@@ -41,9 +41,11 @@ export function atomicGroupsPostprocessor(pattern) {
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
-            // Replace pattern and use `\k<…>` as a temporary shield for the backref since numbered
-            // backrefs are prevented separately
-            pattern = `${pattern.slice(0, aGPos)}${emulatedAGDelim}${pattern.slice(aGPos + aGDelim.length, pos)}))\\k<${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
+            // Replace pattern and use `\k<$$N>` as a temporary shield for the backref since
+            // numbered backrefs are prevented separately
+            pattern = `${pattern.slice(0, aGPos)}${emulatedAGDelim}${
+              pattern.slice(aGPos + aGDelim.length, pos)
+            }))\\k<$$${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
             hasProcessedAG = true;
             break;
           }
@@ -62,10 +64,10 @@ export function atomicGroupsPostprocessor(pattern) {
   // Start over from the beginning of the last atomic group's contents, in case the processed group
   // contains additional atomic groups
   } while (hasProcessedAG);
-  // Replace `\k<…>` added as a shield from the check for invalid numbered backrefs
+  // Replace `\k<$$N>` added as a shield from the check for invalid numbered backrefs
   pattern = replaceUnescaped(
     pattern,
-    String.raw`\\k<(?<backrefNum>\d+)>`,
+    String.raw`\\k<\$\$(?<backrefNum>\d+)>`,
     ({groups: {backrefNum}}) => `\\${backrefNum}`,
     Context.DEFAULT
   );
