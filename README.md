@@ -130,16 +130,16 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Subroutines
 
-Subroutines, written as `\g<name>` where *name* refers to a named group, treat the referenced group as an independent subpattern that they try to match at the current position. This enables pattern composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes that can become grammatical and easily readable.
+Subroutines, written as `\g<name>` where *name* refers to a named group, treat the referenced group as an independent subpattern that they try to match at the current position. This enables pattern composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes.
 
 Here's a simple example that compares the behavior of subroutines and backreferences:
 
 ```js
-// A standard backreference with \k
+// A standard backreference with \k<name>
 regex`(?<prefix>Sens|Respons)e \+ \k<prefix>ibility`
 // Matches only 'Sense+Sensibility' or 'Response+Responsibility'
 
-// A subroutine with \g
+// A subroutine with \g<name>
 regex`(?<prefix>Sens|Respons)e \+ \g<prefix>ibility`
 // In addition to the strings matched by the prior regex, this also matches
 // 'Sense+Responsibility' and 'Response+Sensibility'
@@ -156,8 +156,8 @@ To illustrate points 2 and 3, consider:
 ```js
 regex`(?<n> (?<char>[ab]) \k<char> ) \g<n> \k<n>`
 // The backreference \k<n> matches whatever was matched by capturing group n,
-// regardless of what was matched by the subroutine. E.g., the regex matches
-// 'aabbaa' but not 'aabbbb'
+// regardless of what was matched by the subroutine. For example, the regex can
+// match 'aabbaa' but not 'aabbbb'
 ```
 
 More examples:
@@ -194,7 +194,7 @@ More details:
 - Subroutines can't be used recursively. For that, see the next section.
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl, although Perl uses `(?&name)` as the syntax. Ruby, like PCRE, supports subroutines with the `\g<name>` syntax, but it has behavior differences related to capturing and backreferences.
+> Subroutines are based on the feature in PCRE and Perl, although Perl uses `(?&name)` as the syntax. Ruby also supports subroutines using the `\g<name>` syntax like PCRE, but it has behavior differences related to capturing and backreferences.
 
 ### Recursion
 
@@ -546,9 +546,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🏷️ About
 
-`regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
-
-Version 1.0.0 was named Regex.make and used tag name `make` instead of `regex`. `make` is still available as an alias.
+`regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). Version 1.0.0 was named Regex.make.
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.

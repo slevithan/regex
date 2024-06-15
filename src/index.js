@@ -226,10 +226,4 @@ function transformForLocalFlags(re, outerFlags) {
   return {value};
 }
 
-// Alias for backcompat with v1.0.0; might be removed in v2
-const make = regex;
-
-export {make, partial, regex};
-
-// The default export is deprecated and might be removed in v2
-export default {make, partial, regex};
+export {regex, partial};
