@@ -3,7 +3,7 @@
 [<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
 <sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
 
-`regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.6KB) and supports all ES2024+ regex features.
+`regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight and supports all ES2024+ regex features.
 
 Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful pattern composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -380,8 +380,8 @@ If you want to understand the handling of partial patterns more deeply, let's lo
 First, let's consider:
 
 ```js
-regex`[${partial('^')}]`
-regex`[a${partial('^')}]`
+regex`[${partial`^`}]`
+regex`[a${partial`^`}]`
 ```
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
@@ -393,17 +393,17 @@ Both of these examples therefore match a literal `^`. They don't change the mean
 Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of their surrounding patterns:
 
 ```js
-regex`(${partial(')')})`
-regex`[${partial(']')}]`
-regex`[${partial('a\\')}]]`
+regex`(${partial`)`})`
+regex`[${partial`]`}]`
+regex`[${partial`a\`}]]`
 ```
 
 But these are fine since they don't break out:
 
 ```js
-regex`(${partial('()')})`
-regex`[\w--${partial('[_]')}]`
-regex`[${partial('\\\\')}]`
+regex`(${partial`()`})`
+regex`[\w--${partial`[_]`}]`
+regex`[${partial`\\`}]`
 ```
 
 Partials can be embedded within any token scope:
@@ -424,8 +424,8 @@ But again, changing the meaning or error status of characters outside the interp
 ```js
 // Not using `partial` for values that are not escaped anyway
 /* 1.*/ regex`\u${'000A'}`
-/* 2.*/ regex`\u{${partial('A}')}`
-/* 3.*/ regex`(${partial('?:')}…)`
+/* 2.*/ regex`\u{${partial`A}`}`
+/* 3.*/ regex`(${partial`?:`}…)`
 ```
 
 These last examples are all errors due to the corresponding reasons below:
