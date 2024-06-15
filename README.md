@@ -386,24 +386,24 @@ regex`[a${partial`^`}]`
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `partial('^^')` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
+Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` partial`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
 > If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the partial.
 
 Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of their surrounding patterns:
 
 ```js
-regex`(${partial`)`})`
-regex`[${partial`]`}]`
-regex`[${partial`a\`}]]`
+regex`(${partial(')')})`
+regex`[${partial(']')}]`
+regex`[${partial('a\\')}]]`
 ```
 
 But these are fine since they don't break out:
 
 ```js
-regex`(${partial`()`})`
-regex`[\w--${partial`[_]`}]`
-regex`[${partial`\\`}]`
+regex`(${partial('()')})`
+regex`[\w--${partial('[_]')}]`
+regex`[${partial('\\\\')}]`
 ```
 
 Partials can be embedded within any token scope:
