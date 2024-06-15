@@ -129,7 +129,7 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 }
 
 const contextToken = new RegExp(String.raw`
-  (?<groupN> \(\?< (?! [=!] ) | \\k< )
+  (?<groupN> \(\?< (?! [=!] ) | \\[gk]< )
 | (?<enclosedT> \\[pPu]\{ )
 | (?<qT> \\q\{ )
 | (?<intervalQ> \{ )

@@ -5,11 +5,11 @@
 
 `regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight (5.6KB) and supports all ES2024+ regex features.
 
-Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful pattern composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🕹️ Install and use
 
-```bash
+```sh
 npm install regex
 ```
 
@@ -34,6 +34,7 @@ In browsers:
 - [Context](#-context)
 - [New regex syntax](#-new-regex-syntax)
   - [Atomic groups](#atomic-groups)
+  - [Subroutines](#subroutines)
   - [Recursion](#recursion)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
@@ -57,7 +58,10 @@ In browsers:
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves the readability and efficiency of your regexes.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- Atomic groups via `(?>…)` that can dramatically improve performance and prevent ReDoS.
+- New regex syntax.
+  - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
+  - Subroutines via `\g<name>` enable powerful composition and improve readability.
+  - Recursive matching is enabled by an extension.
 - Context-aware and safe interpolation of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
   - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
@@ -71,7 +75,7 @@ const re = regex('gm')`
   # Strings are contextually escaped and repeated as complete units
   ^ ${'a.b'}+ $
   |
-  # Only the inner regex is case insensitive (flag i)
+  # Only the inner regex is case insensitive (flag i).
   # Also, the outer regex's flag m is not applied to it
   ${/^a.b$/i}
   |
@@ -80,6 +84,11 @@ const re = regex('gm')`
   |
   # An atomic group
   (?> \w+ \s? )+
+  |
+  # Subroutines
+  ^ Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
+  Admitted: \g<date> \n
+  Released: \g<date> $
 `;
 ```
 
@@ -96,7 +105,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, *named capture only* mode, and interpolation (coming soon: subroutines and definition blocks) — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -119,16 +128,77 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
 
+### Subroutines
+
+Subroutines, written as `\g<name>` where *name* refers to a named group, treat the referenced group as an independent subpattern that they try to match at the current position. This enables pattern composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes that can become grammatical and easily readable.
+
+Here's a simple example that compares the behavior of subroutines and backreferences:
+
+```js
+// A standard backreference with \k
+regex`(?<prefix>Sens|Respons)e \+ \k<prefix>ibility`
+// Matches only 'Sense+Sensibility' or 'Response+Responsibility'
+
+// A subroutine with \g
+regex`(?<prefix>Sens|Respons)e \+ \g<prefix>ibility`
+// In addition to the strings matched by the prior regex, this also matches
+// 'Sense+Responsibility' and 'Response+Sensibility'
+```
+
+Subroutines go beyond the composition benefits of [interpolation](#-interpolation). Apart from the obvious difference that they don't require variables to be defined outside of the regex, they also don't simply insert the referenced subpattern.
+
+1. They can reference groups that themselves contain subroutines, chained to any depth.
+2. Any capturing groups that are set during the subroutine call revert to their previous values afterwards.
+3. They don't create named captures that are visible outside of the subroutine, so using subroutines doesn't lead to "duplicate capture group name" errors.
+
+To illustrate points 2 and 3, consider:
+
+```js
+regex`(?<n> (?<char>[ab]) \k<char> ) \g<n> \k<n>`
+// The backreference \k<n> matches whatever was matched by capturing group n,
+// regardless of what was matched by the subroutine. E.g., the regex matches
+// 'aabbaa' but not 'aabbbb'
+```
+
+More examples:
+
+```js
+// Matches an IPv4 address such as '192.168.12.123'
+regex`
+  # Define a subpattern without matching it, due to the {0} quantifier
+  (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
+
+  # Match the 4 parts, separated by dots
+  \b \g<byte> (\.\g<byte>){3} \b
+`
+
+// Matches an admittance record
+regex`^
+  ( (?<date>  \g<year>-\g<month>-\g<day>)
+    (?<year>  \d{4})
+    (?<month> \d{2})
+    (?<day>   \d{2})
+  ){0}
+
+  Name:\ (.*)\n
+  Born:\ \g<date>\n
+  Admitted:\ \g<date>\n
+  Released:\ \g<date>
+$`
+```
+
+More details:
+
+- Subroutines can appear before the group that they reference.
+- Subroutines are applied after interpolation, giving them maximum flexibility.
+- Subroutines can't be used recursively. For that, see the next section.
+
+> [!NOTE]
+> Subroutines are based on the feature in PCRE and Perl, although Perl uses `(?&name)` as the syntax. Ruby, like PCRE, supports subroutines with the `\g<name>` syntax, but it has behavior differences related to capturing and backreferences.
+
 ### Recursion
 
-You can use the `regex` extension [regex-recursion](https://github.com/slevithan/regex-recursion) for matching recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
-
-### Coming soon
-
-The following new regex syntax is planned for upcoming versions:
-
-- Subroutines: `\g<name>`.
-- Definition blocks: `(?(DEFINE)…)`.
+You can use the `regex` extension package [`regex-recursion`](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ## 🚩 Flags
 
@@ -216,9 +286,9 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to named groups in the outer regex, which follows the behavior of C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also prevents this even without flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
-> Aside: Flag <kbd>n</kbd>'s behavior also enables `regex` to emulate atomic groups and recursion.
+> Aside: Flag <kbd>n</kbd>'s behavior also enables `regex` to emulate atomic groups, subroutines, and recursion.
 
 ## 🧩 Interpolation
 
@@ -296,7 +366,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
 
-For all of these cases, you can interpolate `partial(value)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` partial`…` `` as a tag, as shorthand for ``partial(String.raw`…`)``.
+For all of these cases, you can interpolate `partial(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` partial`…` `` as a tag, as shorthand for ``partial(String.raw`…`)``.
 
 Apart from edge cases, `partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
@@ -451,8 +521,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <td><code>regex`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
-    <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>
-    </td>
+    <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
     <td><code>regex`…\k<${'a'}>`</code></td>
   </tr>
 </table>

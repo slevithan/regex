@@ -7,7 +7,7 @@ const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
 const token = new RegExp(String.raw`
 \\ (?:
-    k <
+    [gk] <
   | [pPu] \{
   | c [A-Za-z]
   | u [A-Fa-f\d]{4}

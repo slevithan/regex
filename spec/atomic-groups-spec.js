@@ -28,12 +28,19 @@ describe('atomic groups', () => {
     expect('one two').toMatch(regex`^(?>\w+\s?)+$`);
   });
 
+  // Just documenting current behavior; this could be supported in the future
   it('should not allow numbered backreferences in interpolated regexes when using atomic groups', () => {
     expect(() => regex`(?>)${/()\1/}`).toThrow();
     expect(() => regex`${/()\1/}(?>)`).toThrow();
     expect(() => regex`(?>${/()\1/})`).toThrow();
+    // These are okay
     expect(() => regex`(?>${/()/})`).not.toThrow();
     expect(() => regex`(?>${/(?<n>)\k<n>/})`).not.toThrow();
+  });
+
+  it('should be invalid within character classes', () => {
+    // Contains invalid unescaped chars for character classes, given flag v
+    expect(() => regex`[(?>)]`).toThrow();
   });
 
   it('should handle atomic groups added by postprocessors', () => {

@@ -5,6 +5,7 @@ import {atomicGroupsPostprocessor} from './atomic-groups.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
+import {subroutinesPostprocessor} from './subroutines.js';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 /**
@@ -99,11 +100,11 @@ function fromTemplate(constructor, options, template, ...values) {
     }
   });
 
-  const builtInPostprocessors = [
+  [ ...postprocessors,
     atomicGroupsPostprocessor,
+    subroutinesPostprocessor,
     ...(__rake ? [rakePostprocessor] : []),
-  ];
-  [...postprocessors, ...builtInPostprocessors].forEach(pp => pattern = pp(pattern));
+  ].forEach(pp => pattern = pp(pattern));
   return new constructor(pattern, `v${flags}`);
 }
 

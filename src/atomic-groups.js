@@ -1,6 +1,10 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {noncapturingStart} from './utils.js';
 
+/**
+@param {string} pattern
+@returns {string}
+*/
 export function atomicGroupsPostprocessor(pattern) {
   if (!hasUnescaped(pattern, String.raw`\(\?>`, Context.DEFAULT)) {
     return pattern;
