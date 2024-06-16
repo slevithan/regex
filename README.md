@@ -130,18 +130,18 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Subroutines
 
-Subroutines, written as `\g<name>` where *name* refers to a named group, treat the referenced group as an independent subpattern that they try to match at the current position. This enables pattern composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes.
+Subroutines are written as `\g<name>` (where *name* refers to a named group), and they match the contents of the referenced group (as an independent subpattern) at the current position. This enables subpattern reuse and composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes.
 
-Here's a simple example that compares the behavior of subroutines and backreferences:
+Here's a simple example that shows how subroutines and backreferences differ:
 
 ```js
 // A standard backreference with \k<name>
 regex`(?<prefix>Sens|Respons)e \+ \k<prefix>ibility`
-// Matches only 'Sense+Sensibility' or 'Response+Responsibility'
+// Matches 'Sense+Sensibility' or 'Response+Responsibility'
 
 // A subroutine with \g<name>
 regex`(?<prefix>Sens|Respons)e \+ \g<prefix>ibility`
-// In addition to the strings matched by the prior regex, this also matches
+// In addition to what the prior regex matches, this also matches
 // 'Sense+Responsibility' and 'Response+Sensibility'
 ```
 
@@ -154,10 +154,10 @@ Subroutines go beyond the composition benefits of [interpolation](#-interpolatio
 To illustrate points 2 and 3, consider:
 
 ```js
-regex`(?<n> (?<char>[ab]) \k<char> ) \g<n> \k<n>`
+regex`(?<n> (?<char>.) \k<char> ) \g<n> \k<n>`
 // The backreference \k<n> matches whatever was matched by capturing group n,
 // regardless of what was matched by the subroutine. For example, the regex can
-// match 'aabbaa' but not 'aabbbb'
+// match 'xx!!xx' but not 'xx!!!!'
 ```
 
 More examples:
@@ -174,6 +174,7 @@ regex`
 
 // Matches an admittance record
 regex`^
+  # Define subpatterns
   ( (?<date>  \g<year>-\g<month>-\g<day>)
     (?<year>  \d{4})
     (?<month> \d{2})
@@ -189,12 +190,12 @@ $`
 
 More details:
 
-- Subroutines can appear before the group that they reference.
-- Subroutines are applied after interpolation, giving them maximum flexibility.
-- Subroutines can't be used recursively. For that, see the next section.
+- Subroutines work even if they appear before the group they reference.
+- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
+- Like all extended syntax, subroutines are applied after interpolation, giving them maximum flexibility.
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl, although Perl uses `(?&name)` as the syntax. Ruby also supports subroutines using the `\g<name>` syntax like PCRE, but it has behavior differences related to capturing and backreferences.
+> Subroutines are based on the feature in PCRE and Perl. However, Perl uses `(?&name)` as the syntax. Ruby also supports subroutines using the `\g<name>` syntax like PCRE, but it has behavior differences related to capturing and backreferences that make them less powerful.
 
 ### Recursion
 
