@@ -172,7 +172,7 @@ regex`
   \b \g<byte> (\.\g<byte>){3} \b
 `
 
-// Matches an admittance record
+// Matches a record with several date fields
 regex`^
   # Define subpatterns
   ( (?<date>  \g<year>-\g<month>-\g<day>)
@@ -181,21 +181,23 @@ regex`^
     (?<day>   \d{2})
   ){0}
 
-  Name:\ (.*)\n
+  Name:\ (?<name>.*)\n
   Born:\ \g<date>\n
   Admitted:\ \g<date>\n
   Released:\ \g<date>
 $`
 ```
 
-More details:
+<details>
+  <summary>👉 <b>Show more details</b></summary>
 
 - Subroutines work even if they appear before the group they reference.
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
-- Like all extended syntax, subroutines are applied after interpolation, giving them maximum flexibility.
+- Like all extended syntax, subroutines are applied after interpolation, giving them maximal flexibility.
+</details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. However, Perl uses `(?&name)` as the syntax. Ruby also supports subroutines using the `\g<name>` syntax like PCRE, but it has behavior differences related to capturing and backreferences that make them less powerful.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that make its subroutines less powerful.
 
 ### Recursion
 
@@ -542,7 +544,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 ## 🪶 Compatibility
 
 - `regex` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 (see [compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. But it's possible to extend support to older browsers (see [#2](https://github.com/slevithan/regex/issues/2)).
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags does not rely on this feature.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 - If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 
 ## 🏷️ About
