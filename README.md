@@ -1,8 +1,5 @@
 # `regex`
 
-[<img align="left" src="https://github.com/slevithan/awesome-regex/raw/main/media/awesome-regex.svg" height="45">](https://github.com/slevithan/awesome-regex) <sub>Included in</sub><br>
-<sup>[Awesome Regex](https://github.com/slevithan/awesome-regex)</sup>
-
 `regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight and supports all ES2024+ regex features.
 
 Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful pattern composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
