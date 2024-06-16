@@ -188,16 +188,16 @@ regex`^
 $`
 ```
 
+> [!NOTE]
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that make its subroutines less powerful.
+
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Subroutines work even if they appear before the group they reference.
+- Subroutines can be used before the groups they reference.
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
 - Like all extended syntax, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
-
-> [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that make its subroutines less powerful.
 
 ### Recursion
 
