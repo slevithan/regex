@@ -1,8 +1,10 @@
 # `regex`
 
-`regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight and supports all ES2024+ regex features.
+`regex` is a template tag for dynamically creating readable, high performance, *native* JavaScript regular expressions with advanced features and best practices built-in. It's lightweight and supports all modern ES2024+ regex functionality.
 
-Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+
+With the `regex` package, JavaScript steps up for the first time as being among the very best regex flavors.
 
 ## 🕹️ Install and use
 
@@ -19,7 +21,6 @@ In browsers:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
 <script>
-  // Recommended
   const {regex, partial} = Regex;
 </script>
 ```
