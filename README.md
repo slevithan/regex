@@ -2,7 +2,7 @@
 
 `regex` is a template tag for dynamically creating readable, high performance, native JavaScript regular expressions with advanced features. It's lightweight and supports all ES2024+ regex features.
 
-Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful pattern composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include using whitespace and comments in regexes, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🕹️ Install and use
 
@@ -57,7 +57,7 @@ In browsers:
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - New regex syntax.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
-  - Subroutines via `\g<name>` enable powerful composition and improve readability.
+  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
   - Recursive matching is enabled by an extension.
 - Context-aware and safe interpolation of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -141,8 +141,8 @@ regex`(?<prefix>sens|respons)e\ and\ \k<prefix>ibility`
 regex`(?<prefix>sens|respons)e\ and\ \g<prefix>ibility`
 /* Matches: - 'sense and sensibility'
             - 'sense and responsibility'
-            - 'response and responsibility'
-            - 'response and sensibility' */
+            - 'response and sensibility'
+            - 'response and responsibility' */
 ```
 
 Subroutines go beyond the composition benefits of [interpolation](#-interpolation). Apart from the obvious difference that they don't require variables to be defined outside of the regex, they also don't simply insert the referenced subpattern.
@@ -156,8 +156,8 @@ To illustrate points 2 and 3, consider:
 ```js
 regex`(?<n> (?<char>.) \k<char> ) \g<n> \k<n>`
 // The backreference \k<n> matches whatever was matched by capturing group n,
-// regardless of what was matched by the subroutine. For example, the regex can
-// match 'xx!!xx' but not 'xx!!!!'
+// regardless of what was matched by the subroutine. For example, the regex
+// matches 'xx!!xx' but not 'xx!!!!'
 ```
 
 Defining subpatterns for use by reference only:
@@ -277,7 +277,7 @@ const re = regex`
 
 Flag <kbd>n</kbd> gives you *named capture only* mode, which prevents the grouping metacharacters `(…)` from capturing. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
-Motivation: Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
+Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
 Example:
 
