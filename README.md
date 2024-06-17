@@ -127,19 +127,22 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Subroutines
 
-Subroutines are written as `\g<name>` (where *name* refers to a named group), and they match the contents of the referenced group (as an independent subpattern) at the current position. This enables subpattern reuse and composition, and is used to improve readability and maintainability, with potentially dramatic improvements for more complex regexes.
+Subroutines are written as `\g<name>` (where *name* refers to a named group), and they treat the referenced group as an independent subpattern that they try to match at the current position. This enables subpattern composition and reuse, which improves readability and maintainability with potentially dramatic improvements for more complex regexes.
 
-Here's a simple example that shows how subroutines and backreferences differ:
+The following example shows how subroutines and backreferences differ:
 
 ```js
-// A standard backreference with \k<name>
-regex`(?<prefix>Sens|Respons)e \+ \k<prefix>ibility`
-// Matches 'Sense+Sensibility' or 'Response+Responsibility'
+// A backreference with \k<name>
+regex`(?<prefix>sens|respons)e\ and\ \k<prefix>ibility`
+/* Matches: - 'sense and sensibility'
+            - 'response and responsibility' */
 
 // A subroutine with \g<name>
-regex`(?<prefix>Sens|Respons)e \+ \g<prefix>ibility`
-// In addition to what the prior regex matches, this also matches
-// 'Sense+Responsibility' and 'Response+Sensibility'
+regex`(?<prefix>sens|respons)e\ and\ \g<prefix>ibility`
+/* Matches: - 'sense and sensibility'
+            - 'sense and responsibility'
+            - 'response and responsibility'
+            - 'response and sensibility' */
 ```
 
 Subroutines go beyond the composition benefits of [interpolation](#-interpolation). Apart from the obvious difference that they don't require variables to be defined outside of the regex, they also don't simply insert the referenced subpattern.
@@ -157,7 +160,7 @@ regex`(?<n> (?<char>.) \k<char> ) \g<n> \k<n>`
 // match 'xx!!xx' but not 'xx!!!!'
 ```
 
-More examples:
+Examples of defining capturing groups for use by reference only:
 
 ```js
 // Matches an IPv4 address such as '192.168.12.123'
@@ -186,7 +189,7 @@ $`
 ```
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not act as independent subpatterns.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not always act as independent subpatterns.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
