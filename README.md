@@ -160,15 +160,14 @@ regex`(?<n> (?<char>.) \k<char> ) \g<n> \k<n>`
 // match 'xx!!xx' but not 'xx!!!!'
 ```
 
-Examples of defining capturing groups for use by reference only:
+Defining subpatterns for use by reference only:
 
 ```js
 // Matches an IPv4 address such as '192.168.12.123'
 regex`
-  # Define a subpattern without matching it, due to the {0} quantifier
+  # The {0} quantifier allows defining a subpattern without matching it
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
 
-  # Match the 4 parts, separated by dots
   \b \g<byte> (\.\g<byte>){3} \b
 `
 
