@@ -1,10 +1,8 @@
 # `regex`
 
-`regex` is a template tag for dynamically creating readable, high performance, *native* JavaScript regular expressions with advanced features and best practices built-in. It's lightweight and supports all modern ES2024+ regex functionality.
+`regex` is a template tag for dynamically creating readable, high performance, *native* JavaScript regular expressions with advanced features and best practices built-in. It's lightweight and supports all ES2024+ regex functionality.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
-
-With the `regex` package, JavaScript steps up for the first time as being among the very best regex flavors.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up for the first time as being among the very best regex flavors.
 
 ## 🕹️ Install and use
 
@@ -128,9 +126,9 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 
 ### Subroutines
 
-Subroutines are written as `\g<name>` (where *name* refers to a named group), and they treat the referenced group as an independent subpattern that they try to match at the current position. This enables subpattern composition and reuse, which improves readability and maintainability with potentially dramatic improvements for more complex regexes.
+Subroutines are written as `\g<name>` (where *name* refers to a named group), and they treat the referenced group as an independent subpattern that they try to match at the current position. This enables subpattern composition and reuse, which improves readability and maintainability.
 
-The following example shows how subroutines and backreferences differ:
+The following example illustrates how subroutines and backreferences differ:
 
 ```js
 // A backreference with \k<name>
@@ -155,13 +153,13 @@ Subroutines go beyond the composition benefits of [interpolation](#-interpolatio
 To illustrate points 2 and 3, consider:
 
 ```js
-regex`(?<n> (?<char>.) \k<char> ) \g<n> \k<n>`
-// The backreference \k<n> matches whatever was matched by capturing group n,
-// regardless of what was matched by the subroutine. For example, the regex
-// matches 'xx!!xx' but not 'xx!!!!'
+regex`(?<double> (?<char>.) \k<char> ) \g<double> \k<double>`
+// The backreference \k<double> matches whatever was matched by capturing group
+// `double`, regardless of what was matched by the subroutine. For example, the
+// regex matches 'xx!!xx' but not 'xx!!!!'
 ```
 
-Defining subpatterns for use by reference only:
+You can also define subpatterns for use by reference only:
 
 ```js
 // Matches an IPv4 address such as '192.168.12.123'
