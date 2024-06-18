@@ -163,27 +163,26 @@ You can also define subpatterns for use by reference only:
 
 ```js
 // Matches an IPv4 address such as '192.168.12.123'
-regex`
+regex`\b \g<byte> (\.\g<byte>){3} \b
+
   # The {0} quantifier allows defining a subpattern without matching it
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
-
-  \b \g<byte> (\.\g<byte>){3} \b
 `
 
 // Matches a record with several date fields
-regex`^
+regex`
+  ^ Name:\   (?<name>.*) \n
+  Born:\     \g<date>    \n
+  Admitted:\ \g<date>    \n
+  Released:\ \g<date>    $
+
   # Define subpatterns
   ( (?<date>  \g<year>-\g<month>-\g<day>)
     (?<year>  \d{4})
     (?<month> \d{2})
     (?<day>   \d{2})
   ){0}
-
-  Name:\ (?<name>.*)\n
-  Born:\ \g<date>\n
-  Admitted:\ \g<date>\n
-  Released:\ \g<date>
-$`
+`
 ```
 
 > [!NOTE]
