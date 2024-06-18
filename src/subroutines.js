@@ -1,6 +1,9 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
 import {countCaptures} from './utils.js';
 
+// In environments that support duplicate capture names, subroutines refer to the first instance of
+// the given group (matching the behavior of PCRE and Perl)
+
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
 const subroutinePattern = String.raw`\\g<(?<subroutineName>[^>&]+)>`;
@@ -46,19 +49,16 @@ export function subroutinesPostprocessor(pattern) {
         if (openSubroutinesMap.has(subroutineName)) {
           throw new Error(`Subroutine ${m} followed a recursive reference`);
         }
-        // TODO: Just using `[0]` for now since JS doesn't yet support duplicate named capturing
-        // groups, but will need to update when
-        // <https://github.com/tc39/proposal-duplicate-named-capturing-groups> is adopted
-        const capturingGroupContents = capturingGroups.get(subroutineName)[0].contents;
-        const numCaptures = countCaptures(capturingGroupContents) + 1; // Plus '(' wrapper
+        const contents = capturingGroups.get(subroutineName);
+        const numCaptures = countCaptures(contents) + 1; // Plus '(' wrapper
         numCapturesPassedInsideSubroutines += numCaptures;
         // Wrap value in case it has top-level alternation or is followed by a quantifier. The
         // wrapper also marks the end of the expanded contents, which we'll track using
         // `unclosedGroupCount`. Wrap with '()' instead of '(?:)' so that backrefs line up, in case
         // there are backrefs inside the subroutine that refer to their parent capturing group
-        const subroutineValue = `(${capturingGroupContents})`;
+        const subroutineValue = `(${contents})`;
         openSubroutinesMap.set(subroutineName, {
-          contents: capturingGroupContents,
+          contents,
           unclosedGroupCount: countSubgroups(subroutineValue),
           numCaptures,
         });
@@ -109,18 +109,18 @@ export function subroutinesPostprocessor(pattern) {
           // Search for the corresponding group in the contents of the subroutine stack
           let found = false;
           for (const s of openSubroutinesStack) {
-            const contents = openSubroutinesMap.get(s).contents;
-            if (hasUnescaped(contents, String.raw`\(\?<${backrefName}>`, Context.DEFAULT)) {
+            if (hasUnescaped(
+              openSubroutinesMap.get(s).contents,
+              String.raw`\(\?<${backrefName}>`,
+              Context.DEFAULT
+            )) {
               found = true;
               break;
             }
           }
           if (found) {
-            // Count captures preceding the referenced group in the original pattern
-            // TODO: Will need to update logic when JS supports duplicate named capturing groups
-            const captureNum = countCapturesBeforeGroup(pattern, backrefName) + 1;
             // Point to the group, then let normal renumbering work in the next loop iteration
-            const adjusted = `\\${captureNum}`;
+            const adjusted = `\\${getCaptureNum(pattern, backrefName)}`;
             result = spliceStr(result, pos, m, adjusted);
             token.lastIndex -= m.length;
           }
@@ -170,16 +170,16 @@ function countCapturesBeforeFirstReferencedBySubroutine(pattern) {
 @param {string} groupName
 @returns {number}
 */
-function countCapturesBeforeGroup(pattern, groupName) {
+function getCaptureNum(pattern, groupName) {
   let num = 0;
   let pos = 0;
   let match;
   while (match = execUnescaped(pattern, capturingStartPattern, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
+    num++;
     if (captureName === groupName) {
       break;
     }
-    num++;
     pos = index + m.length;
   }
   return num;
@@ -204,15 +204,8 @@ function getNamedCapturingGroups(pattern) {
   const capturingGroups = new Map();
   forEachUnescaped(pattern, String.raw`\(\?<(?<captureName>[^>]+)>`, ({0: m, index, groups: {captureName}}) => {
     if (!capturingGroups.has(captureName)) {
-      // Support multiple groups with the same name
-      capturingGroups.set(captureName, []);
+      capturingGroups.set(captureName, getGroupContents(pattern, index + m.length));
     }
-    const matchEndPos = index + m.length;
-    const contents = getGroupContents(pattern, matchEndPos);
-    capturingGroups.get(captureName).push({
-      contents,
-      endPos: matchEndPos + contents.length,
-    });
   }, Context.DEFAULT);
   return capturingGroups;
 }

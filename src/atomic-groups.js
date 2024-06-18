@@ -28,6 +28,7 @@ export function atomicGroupsPostprocessor(pattern) {
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
+
         if (m === aGDelim && !inAG) {
           aGPos = pos;
           inAG = true;
@@ -57,6 +58,7 @@ export function atomicGroupsPostprocessor(pattern) {
           // (since numbered backrefs outside regex interpolation are prevented by implicit flag n)
           throw new Error(`Invalid decimal escape "${m}" in interpolated regex; cannot be used with atomic group`);
         }
+
       } else if (m === ']') {
         numCharClassesOpen--;
       }

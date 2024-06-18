@@ -7,3 +7,13 @@ globalThis.patternModsSupported = (() => {
   }
   return supported;
 })();
+
+globalThis.duplicateCaptureNamesSupported = (() => {
+  let supported = true;
+  try {
+    new RegExp('(?<n>)|(?<n>)');
+  } catch (e) {
+    supported = false;
+  }
+  return supported;
+})();
