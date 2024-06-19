@@ -107,6 +107,10 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
+Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With the `regex` package, those days are over. Native JavaScript regexes have dramatically [evolved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) over the years, especially with ES2018 (which added lookbehind, named capture, and Unicode properties) and ES2024 (which added character class set operations and properties of strings). The `regex` package, with its thoughtfully-selected implicit flags and powerful new syntax, adds the remaining critical pieces needed to compete with or surpass the other major flavors.
+
+> `regex` transpiles to native JavaScript regexes with all of the features and performance that native regexes offer. All ES2024+ regex features are fully supported, even including proposal-stage syntax that is only available in bleeding-edge environments.
+
 ### Atomic groups
 
 [Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to improve performance, and are a much needed feature that `regex` brings to native JavaScript regular expressions.
@@ -191,7 +195,7 @@ regex`
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Subroutines can appear before the groups they reference.
+- Subroutines can appear before the groups they reference, as shown in examples above.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
 - As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
@@ -354,7 +358,7 @@ Some examples of where context awareness comes into play:
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
 
-These and other issues (including the effects of current and future flags like `x`) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle these kinds of issues.
+These and other issues (including the effects of current and [future](https://github.com/tc39/proposal-regexp-x-mode) flags like `x`) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle these kinds of issues.
 
 `regex` solves all of this via context awareness. So instead of remembering anything above, you should just switch to always safely escaping regex syntax via `regex`.
 
