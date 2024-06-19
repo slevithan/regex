@@ -89,6 +89,7 @@ describe('subroutines', () => {
 
   it('should support referencing a named capture added via interpolating a regex', () => {
     expect('aa').toMatch(regex`^${/(?<n>a)/}\g<n>$`);
+    expect('abbb').toMatch(regex`^(?<a>a)${/(b)(?<n>\1)/}\g<n>$`);
   });
 
   it('should support atomic groups within the referenced group', () => {

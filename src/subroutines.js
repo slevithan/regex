@@ -1,9 +1,6 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
 import {countCaptures} from './utils.js';
 
-// In environments that support duplicate capture names, subroutines refer to the first instance of
-// the given group (matching the behavior of PCRE and Perl)
-
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
 const subroutinePattern = String.raw`\\g<(?<subroutineName>[^>&]+)>`;
@@ -203,6 +200,8 @@ function spliceStr(str, pos, oldValue, newValue) {
 function getNamedCapturingGroups(pattern) {
   const capturingGroups = new Map();
   forEachUnescaped(pattern, String.raw`\(\?<(?<captureName>[^>]+)>`, ({0: m, index, groups: {captureName}}) => {
+    // If there are duplicate capture names, subroutines refer to the first instance of the given
+    // group (matching the behavior of PCRE and Perl)
     if (!capturingGroups.has(captureName)) {
       capturingGroups.set(captureName, getGroupContents(pattern, index + m.length));
     }

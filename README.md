@@ -192,7 +192,7 @@ regex`
   <summary>👉 <b>Show more details</b></summary>
 
 - Subroutines can appear before the groups they reference.
-- In environments that support [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
+- If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
 - As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
