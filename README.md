@@ -81,9 +81,9 @@ const re = regex('gm')`
   (?> \w+ \s? )+
   |
   # Subroutines
-  ^ Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
+  Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
   Admitted: \g<date> \n
-  Released: \g<date> $
+  Released: \g<date>
 `;
 ```
 
@@ -106,7 +106,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its new flags and syntax, adds the remaining pieces needed to compete with or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and flags, adds the remaining pieces needed to compete with or surpass other major flavors.
 
 ### Atomic groups
 
@@ -485,7 +485,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 2. Interpolated values are always aware of the context of where they're embedded.
 3. When relevant, interpolated values are always treated as complete units.
 
-> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation, if they contain numbered backreferences (leading to renumbering), or if they're placed in a character class range or set operation.
+> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation or unnamed backreferences, or if they're placed in a character class range or set operation.
 
 ### Interpolation contexts
 
