@@ -2,7 +2,7 @@
 
 `regex` is a template tag for dynamically creating readable, high performance, *native* JavaScript regular expressions with advanced features and best practices built-in. It's lightweight and supports all ES2024+ regex functionality.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up for the first time as being among the very best regex flavors.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up to being one of the very best regex flavors.
 
 ## 🕹️ Install and use
 
@@ -107,7 +107,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With the `regex` package, those days are over. Native JavaScript regexes have dramatically [evolved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) over the years, especially with ES2018 (which added lookbehind, named capture, and Unicode properties) and ES2024 (which added character class set operations and properties of strings). The `regex` package, with its implicit flags and powerful new syntax, adds the remaining pieces needed to compete with or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction/intersection, and more), and the `regex` package—with its new flags and powerful new syntax—adds the remaining pieces needed to compete with or surpass other major flavors.
 
 ### Atomic groups
 
