@@ -45,7 +45,6 @@ In browsers:
   - [Interpolation contexts](#interpolation-contexts)
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
-- [About](#️-about)
 
 ## 💎 Features
 
@@ -107,7 +106,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction/intersection, and more). The `regex` package, with its new flags and syntax, adds the remaining pieces needed to compete with or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its new flags and syntax, adds the remaining pieces needed to compete with or surpass other major flavors.
 
 ### Atomic groups
 
@@ -225,7 +224,7 @@ For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via 
 
 ### Flag `v`
 
-JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operations and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of four (so you only need to remember one set of regex syntax and behavior).
+JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operations and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
@@ -543,8 +542,8 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-- `regex` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 (see [compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. But it's possible to extend support to older browsers (see [#2](https://github.com/slevithan/regex/issues/2)).
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome and Edge 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+- `regex` relies on flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. It's possible to extend support to older browsers (see [#2](https://github.com/slevithan/regex/issues/2)).
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 - If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 
 ## 🏷️ About
