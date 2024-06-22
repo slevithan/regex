@@ -536,7 +536,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## ⚡ Performance
 
-`regex` compiles to native `RegExp` instances. Therefore regexes built with `regex` perform just as fast as native regular expressions. There is a tiny extra cost when compiling a pattern.
+`regex` transpiles its input to native `RegExp` instances. Therefore regexes built with `regex` perform just as fast as native regular expressions.
 
 For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
 

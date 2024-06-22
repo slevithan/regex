@@ -1,7 +1,18 @@
 describe('atomic groups', () => {
   it('should not remember backtracking positions within atomic groups', () => {
-    expect('abcc').toMatch(regex`^a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex`^a(?>bc|b)c$`);
+    expect('abcc').toMatch(regex`^a(?>bc|b)c$`);
+    expect('aaaaaab').not.toMatch(regex`(?>a+)ab`);
+    expect('aaaaaab').toMatch(regex`(?>a)+ab`);
+  });
+
+  it('should allow nested atomic groups', () => {
+    expect('integerrr+').toMatch(regex`\b(?>int(?>eger+)?|insert)\b(?>.)`);
+    expect('integerrr+').not.toMatch(regex`\b(?>int(?>eger+)??|insert)\b(?>.)`);
+  });
+
+  it('should allow quantifying atomic groups', () => {
+    expect('one two').toMatch(regex`^(?>\w+\s?)+$`);
   });
 
   it('should work when named capturing groups present', () => {
@@ -17,15 +28,6 @@ describe('atomic groups', () => {
   it('should work when capturing groups present via interpolation', () => {
     expect('abcc').toMatch(regex`^${/()/}a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex`^${/()/}a(?>bc|b)c$`);
-  });
-
-  it('should allow nested atomic groups', () => {
-    expect('integerrr+').toMatch(regex`\b(?>int(?>eger+)?|insert)\b(?>.)`);
-    expect('integerrr+').not.toMatch(regex`\b(?>int(?>eger+)??|insert)\b(?>.)`);
-  });
-
-  it('should allow quantifying atomic groups', () => {
-    expect('one two').toMatch(regex`^(?>\w+\s?)+$`);
   });
 
   // Just documenting current behavior; this could be supported in the future
@@ -44,6 +46,7 @@ describe('atomic groups', () => {
   });
 
   it('should handle atomic groups added by postprocessors', () => {
-    expect('aabb').toMatch(regex({postprocessors: [p => p.replace(/\$$/, '(?>b)+$')]})`^(?>a)+$`);
+    const addAGFn = p => p.replace(/\$$/, '(?>b+)$');
+    expect('aabb').toMatch(regex({postprocessors: [addAGFn]})`^(?>a+)$`);
   });
 });
