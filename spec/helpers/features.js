@@ -1,7 +1,7 @@
 globalThis.patternModsSupported = (() => {
   let supported = true;
   try {
-    new RegExp('(?i-ms:)');
+    new RegExp('(?i:)');
   } catch (e) {
     supported = false;
   }

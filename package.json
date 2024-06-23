@@ -7,7 +7,7 @@
   "type": "module",
   "exports": "./src/index.js",
   "scripts": {
-    "build": "esbuild src/index.js --bundle --minify --sourcemap --outfile=dist/regex.min.js --global-name=Regex",
+    "build": "esbuild src/index.js --bundle --minify --outfile=dist/regex.min.js --global-name=Regex",
     "pretest": "npm run build",
     "test": "jasmine",
     "prepublish": "npm test"

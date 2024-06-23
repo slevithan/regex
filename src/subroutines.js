@@ -6,11 +6,11 @@ import {countCaptures} from './utils.js';
 const subroutinePattern = String.raw`\\g<(?<subroutineName>[^>&]+)>`;
 const capturingStartPattern = String.raw`\((?:(?!\?)|\?<(?![=!])(?<captureName>[^>]+)>)`;
 const token = new RegExp(String.raw`
-  ${subroutinePattern}
-| (?<capturingStart> ${capturingStartPattern} )
-| \\ (?<backrefNum> [1-9]\d* )
-| \\k< (?<backrefName> [^>]+ ) >
-| \\? .
+${subroutinePattern}
+| (?<capturingStart>${capturingStartPattern})
+| \\(?<backrefNum>[1-9]\d*)
+| \\k<(?<backrefName>[^>]+)>
+| \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 /**

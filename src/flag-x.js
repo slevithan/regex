@@ -6,20 +6,19 @@ const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
 const escapedCharClassWs = /^\\[ \t]$/;
 const token = new RegExp(String.raw`
-\\ (?:
-    [gk] <
-  | [pPu] \{
-  | c [A-Za-z]
-  | u [A-Fa-f\d]{4}
-  | x [A-Fa-f\d]{2}
-  | 0 \d+
+\\(?: [gk]<
+  | [pPu]\{
+  | c[A-Za-z]
+  | u[A-Fa-f\d]{4}
+  | x[A-Fa-f\d]{2}
+  | 0\d+
 )
 | \[\^
 | ${noncapturingStart}
 | \(\?<
-| (?<dp> [${doublePunctuatorChars}] ) \k<dp>
+| (?<dp>[${doublePunctuatorChars}])\k<dp>
 | --
-| \\? .
+| \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 // Applied to the outer regex and interpolated partials, but not interpolated regexes or strings

@@ -1,10 +1,10 @@
 import {RegexContext, getEndContextForIncompletePattern, noncapturingStart} from './utils.js';
 
 const token = new RegExp(String.raw`
-  ${noncapturingStart}
+${noncapturingStart}
 | \(\?<
-| (?<backrefNum> \\[1-9]\d* )
-| \\? .
+| (?<backrefNum>\\[1-9]\d*)
+| \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 // Applied to the outer regex and interpolated partials, but not interpolated regexes or strings

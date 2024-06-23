@@ -560,5 +560,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 `regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). Version 1.0.0 was named Regex.make.
 
+`regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), separated merely so that it can be shared by `regex` extensions.
+
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.

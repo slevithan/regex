@@ -2,26 +2,26 @@ import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
-  DEFAULT: 'R_DEFAULT',
-  CHAR_CLASS: 'R_CHAR_CLASS',
-  GROUP_NAME: 'R_GROUP_NAME',
-  ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
-  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
-  INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
+  DEFAULT: 'R_D',
+  CHAR_CLASS: 'R_CC',
+  GROUP_NAME: 'R_GN',
+  ENCLOSED_TOKEN: 'R_ET',
+  INTERVAL_QUANTIFIER: 'R_IQ',
+  INVALID_INCOMPLETE_TOKEN: 'R_IIT',
 };
 
 export const CharClassContext = {
-  DEFAULT: 'CC_DEFAULT',
-  RANGE: 'CC_RANGE',
-  ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
-  Q_TOKEN: 'CC_Q_TOKEN',
-  INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
+  DEFAULT: 'CC_D',
+  RANGE: 'CC_R',
+  ENCLOSED_TOKEN: 'CC_ET',
+  Q_TOKEN: 'CC_QT',
+  INVALID_INCOMPLETE_TOKEN: 'CC_IIT',
 };
 
 export const patternModsSupported = (() => {
   let supported = true;
   try {
-    new RegExp('(?i-ms:)');
+    new RegExp('(?i:)');
   } catch (e) {
     supported = false;
   }
@@ -129,19 +129,18 @@ export function getBreakoutChar(pattern, regexContext, charClassContext) {
 }
 
 const contextToken = new RegExp(String.raw`
-  (?<groupN> \(\?< (?! [=!] ) | \\[gk]< )
-| (?<enclosedT> \\[pPu]\{ )
-| (?<qT> \\q\{ )
-| (?<intervalQ> \{ )
-| (?<incompleteT> \\ (?:
-    $
-  | c (?! [A-Za-z] )
-  | u (?! [A-Fa-f\d]{4} ) [A-Fa-f\d]{0,3}
-  | x (?! [A-Fa-f\d]{2} ) [A-Fa-f\d]?
+(?<groupN>\(\?<(?![=!])|\\[gk]<)
+| (?<enclosedT>\\[pPu]\{)
+| (?<qT>\\q\{)
+| (?<intervalQ>\{)
+| (?<incompleteT>\\(?: $
+  | c(?![A-Za-z])
+  | u(?![A-Fa-f\d]{4})[A-Fa-f\d]{0,3}
+  | x(?![A-Fa-f\d]{2})[A-Fa-f\d]?
   )
 )
 | --
-| \\? .
+| \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 // Accepts and returns its full state so it doesn't have to reprocess pattern parts that it's
@@ -239,13 +238,12 @@ const stringPropertyNames = [
 ].join('|');
 
 const charClassUnionToken = new RegExp(String.raw`
-\\ (?:
-    c [A-Za-z]
-  | p \{ (?<pStrProp> ${stringPropertyNames} ) \}
-  | [pP] \{ [^\}]+ \}
-  | (?<qStrProp> q )
-  | u (?: [A-Fa-f\d]{4} | \{ [A-Fa-f\d]+ \} )
-  | x [A-Fa-f\d]{2}
+\\(?: c[A-Za-z]
+  | p\{(?<pStrProp>${stringPropertyNames})\}
+  | [pP]\{[^\}]+\}
+  | (?<qStrProp>q)
+  | u(?:[A-Fa-f\d]{4}|\{[A-Fa-f\d]+\})
+  | x[A-Fa-f\d]{2}
   | .
 )
 | --
