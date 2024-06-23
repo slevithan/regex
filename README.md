@@ -1,8 +1,82 @@
 # `regex`
 
-`regex` is a template tag for dynamically creating readable, high performance, *native* JavaScript regular expressions with advanced features and best practices built-in. It's lightweight and supports all ES2024+ regex functionality.
+`regex` allows you to create **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.2KB minified and brotlied) and supports all ES2024+ regex functionality.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up to being one of the very best regex flavors.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up as one of the very best regex flavors.
+
+<details>
+  <summary>📜 <b>Contents</b></summary>
+
+- [Features](#-features)
+- [Examples](#-examples)
+- [Install and use](#️-install-and-use)
+- [Context](#-context)
+- [New regex syntax](#-new-regex-syntax)
+  - [Atomic groups](#atomic-groups)
+  - [Subroutines](#subroutines)
+  - [Recursion](#recursion)
+- [Flags](#-flags)
+  - [Implicit flags](#implicit-flags)
+  - [Flag <kbd>v</kbd>](#flag-v)
+  - [Flag <kbd>x</kbd>](#flag-x)
+  - [Flag <kbd>n</kbd>](#flag-n)
+- [Interpolation](#-interpolation)
+  - [`RegExp` instances](#interpolating-regexes)
+  - [Escaped strings](#interpolating-escaped-strings)
+  - [Partial patterns](#interpolating-partial-patterns)
+  - [Interpolation principles](#interpolation-principles)
+  - [Interpolation contexts](#interpolation-contexts)
+- [Performance](#-performance)
+- [Compatibility](#-compatibility)
+</details>
+
+## 💎 Features
+
+- **A modern regex baseline** so you don't need to continually opt-in to best practices.
+  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
+  - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+  - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
+  - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
+- **New regex syntax**.
+  - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
+  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
+  - Recursive matching is enabled by an extension.
+- **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
+  - Interpolated strings have their special characters escaped.
+  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
+
+## 🪧 Examples
+
+```js
+import {regex, partial} from 'regex';
+
+// Subroutines
+const record = regex('gm')`^
+  Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
+  Admitted: \g<date> \n
+  Released: \g<date>
+$`;
+
+// Atomic groups; avoid ReDoS from the nested, overlapping quantifier
+const words = regex`^(?>\w+\s?)+$`;
+
+// Context-aware and safe interpolation
+const re = regex('m')`
+  # Only the inner regex is case insensitive (flag i)
+  # Also, the outer regex's flag m is not applied to it
+  ${/^a.b$/i}
+  |
+  # Strings are contextually escaped and repeated as complete units
+  ^ ${'a.b'}+ $
+  |
+  # This string is contextually sandboxed but not escaped
+  ${partial('^ a.b $')}
+`;
+
+// Adjusts backreferences in interpolated regexes
+regex`^ ${/(dog)\1/} ${/(cat)\1/} $`;
+// → /^(dog)\1(cat)\2$/v
+```
 
 ## 🕹️ Install and use
 
@@ -23,70 +97,6 @@ In browsers:
 </script>
 ```
 
-## 📜 Contents
-
-- [Features](#-features)
-- [Example](#-example)
-- [Context](#-context)
-- [New regex syntax](#-new-regex-syntax)
-  - [Atomic groups](#atomic-groups)
-  - [Subroutines](#subroutines)
-  - [Recursion](#recursion)
-- [Flags](#-flags)
-  - [Implicit flags](#implicit-flags)
-  - [Flag <kbd>v</kbd>](#flag-v)
-  - [Flag <kbd>x</kbd>](#flag-x)
-  - [Flag <kbd>n</kbd>](#flag-n)
-- [Interpolation](#-interpolation)
-  - [`RegExp` instances](#interpolating-regexes)
-  - [Escaped strings](#interpolating-escaped-strings)
-  - [Partial patterns](#interpolating-partial-patterns)
-  - [Interpolation principles](#interpolation-principles)
-  - [Interpolation contexts](#interpolation-contexts)
-- [Performance](#-performance)
-- [Compatibility](#-compatibility)
-
-## 💎 Features
-
-- A modern regex baseline so you don't need to continually opt-in to best practices.
-  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support, extra features, and strict errors.
-  - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-  - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves the readability and efficiency of your regexes.
-  - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- New regex syntax.
-  - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
-  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Recursive matching is enabled by an extension.
-- Context-aware and safe interpolation of regexes, strings, and partial patterns.
-  - Interpolated strings have their special characters escaped.
-  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
-
-## 🪧 Example
-
-```js
-import {regex, partial} from 'regex';
-
-const re = regex('gm')`
-  # Strings are contextually escaped and repeated as complete units
-  ^ ${'a.b'}+ $
-  |
-  # Only the inner regex is case insensitive (flag i).
-  # Also, the outer regex's flag m is not applied to it
-  ${/^a.b$/i}
-  |
-  # This string is contextually sandboxed but not escaped
-  ${partial('^ a.b $')}
-  |
-  # An atomic group
-  (?> \w+ \s? )+
-  |
-  # Subroutines
-  Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
-  Admitted: \g<date> \n
-  Released: \g<date>
-`;
-```
-
 ## ❓ Context
 
 Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
@@ -100,7 +110,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
