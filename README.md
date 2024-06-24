@@ -1,4 +1,4 @@
-# `regex`
+<a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" width="225" alt="regex logo"></a>
 
 `regex` allows you to create **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6KB minified and brotlied) and supports all ES2024+ regex functionality.
 
