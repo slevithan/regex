@@ -1,11 +1,11 @@
 <a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" width="225" alt="regex logo"></a>
 
-`regex` allows you to create **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6KB minified and brotlied) and supports all ES2024+ regex functionality.
+`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6KB minified and brotlied) and supports all ES2024+ regex functionality.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up as one of the very best regex flavors.
 
 <details>
-  <summary>📜 <b>Contents</b></summary>
+  <summary><b>Contents</b></summary>
 
 - [Features](#-features)
 - [Examples](#-examples)
