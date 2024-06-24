@@ -2,20 +2,20 @@ import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 import {PartialPattern, partial} from './partial.js';
 
 export const RegexContext = {
-  DEFAULT: 'R_D',
-  CHAR_CLASS: 'R_CC',
-  GROUP_NAME: 'R_GN',
-  ENCLOSED_TOKEN: 'R_ET',
-  INTERVAL_QUANTIFIER: 'R_IQ',
-  INVALID_INCOMPLETE_TOKEN: 'R_IIT',
+  DEFAULT: 'R_DEFAULT',
+  CHAR_CLASS: 'R_CHAR_CLASS',
+  GROUP_NAME: 'R_GROUP_NAME',
+  ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
+  INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
+  INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
 };
 
 export const CharClassContext = {
-  DEFAULT: 'CC_D',
-  RANGE: 'CC_R',
-  ENCLOSED_TOKEN: 'CC_ET',
-  Q_TOKEN: 'CC_QT',
-  INVALID_INCOMPLETE_TOKEN: 'CC_IIT',
+  DEFAULT: 'CC_DEFAULT',
+  RANGE: 'CC_RANGE',
+  ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
+  Q_TOKEN: 'CC_Q_TOKEN',
+  INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
 };
 
 export const patternModsSupported = (() => {

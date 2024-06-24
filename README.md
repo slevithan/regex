@@ -1,6 +1,6 @@
 # `regex`
 
-`regex` allows you to create **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.2KB minified and brotlied) and supports all ES2024+ regex functionality.
+`regex` allows you to create **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6KB minified and brotlied) and supports all ES2024+ regex functionality.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up as one of the very best regex flavors.
 
@@ -560,7 +560,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 `regex` was partly inspired by and significantly improves upon [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). Version 1.0.0 was named Regex.make.
 
-`regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), separated merely so that it can be shared by `regex` extensions.
+`regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which is separated so it can be reused by `regex` extensions.
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.
