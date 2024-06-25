@@ -1,5 +1,5 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
-import {countCaptures} from './utils.js';
+import {countCaptures, lastOf} from './utils.js';
 
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
@@ -38,7 +38,7 @@ export function subroutinesPostprocessor(pattern) {
       numCharClassesOpen++;
     } else if (!numCharClassesOpen) {
 
-      const subroutine = openSubroutinesMap.size ? openSubroutinesMap.get(openSubroutinesStack.at(-1)) : null;
+      const subroutine = openSubroutinesMap.size ? openSubroutinesMap.get(lastOf(openSubroutinesStack)) : null;
       if (subroutineName) {
         if (!capturingGroups.has(subroutineName)) {
           throw new Error(`Invalid named capture referenced by subroutine ${m}`);
@@ -75,11 +75,11 @@ export function subroutinesPostprocessor(pattern) {
             result = spliceStr(result, pos, m, '(');
             token.lastIndex -= m.length;
           }
-          backrefIncrements.push(backrefIncrements.at(-1) + subroutine.numCaptures);
+          backrefIncrements.push(lastOf(backrefIncrements) + subroutine.numCaptures);
         } else {
           numCapturesPassedOutsideSubroutines++;
           if (backrefIncrements.length === numCapturesPassedOutsideSubroutines) {
-            backrefIncrements.push(backrefIncrements.at(-1));
+            backrefIncrements.push(lastOf(backrefIncrements));
           }
         }
       } else if (backrefNum) {
