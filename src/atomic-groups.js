@@ -6,7 +6,7 @@ import {noncapturingStart} from './utils.js';
 @returns {string}
 */
 export function atomicGroupsPostprocessor(pattern) {
-  if (!hasUnescaped(pattern, String.raw`\(\?>`, Context.DEFAULT)) {
+  if (!hasUnescaped(pattern, '\\(\\?>', Context.DEFAULT)) {
     return pattern;
   }
   const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingStart})|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');

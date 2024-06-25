@@ -27,10 +27,20 @@ describe('regex', () => {
     expect(regex(undefined)``).toBeInstanceOf(RegExp);
   });
 
-  it('should implicitly add flag v', () => {
-    expect(regex``.flags).toContain('v');
-    expect(regex``.unicodeSets).toBeTrue();
-    expect(regex('g')``.unicodeSets).toBeTrue();
+  it('should implicitly add flag v when supported natively, else flag u', () => {
+    if (flagVSupported) {
+      expect(regex``.flags).toContain('v');
+      expect(regex``.unicodeSets).toBeTrue();
+      expect(regex('g')``.unicodeSets).toBeTrue();
+    } else {
+      expect(regex``.flags).toContain('u');
+      expect(regex``.unicode).toBeTrue();
+      expect(regex('g')``.unicode).toBeTrue();
+    }
+  });
+
+  it('should implicitly add flag u when flag v disabled by an experimental option', () => {
+    expect(regex({__flagV: false})``.unicode).toBeTrue();
   });
 
   it('should not allow explicitly adding implicit flags', () => {
@@ -41,6 +51,29 @@ describe('regex', () => {
       expect(() => regex(`i${f}m`)``).toThrow();
       expect(() => regex({flags: f})``).toThrow();
     });
+  });
+
+  it('should follow flag v escaping rules, even when flag v not supported', () => {
+    expect(() => regex({__flagV: false})`[(]`).toThrow();
+    expect(() => regex({__flagV: false})`[)]`).toThrow();
+    expect(() => regex({__flagV: false})`[[]`).toThrow();
+    expect(() => regex({__flagV: false})`[]]`).toThrow();
+    expect(() => regex({__flagV: false})`[[]]`).toThrow();
+
+    const incompatibleEscapeChars = '&!#%,:;<=>@`~'.split('');
+    incompatibleEscapeChars.forEach(char => {
+      expect(char).toMatch(regex({__flagV: false})({raw: ['^[\\' + char + ']$']}));
+    });
+
+    const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~'.split('');
+    doublePunctuatorChars.forEach(dp => {
+      expect(dp).toMatch(regex({__flagV: false})({raw: ['^[a' + dp + 'b]$']}));
+      if (dp !== '&') {
+        expect(() => regex({__flagV: false})({raw: ['[a' + dp + dp + 'b]']})).toThrow();
+      }
+    });
+    expect(() => regex({__flagV: false})`[a--b]`).toThrow();
+    expect(() => regex({__flagV: false})`[a&&b]`).toThrow();
   });
 
   it('should coerce non-string values in raw array', () => {

@@ -1,19 +1,26 @@
 globalThis.patternModsSupported = (() => {
-  let supported = true;
   try {
     new RegExp('(?i:)');
   } catch (e) {
-    supported = false;
+    return false;
   }
-  return supported;
+  return true;
 })();
 
 globalThis.duplicateCaptureNamesSupported = (() => {
-  let supported = true;
   try {
     new RegExp('(?<n>)|(?<n>)');
   } catch (e) {
-    supported = false;
+    return false;
   }
-  return supported;
+  return true;
+})();
+
+globalThis.flagVSupported = (() => {
+  try {
+    new RegExp('', 'v');
+  } catch (e) {
+    return false;
+  }
+  return true;
 })();

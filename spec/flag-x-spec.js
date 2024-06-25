@@ -168,36 +168,18 @@ describe('flag x', () => {
     });
 
     it('should allow set operators to be offset by whitespace', () => {
-      expect('a').toMatch(regex`[\w -- _]`);
-      expect('a').toMatch(regex`[\w-- _]`);
-      expect('a').toMatch(regex`[\w --_]`);
-      expect('a').toMatch(regex`[\w && [a-z]]`);
-      expect('a').toMatch(regex`[\w&& [a-z]]`);
-      expect('a').toMatch(regex`[\w &&[a-z]]`);
+      if (flagVSupported) {
+        expect('a').toMatch(regex`[\w -- _]`);
+        expect('a').toMatch(regex`[\w-- _]`);
+        expect('a').toMatch(regex`[\w --_]`);
+        expect('a').toMatch(regex`[\w && [a-z]]`);
+        expect('a').toMatch(regex`[\w&& [a-z]]`);
+        expect('a').toMatch(regex`[\w &&[a-z]]`);
+      }
     });
 
     it('should match (as a literal character) a lone double-punctuator character separated from its partner by whitespace', () => {
-      const doublePunctuatorChars = [
-        '&',
-        '!',
-        '#',
-        '$',
-        '%',
-        '*',
-        '+',
-        ',',
-        '.',
-        ':',
-        ';',
-        '<',
-        '=',
-        '>',
-        '?',
-        '@',
-        '^',
-        '`',
-        '~',
-      ];
+      const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~'.split('');
       doublePunctuatorChars.forEach(c => {
         expect(c).withContext(`[a${c} ${c}b]`).toMatch(regex({raw: [`[a${c} ${c}b]`]}));
         expect(c).withContext(`[a${c} ${c} b]`).toMatch(regex({raw: [`[a${c} ${c} b]`]}));
@@ -208,8 +190,10 @@ describe('flag x', () => {
 
     it('should allow escaping whitespace to make it significant', () => {
       expect(' ').toMatch(regex`^[ \ ]$`);
-      expect(' ').toMatch(regex`^[\q{ \ }]$`);
       expect('t ').toMatch(regex`^[\ t]{2}$`);
+      if (flagVSupported) {
+        expect(' ').toMatch(regex`^[\q{ \ }]$`);
+      }
     });
 
     it('should treat whitespace in enclosed tokens as significant', () => {
@@ -218,14 +202,18 @@ describe('flag x', () => {
       expect(() => regex`[\u{ 0 }]`).toThrow();
     });
 
-    it('should treat whitespace in [\\q{}] as insignificant', () => {
-      expect('ab').toMatch(regex`^[\q{ a b | c }]$`);
-    });
+    if (flagVSupported) {
+      it('should treat whitespace in [\\q{}] as insignificant', () => {
+        expect('ab').toMatch(regex`^[\q{ a b | c }]$`);
+      });
+    }
 
     it('should handle empty character classes with insignificant whitespace', () => {
       expect(/[]/v.test('a')).toBe(regex`[ ]`.test('a'));
       expect(/[^]/v.test('a')).toBe(regex`[^ ]`.test('a'));
-      expect(/[\q{}]/v.test('a')).toBe(regex`[ \q{ } ]`.test('a'));
+      if (flagVSupported) {
+        expect(/[\q{}]/v.test('a')).toBe(regex`[ \q{ } ]`.test('a'));
+      }
     });
   });
 

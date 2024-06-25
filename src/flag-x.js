@@ -111,9 +111,9 @@ export function flagXPreprocessor(value, runningContext) {
         escapedCharClassWs.test(m) &&
         (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.Q_TOKEN)
       ) {
-          transformed += update(m[1], {prefix: false});
+        transformed += update(m[1], {prefix: false});
       } else if (charClassContext === CharClassContext.DEFAULT) {
-          transformed += update(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
+        transformed += update(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
       } else {
         transformed += update(m);
       }

@@ -88,27 +88,7 @@ describe('interpolation: partial patterns', () => {
   });
 
   describe('in character class context', () => {
-    const doublePunctuatorChars = [
-      '&',
-      '!',
-      '#',
-      '$',
-      '%',
-      '*',
-      '+',
-      ',',
-      '.',
-      ':',
-      ';',
-      '<',
-      '=',
-      '>',
-      '?',
-      '@',
-      '^',
-      '`',
-      '~',
-    ];
+    const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~'.split('');
 
     it('should coerce non-string values', () => {
       expect('5').toMatch(regex`[1-${partial(9)}]`);

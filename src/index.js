@@ -1,12 +1,13 @@
 // regex 2.0.0; Steven Levithan; MIT License
 
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {atomicGroupsPostprocessor} from './atomic-groups.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
 import {PartialPattern, partial} from './partial.js';
+import {atomicGroupsPostprocessor} from './atomic-groups.js';
 import {subroutinesPostprocessor} from './subroutines.js';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {backcompatPostprocessor} from './backcompat.js';
 
 /**
 @typedef {Object} RegexTagOptions
@@ -63,10 +64,11 @@ function fromTemplate(constructor, options, template, ...values) {
     postprocessors = [],
     __flagN = true,
     __flagX = true,
+    __flagV = flagVSupported,
     __rake = true,
   } = options;
   if (/[vu]/.test(flags)) {
-    throw new Error('Flags v/u cannot be explicitly added since v is always enabled');
+    throw new Error('Flags v/u cannot be explicitly added');
   }
 
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
@@ -100,12 +102,15 @@ function fromTemplate(constructor, options, template, ...values) {
     }
   });
 
-  [ ...postprocessors,
-    atomicGroupsPostprocessor,
-    subroutinesPostprocessor,
-    ...(__rake ? [rakePostprocessor] : []),
-  ].forEach(pp => pattern = pp(pattern));
-  return new constructor(pattern, `v${flags}`);
+  const pp = [...postprocessors, atomicGroupsPostprocessor, subroutinesPostprocessor];
+  if (!__flagV) {
+    pp.push(backcompatPostprocessor);
+  }
+  if (__rake) {
+    pp.push(rakePostprocessor);
+  }
+  pp.forEach(pp => pattern = pp(pattern));
+  return new constructor(pattern, (__flagV ? 'v' : 'u') + flags);
 }
 
 function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures) {
@@ -147,7 +152,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
       if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
         // Sandboxing so we don't change the chars outside the partial into being part of an
         // operation they didn't initiate. Same problem as starting a partial with a quantifier
-        throw new Error('In character classes, a partial cannot use a range or set operator at its boundary; move the operation into the partial or the operator outside of it');
+        throw new Error('Cannot use range or set operator at boundary of partial; move the operation into the partial or the operator outside of it');
       }
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check

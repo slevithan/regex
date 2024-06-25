@@ -19,13 +19,21 @@ export const CharClassContext = {
 };
 
 export const patternModsSupported = (() => {
-  let supported = true;
   try {
     new RegExp('(?i:)');
   } catch (e) {
-    supported = false;
+    return false;
   }
-  return supported;
+  return true;
+})();
+
+export const flagVSupported = (() => {
+  try {
+    new RegExp('', 'v');
+  } catch (e) {
+    return false;
+  }
+  return true;
 })();
 
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
