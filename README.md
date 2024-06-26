@@ -118,7 +118,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful as other major regex flavors like PCRE, Perl, .NET, Java, Ruby, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and flags, adds the remaining pieces needed to compete with or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the remaining pieces needed to compete with or surpass other major flavors.
 
 ### Atomic groups
 
