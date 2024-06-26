@@ -106,10 +106,10 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 <details>
   <summary>See the four parsing modes</summary>
 
-1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
-2. Named capture mode, triggered when a named capture appears anywhere in a regex, changes the meaning of `\k`.
-3. Unicode mode with flag <kbd>u</kbd> applies strict error handling (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code point based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd>, changes escaping rules within character classes and fixes case-insensitive matching for doubly-negated `[^\P{…}]`, in addition to adding new features/syntax.
+1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
+2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
+3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd>, changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
@@ -561,7 +561,7 @@ If you want `regex` to use a `RegExp` subclass or other constructor, you can do 
 Following are edge cases that rely on modern JavaScript features:
 
 - `regex` uses flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. In environments without native flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used as a fallback while enforcing <kbd>v</kbd>'s rules, which extends support backward to Node.js 12+ and old browsers.
-  - Note that `regex` generates nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is throw when this isn't supported, which can be avoided by not interpolating multi-token partials/strings into character classes.
+  - Note that `regex` generates nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is throw when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🏷️ About
