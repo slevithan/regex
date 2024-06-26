@@ -4,7 +4,7 @@
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
-With the `regex` package, JavaScript steps up as one of the very best regex flavors.
+With the `regex` package, JavaScript steps up as one of the very best regex flavors, competitive with PCRE and Perl and maybe surpassing C++, Java, .NET, Python, and Ruby.
 
 <details>
   <summary><b>Table of contents</b></summary>
@@ -556,12 +556,13 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When it's not available, flag <kbd>u</kbd> is automatically used as a fallback (while enforcing <kbd>v</kbd> rules), which extends support to Node.js 12+ and 2019-era browsers (2016-era with polyfills for private class fields and the string `matchAll` method).
+
 If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 
 Following are edge cases that rely on modern JavaScript features:
 
-- `regex` uses flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. In environments without native flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used as a fallback while enforcing <kbd>v</kbd>'s rules, which extends support backward to Node.js 12+ and old browsers.
-  - Note that `regex` generates nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is throw when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
+- To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🏷️ About
