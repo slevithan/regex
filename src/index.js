@@ -1,5 +1,3 @@
-// regex 2.0.0; Steven Levithan; MIT License
-
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {flagNPreprocessor} from './flag-n.js';
@@ -12,8 +10,9 @@ import {backcompatPostprocessor} from './backcompat.js';
 /**
 @typedef {Object} RegexTagOptions
 @prop {string} [flags]
-@prop {Array<(pattern: string) => string>} [postprocessors]
+@prop {Array<(pattern: string, flags: string) => string>} [postprocessors]
 @prop {boolean} [__flagN]
+@prop {boolean} [__flagV]
 @prop {boolean} [__flagX]
 @prop {boolean} [__rake]
 */
@@ -63,8 +62,8 @@ function fromTemplate(constructor, options, template, ...values) {
     flags = '',
     postprocessors = [],
     __flagN = true,
-    __flagX = true,
     __flagV = flagVSupported,
+    __flagX = true,
     __rake = true,
   } = options;
   if (/[vu]/.test(flags)) {
