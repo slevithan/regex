@@ -108,8 +108,8 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
 2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
-3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd>, changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
+3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), makes flag <kbd>i</kbd> use Unicode case-folding, and adds new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
@@ -240,7 +240,7 @@ JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode suppor
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
-> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used as a fallback and flag <kbd>v</kbd>'s rules are enforced so your regexes are forward compatible.
+> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while still enforcing flag <kbd>v</kbd>'s rules. So your regexes are forward compatible.
 
 ### Flag `x`
 
@@ -556,7 +556,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When it's not available, flag <kbd>u</kbd> is automatically used as a fallback (while enforcing <kbd>v</kbd> rules), which extends support to Node.js 12+ and 2019-era browsers (2016-era with polyfills for private class fields and the string `matchAll` method).
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When it's not available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 12+ and 2019-era browsers (2017-era with a Babel build step that transpiles private class fields and the string `matchAll` method).
 
 If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 
