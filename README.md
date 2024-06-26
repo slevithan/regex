@@ -30,6 +30,7 @@ With the `regex` package, JavaScript steps up as one of the very best regex flav
   - [Interpolation contexts](#interpolation-contexts)
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
+- [FAQ](#-faq)
 </details>
 
 ## 💎 Features
@@ -564,6 +565,18 @@ Following are edge cases that rely on modern JavaScript features:
 
 - To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+
+## 🙋 FAQ
+
+<details>
+  <summary><b>How are you comparing regex flavors?</b></summary>
+
+There are many aspects that could be compared, and the claim that JavaScript with the `regex` package is among the best is based on a holistic view. Following are a few key aspects:
+
+1. **Performance:** An important aspect, but not the main one since regexes are generally pretty fast. JavaScript is already strong on regex performance, at least considering V8's Irregexp engine (built into Chrome, Edge, Opera, and Node.js, and even Firefox extracts it from V8) and JavaScriptScore (Safari). However, JavaScript uses a backtracking regex engine that is missing any syntax for backtracking control, which is a major limitation that makes it easy to be vulnerable to ReDoS. The `regex` package adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
+2. **Support for powerful/advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript has stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and `Script_Extensions`). These features are either not supported or not as robust in many other flavors.
+3. **Ability to write readable, maintainable, grammatical patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the `x` (extended) flag that allows insignificant whitespace and comments. The `regex` package not only adds `x` and turns it on by default, but additionally it adds regex subroutines (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
+</details>
 
 ## 🏷️ About
 
