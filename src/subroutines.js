@@ -1,5 +1,5 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
-import {countCaptures, lastOf} from './utils.js';
+import {countCaptures} from './utils.js';
 
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
@@ -217,4 +217,13 @@ function countSubgroups(pattern) {
   let num = 0;
   forEachUnescaped(pattern, String.raw`\(`, () => num++, Context.DEFAULT);
   return num;
+}
+
+/**
+Remove when support for ES2022 string/array method `at` (Node.js 16.6+) is no longer an issue
+@param {string | any[]} strOrArr
+@returns {any}
+*/
+function lastOf(strOrArr) {
+  return strOrArr[strOrArr.length - 1];
 }

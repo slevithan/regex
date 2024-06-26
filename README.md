@@ -1,11 +1,13 @@
 <a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" height="130" alt="regex logo"></a>
 
-`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6 KB minified and brotlied) and supports all ES2024+ regex functionality.
+`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.5 KB minified and brotlied) and supports all ES2024+ regex functionality.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns. With the `regex` package, JavaScript steps up as one of the very best regex flavors.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+
+With the `regex` package, JavaScript steps up as one of the very best regex flavors.
 
 <details>
-  <summary><b>Contents</b></summary>
+  <summary><b>Table of contents</b></summary>
 
 - [Features](#-features)
 - [Examples](#-examples)
@@ -33,7 +35,7 @@ Highlights include support for free spacing and comments, atomic groups via `(?>
 ## 💎 Features
 
 - **A modern regex baseline** so you don't need to continually opt-in to best practices.
-  - Always-on flag <kbd>v</kbd> (or flag <kbd>v</kbd> escaping rules if not supported natively) gives you the best level of Unicode support and strict errors.
+  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors. In environments without <kbd>v</kbd>, it uses flag <kbd>u</kbd> with <kbd>v</kbd>'s rules applied.
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
@@ -105,14 +107,14 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
   <summary>See the four parsing modes</summary>
 
 1. Unicode-unaware (legacy) mode, which you get by default and which can easily and silently create Unicode-related bugs.
-2. Named capture mode, triggered when a named capture appears anywhere in a regex. It changes the meaning of `\k`, octal escapes, and escaped literal digits.
-3. Unicode mode with flag <kbd>u</kbd>, which makes unreserved letter escapes an error, switches to code point based matching (changing the potential handling of the dot, negated shorthands like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd> which improves case-insensitive matching and changes escaping rules within character classes, in addition to adding new features/syntax.
+2. Named capture mode, triggered when a named capture appears anywhere in a regex, changes the meaning of `\k`.
+3. Unicode mode with flag <kbd>u</kbd> applies strict error handling (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code point based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes the behavior of case-insensitive matching, and adds new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd>, an upgrade to <kbd>u</kbd>, changes escaping rules within character classes and fixes case-insensitive matching for doubly-negated `[^\P{…}]`, in addition to adding new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) or emulates its escaping rules (in environments without native flag <kbd>v</kbd> support) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 New regex syntax
 
@@ -229,7 +231,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 <details>
   <summary>🐜 Debugging</summary>
 
-For debugging purposes, you can disable flags <kbd>x</kbd> and <kbd>n</kbd> via experimental options:<br> `` regex({__flagX: false, __flagN: false})`…` ``.
+For debugging purposes, you can disable implicit flags via experimental options:<br> `` regex({__flagX: false, __flagN: false, __flagV: false})`…` ``.
 </details>
 
 ### Flag `v`
@@ -238,7 +240,7 @@ JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode suppor
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
-> In environments where native support for flag <kbd>v</kbd> is not available, flag <kbd>u</kbd> is automatically used instead, while preserving flag <kbd>v</kbd>'s escaping rules.
+> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used as a fallback and flag <kbd>v</kbd>'s rules are enforced so your regexes are forward compatible.
 
 ### Flag `x`
 
@@ -554,13 +556,17 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-- `regex` uses flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. Flag <kbd>u</kbd> is automatically used as a fallback (while preserving flag <kbd>v</kbd>'s escaping rules) in environments without flag <kbd>v</kbd> support, which extends support backward to Node.js 12+. `regex` uses nested character classes when interpolating more than one character at a time *inside character classes*, so interpolation into character classes throws a descriptive error in cases where it's not supported.
+If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
+
+Following are edge cases that rely on modern JavaScript features:
+
+- `regex` uses flag <kbd>v</kbd> (`unicodeSets`), which has had universal browser support since ~mid-2023 ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and is available in Node.js 20+. In environments without native flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used as a fallback while enforcing <kbd>v</kbd>'s rules, which extends support backward to Node.js 12+ and old browsers.
+  - Note that `regex` generates nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is throw when this isn't supported, which can be avoided by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
-- If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
 
 ## 🏷️ About
 
-`regex` was partly inspired by [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which is separated so it can be reused by `regex` extensions.
+`regex` was partly inspired by [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` extensions.
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.

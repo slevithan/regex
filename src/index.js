@@ -109,7 +109,7 @@ function fromTemplate(constructor, options, template, ...values) {
   if (__rake) {
     pp.push(rakePostprocessor);
   }
-  pp.forEach(pp => pattern = pp(pattern));
+  pp.forEach(pp => pattern = pp(pattern, flags));
   return new constructor(pattern, (__flagV ? 'v' : 'u') + flags);
 }
 

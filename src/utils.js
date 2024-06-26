@@ -107,8 +107,8 @@ function getUnbalancedChar(pattern, leftChar, rightChar) {
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
 export function getBreakoutChar(pattern, regexContext, charClassContext) {
   const escapesRemoved = pattern.replace(/\\./gsu, '');
-  // Trailing unescaped `\`. Checking `escapesRemoved.includes('\\')` would also work
-  if (lastOf(escapesRemoved) === '\\') {
+  // Trailing unescaped `\`; checking `.includes('\\')` would also work
+  if (escapesRemoved.endsWith('\\')) {
     return '\\';
   }
   if (regexContext === RegexContext.DEFAULT) {
@@ -324,9 +324,4 @@ export function preprocess(template, values, preprocessor) {
     template: newTemplate,
     values: newValues,
   };
-}
-
-// Remove when ES2022 String/Array method `at` has broader support (Node.js 16.6+)
-export function lastOf(strOrArr) {
-  return strOrArr[strOrArr.length - 1];
 }
