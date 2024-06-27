@@ -564,7 +564,7 @@ The following edge cases rely on modern JavaScript features:
 - To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
-## 🙋🏽‍♀️ FAQ
+## 🙋 FAQ
 
 <details>
   <summary><b>How are you comparing regex flavors?</b></summary>
