@@ -579,14 +579,12 @@ There are many aspects that could be compared, and the claim that JavaScript wit
 <details>
   <summary><b>Can <code>regex</code>'s syntax be extended?</b></summary>
 
-Yes, `regex` supports adding your own extensions. There are two methods for this: postprocessors and alternative constructors:
+Yes, `regex` supports adding your own extensions. There are two methods for this: postprocessors and alternative constructors.
 
-- **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
-- **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called after applying implicit flags and interpolation, but prior to passing the resulting pattern to the `RegExp` (or alternative) constructor. Postprocessors are called with the regex pattern and flags as their first and second arguments, and are expected to return an updated pattern string. The [`regex-utilities`](https://github.com/slevithan/regex-utilities) package can be used to help with processing regex syntax.
+- **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
+- **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying implicit flags and interpolation, but prior to passing the resulting pattern to the `RegExp` (or alternative) constructor. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string.
 
-If desired, you can then make your extension easier to use by wrapping your use of these features in a function or template tag.
-
-For an example of using all of these features, see the (complex) extension [`regex-recursion`](https://github.com/slevithan/regex-recursion). For a simple example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
+You can make your extension easier to use by wrapping your use of these features in a function or template tag. For an example of using all of these features, see extension [`regex-recursion`](https://github.com/slevithan/regex-recursion). For a much simpler example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
 </details>
 
 ## 🏷️ About
