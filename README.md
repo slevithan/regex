@@ -119,7 +119,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -582,9 +582,9 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 Yes, `regex` supports adding your own extensions. There are two methods for this:
 
 1. **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
-2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation, but prior to passing the resulting pattern to the `RegExp` (or alternative) constructor. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string.
+2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
 
-You can make extensions easier to use by wrapping the use of these features in a function or template tag. For an example of using all of these features, see extension [`regex-recursion`](https://github.com/slevithan/regex-recursion). For a much simpler example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
+You can make extensions easier to use by wrapping the use of these features in your own function or template tag. See extension [`regex-recursion`](https://github.com/slevithan/regex-recursion) for an example of using all of these features. For a much simpler example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
 </details>
 
 ## 🏷️ About
