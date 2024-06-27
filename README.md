@@ -4,7 +4,7 @@
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
-With the `regex` package, JavaScript steps up as one of the best regex flavors, competitive with PCRE and Perl and maybe surpassing C++, Java, .NET, Python, and Ruby.
+With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, and maybe surpassing C++, Java, .NET, and Python.
 
 <details>
   <summary><b>Table of contents</b></summary>
@@ -36,7 +36,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors, 
 ## 💎 Features
 
 - **A modern regex baseline** so you don't need to continually opt-in to best practices.
-  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors. In environments without <kbd>v</kbd>, it uses flag <kbd>u</kbd> with <kbd>v</kbd>'s rules applied.
+  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors. In environments without <kbd>v</kbd>, flag <kbd>u</kbd> is used with <kbd>v</kbd>'s rules applied.
   - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
@@ -119,7 +119,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -577,9 +577,9 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 </details>
 
 <details>
-  <summary><b>Can <code>regex</code>'s syntax be extended?</b></summary>
+  <summary><b>Does <code>regex</code> support extensions?</b></summary>
 
-Yes, `regex` supports adding your own extensions. There are two methods for this:
+Yes. There are two methods for this:
 
 1. **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
 2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
