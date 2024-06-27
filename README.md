@@ -4,7 +4,7 @@
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
-With the `regex` package, JavaScript steps up as one of the very best regex flavors, competitive with PCRE and Perl and maybe surpassing C++, Java, .NET, Python, and Ruby.
+With the `regex` package, JavaScript steps up as one of the best regex flavors, competitive with PCRE and Perl and maybe surpassing C++, Java, .NET, Python, and Ruby.
 
 <details>
   <summary><b>Table of contents</b></summary>
@@ -113,13 +113,13 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline template strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the remaining pieces needed to compete with or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -557,16 +557,14 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When it's not available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 12+ and 2019-era browsers (2017-era with a Babel build step that transpiles private class fields and the string `matchAll` method).
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 12+ and 2019-era browsers (2017-era with a Babel build step that transpiles private class fields and the string `matchAll` method).
 
-If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
-
-Following are edge cases that rely on modern JavaScript features:
+The following edge cases rely on modern JavaScript features:
 
 - To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
-## 🙋 FAQ
+## 🙋🏽‍♀️ FAQ
 
 <details>
   <summary><b>How are you comparing regex flavors?</b></summary>
@@ -576,6 +574,19 @@ There are many aspects that could be compared, and the claim that JavaScript wit
 1. **Performance:** An important aspect, but not the main one since regexes are generally pretty fast. JavaScript is already strong on regex performance, at least considering V8's Irregexp engine (built into Chrome, Edge, Opera, and Node.js, and even Firefox extracts it from V8) and JavaScriptScore (Safari). However, JavaScript uses a backtracking regex engine that is missing any syntax for backtracking control, which is a major limitation that makes it easy to be vulnerable to ReDoS. The `regex` package adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
 2. **Support for powerful/advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript has stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and `Script_Extensions`). These features are either not supported or not as robust in many other flavors.
 3. **Ability to write readable, maintainable, grammatical patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the `x` (extended) flag that allows insignificant whitespace and comments. The `regex` package not only adds `x` and turns it on by default, but additionally it adds regex subroutines (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
+</details>
+
+<details>
+  <summary><b>Can <code>regex</code>'s syntax be extended?</b></summary>
+
+Yes, `regex` supports adding your own extensions. There are two methods for this: postprocessors and alternative constructors:
+
+- **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``.
+- **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called after applying implicit flags and interpolation, but prior to passing the resulting pattern to the `RegExp` (or alternative) constructor. Postprocessors are called with the regex pattern and flags as their first and second arguments, and are expected to return an updated pattern string. The [`regex-utilities`](https://github.com/slevithan/regex-utilities) package can be used to help with processing regex syntax.
+
+If desired, you can then make your extension easier to use by wrapping your use of these features in a function or template tag.
+
+For an example of using all of these features, see the (complex) extension [`regex-recursion`](https://github.com/slevithan/regex-recursion). For a simple example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
 </details>
 
 ## 🏷️ About
