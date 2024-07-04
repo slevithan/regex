@@ -1,6 +1,6 @@
 <a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" height="130" alt="regex logo"></a>
 
-`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.5 KB minified and brotlied) and supports all ES2024+ regex functionality.
+`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.5 KB minified and brotlied) and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -514,32 +514,32 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
   <tr>
     <td>Default<br><br><br></td>
-    <td><code>regex`${'^.+'}`</code><br><br><br></td>
+    <td><code>regex<wbr>`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Flags localized</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[[…]]</code>, etc.</td>
-    <td><code>regex`[${'a-z'}]`</code><br><br></td>
+    <td><code>regex<wbr>`[${'a-z'}]`</code><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br></td>
     <td><i>Error</i> <br><br><br></td>
   </tr>
   <tr>
     <td>Interval quantifier: <code>{…}</code></td>
-    <td><code>regex`.{1,${5}}`</code></td>
+    <td><code>regex<wbr>`.{1,${5}}`</code></td>
     <td rowspan="3">•&nbsp;Sandboxed <br> •&nbsp;Escaped <br><br><br></td>
     <td rowspan="3">•&nbsp;Sandboxed <br><br><br><br></td>
     <td rowspan="3"><i>Error</i> <br><br><br><br></td>
   </tr>
   <tr>
     <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
-    <td><code>regex`\u{${'A0'}}`</code></td>
+    <td><code>regex<wbr>`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
     <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
-    <td><code>regex`…\k<${'a'}>`</code></td>
+    <td><code>regex<wbr>`…\k<${'a'}>`</code></td>
   </tr>
 </table>
 
@@ -551,7 +551,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## ⚡ Performance
 
-`regex` transpiles its input to native `RegExp` instances. Therefore regexes built with `regex` perform just as fast as native regular expressions.
+`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform just as fast as native regular expressions. `regex` can also be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
 For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
 
