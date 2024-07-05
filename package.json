@@ -5,16 +5,23 @@
   "author": "Steven Levithan",
   "license": "MIT",
   "type": "module",
-  "exports": "./src/index.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
   "scripts": {
     "build": "esbuild src/index.js --bundle --minify --outfile=dist/regex.min.js --global-name=Regex",
+    "types": "npx --package=typescript tsc src/index.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
     "pretest": "npm run build",
     "test": "jasmine",
     "prepublish": "npm test"
   },
   "files": [
     "src",
-    "dist"
+    "dist",
+    "types"
   ],
   "repository": {
     "type": "git",

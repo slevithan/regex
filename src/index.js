@@ -28,9 +28,11 @@ Can be called in multiple ways:
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 
 @type {{
-  (flags?: string) => (TemplateStringsArray, ...values) => RegExp;
-  (options: RegexTagOptions) => (TemplateStringsArray, ...values) => RegExp;
-  (template: TemplateStringsArray, ...values) => RegExp;
+  (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
+
+  (flags?: string) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
+
+  (options: RegexTagOptions) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
 }}
 */
 const regex = function(first, ...values) {
@@ -51,7 +53,7 @@ const regex = function(first, ...values) {
 
 /**
 Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
-@param {RegExpConstructor | (pattern: string, flags: string) => RegExp} constructor
+@param {new (pattern: string, flags: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...any} values
