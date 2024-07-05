@@ -115,7 +115,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and, in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward and backward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 New regex syntax
 
@@ -241,7 +241,7 @@ JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode suppor
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
-> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while still enforcing flag <kbd>v</kbd>'s rules. So your regexes are forward compatible.
+> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while still enforcing flag <kbd>v</kbd>'s rules. So your regexes are forward and backward compatible.
 
 ### Flag `x`
 
@@ -514,32 +514,32 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
   <tr>
     <td>Default<br><br><br></td>
-    <td><code>regex<wbr>`${'^.+'}`</code><br><br><br></td>
+    <td><code>regex`${'^.+'}`</code><br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Flags localized</td>
   </tr>
   <tr>
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[[…]]</code>, etc.</td>
-    <td><code>regex<wbr>`[${'a-z'}]`</code><br><br></td>
+    <td><code>regex`[${'a-z'}]`</code><br><br></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br></td>
     <td><i>Error</i> <br><br><br></td>
   </tr>
   <tr>
     <td>Interval quantifier: <code>{…}</code></td>
-    <td><code>regex<wbr>`.{1,${5}}`</code></td>
+    <td><code>regex`.{1,${5}}`</code></td>
     <td rowspan="3">•&nbsp;Sandboxed <br> •&nbsp;Escaped <br><br><br></td>
     <td rowspan="3">•&nbsp;Sandboxed <br><br><br><br></td>
     <td rowspan="3"><i>Error</i> <br><br><br><br></td>
   </tr>
   <tr>
     <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
-    <td><code>regex<wbr>`\u{${'A0'}}`</code></td>
+    <td><code>regex`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
     <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
-    <td><code>regex<wbr>`…\k<${'a'}>`</code></td>
+    <td><code>regex`…\k<${'a'}>`</code></td>
   </tr>
 </table>
 
@@ -551,7 +551,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## ⚡ Performance
 
-`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform just as fast as native regular expressions. `regex` can also be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
+`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform just as fast as native regular expressions. It can also be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
 For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
 
