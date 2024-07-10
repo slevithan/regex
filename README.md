@@ -183,12 +183,12 @@ regex`\b \g<byte> (\.\g<byte>){3} \b
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
 `
 
-// Matches a record with several date fields
+// Matches a record with several date fields and captures each value
 regex`
-  ^ Name:\   (?<name>.*) \n
-  Born:\     \g<date>    \n
-  Admitted:\ \g<date>    \n
-  Released:\ \g<date>    $
+  ^ Name:\   (?<name>.*)           \n
+  Born:\     (?<born>    \g<date>) \n
+  Admitted:\ (?<admitted>\g<date>) \n
+  Released:\ (?<released>\g<date>) $
 
   # Define subpatterns
   ( (?<date>  \g<year>-\g<month>-\g<day>)
@@ -303,7 +303,7 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also prevents this even without flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also always prevents this, despite not having flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
 > Aside: Flag <kbd>n</kbd>'s behavior also enables `regex` to emulate atomic groups, subroutines, and recursion.
 
@@ -370,7 +370,7 @@ Some examples of where context awareness comes into play:
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
 
-These and other issues (including the effects of current and [future](https://github.com/tc39/proposal-regexp-x-mode) flags like `x`) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle these kinds of issues.
+These and other issues (including the effects of current and potential future flags like <kbd>x</kbd>) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle these kinds of issues.
 
 `regex` solves all of this via context awareness. So instead of remembering anything above, you should just switch to always safely escaping regex syntax via `regex`.
 
@@ -543,21 +543,21 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
-- *Atomized* means that that something is treated as a complete unit; it isn't related to the *atomic groups* feature. Example: In default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, set operators (union, subtraction, intersection) apply to the entire atom.
+- *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. Example: In default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
-- Character classes have a sub-context on the borders of ranges, explained in [*Interpolating partial patterns*](#interpolating-partial-patterns). Only one character node (ex: `a` or `\u0061`) can be interpolated at these positions.
+- Character classes have a sub-context on the borders of ranges. Only one character node (ex: `a` or `\u0061`) can be interpolated at these positions.
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
 ## ⚡ Performance
 
-`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform just as fast as native regular expressions. It can also be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
+`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform equally fast as native regular expressions. `regex` calls can also be transpiled via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
 For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> has had universal browser support since ~mid-2023 and is available in Node.js 20+. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 12+ and 2019-era browsers (2017-era with a Babel build step that transpiles private class fields and the string `matchAll` method).
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and Node.js 20+. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 12+ and 2019-era browsers (2017-era with a build step that transpiles private class fields and the string `matchAll` method).
 
 The following edge cases rely on modern JavaScript features:
 
