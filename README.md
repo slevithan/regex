@@ -60,7 +60,7 @@ const record = regex('gm')`^
   Released: \g<date>
 $`;
 
-// Atomic groups; avoid ReDoS from the nested, overlapping quantifier
+// Atomic group. Avoids ReDoS from the nested, overlapping quantifier
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware and safe interpolation
@@ -76,9 +76,10 @@ const re = regex('m')`
   ${partial('^ a.b $')}
 `;
 
-// Adjusts backreferences in interpolated regexes
-regex`^ ${/(dog)\1/} ${/(cat)\1/} $`;
-// → /^(dog)\1(cat)\2$/v
+// Adjusts numbered backreferences in interpolated regexes
+const double = /(\w)\1/;
+regex`^ ${double} ${double} $`;
+// → /^(\w)\1(\w)\2$/v
 ```
 
 ## 🕹️ Install and use
@@ -579,7 +580,7 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 <details>
   <summary><b>Does <code>regex</code> support extensions?</b></summary>
 
-Yes. There are two methods for this:
+Yes. There are two approaches for this:
 
 1. **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
 2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
