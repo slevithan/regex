@@ -219,12 +219,21 @@ export function getEndContextForIncompletePattern(partialPattern, {
   };
 }
 
+/**
+@param {string} pattern
+@returns {number}
+*/
 export function countCaptures(pattern) {
   let num = 0;
   forEachUnescaped(pattern, String.raw`\((?:(?!\?)|\?<[^>]+>)`, () => num++, Context.DEFAULT);
   return num;
 }
 
+/**
+@param {string} pattern
+@param {number} precedingCaptures
+@returns {string}
+*/
 export function adjustNumberedBackrefs(pattern, precedingCaptures) {
   return replaceUnescaped(
     pattern,

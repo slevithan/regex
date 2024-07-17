@@ -86,7 +86,7 @@ function fromTemplate(constructor, options, template, ...values) {
   let runningContext = {};
   // Intersperse template raw strings and values
   template.raw.forEach((raw, i) => {
-    const wrapEscapedStr = template.raw[i] || template.raw[i + 1];
+    const wrapEscapedStr = !!(template.raw[i] || template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
@@ -114,6 +114,15 @@ function fromTemplate(constructor, options, template, ...values) {
   return new constructor(pattern, (__flagV ? 'v' : 'u') + flags);
 }
 
+/**
+@param {any} value
+@param {string} flags
+@param {string} regexContext
+@param {string} charClassContext
+@param {boolean} wrapEscapedStr
+@param {number} precedingCaptures
+@returns {string}
+*/
 function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures) {
   if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');

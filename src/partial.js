@@ -13,7 +13,7 @@ Can be called in two ways:
 1. `partial(value)` - For strings or values coerced to strings
 2. `` partial`…` `` - Shorthand for ``partial(String.raw`…`)``
 @param {any} first
-@param {...any} [values] Values to fill the template holes.
+@param {...any} values Values to fill the template holes.
 @returns {PartialPattern}
 */
 export function partial(first, ...values) {
