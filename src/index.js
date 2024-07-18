@@ -1,8 +1,8 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompletePattern, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
-import {PartialPattern, partial} from './partial.js';
+import {Pattern, pattern} from './pattern.js';
 import {atomicGroupsPostprocessor} from './atomic-groups.js';
 import {subroutinesPostprocessor} from './subroutines.js';
 import {backcompatPostprocessor} from './backcompat.js';
@@ -10,7 +10,7 @@ import {backcompatPostprocessor} from './backcompat.js';
 /**
 @typedef {Object} RegexTagOptions
 @prop {string} [flags]
-@prop {Array<(pattern: string, flags: string) => string>} [postprocessors]
+@prop {Array<(expression: string, flags: string) => string>} [postprocessors]
 @prop {boolean} [__flagN]
 @prop {boolean} [__flagV]
 @prop {boolean} [__flagX]
@@ -18,21 +18,21 @@ import {backcompatPostprocessor} from './backcompat.js';
 */
 
 /**
-Template tag for constructing a UnicodeSets-mode RegExp with advanced features and context-aware
-interpolation of regexes, escaped strings, and partial patterns.
+Template tag for constructing a regex with advanced features and context-aware interpolation of
+regexes, strings, and patterns.
 
 Can be called in multiple ways:
 1. `` regex`…` `` - Regex pattern as a raw string.
-2. `` regex('gis')`…` `` - To specify flags.
-3. `` regex({flags: 'gis'})`…` `` - With options.
+2. `` regex('gi')`…` `` - To specify flags.
+3. `` regex({flags: 'gi'})`…` `` - With options.
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 
 @type {{
-  (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
+  (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
 
-  (flags?: string) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
+  (flags?: string) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
 
-  (options: RegexTagOptions) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | PartialPattern>) => RegExp,
+  (options: RegexTagOptions) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
 }}
 */
 const regex = function(first, ...values) {
@@ -53,7 +53,7 @@ const regex = function(first, ...values) {
 
 /**
 Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
-@param {new (pattern: string, flags: string) => RegExp} constructor
+@param {new (expression: string, flags: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...any} values
@@ -82,7 +82,7 @@ function fromTemplate(constructor, options, template, ...values) {
   }
 
   let precedingCaptures = 0;
-  let pattern = '';
+  let expression = '';
   let runningContext = {};
   // Intersperse template raw strings and values
   template.raw.forEach((raw, i) => {
@@ -91,13 +91,13 @@ function fromTemplate(constructor, options, template, ...values) {
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
     // cases a following interpolated value would always be atomized
-    pattern += sandboxUnsafeNulls(raw, Context.CHAR_CLASS);
-    runningContext = getEndContextForIncompletePattern(pattern, runningContext);
+    expression += sandboxUnsafeNulls(raw, Context.CHAR_CLASS);
+    runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
       const value = values[i];
-      pattern += interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
-      if (value instanceof RegExp || value instanceof PartialPattern) {
+      expression += interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+      if (value instanceof RegExp || value instanceof Pattern) {
         precedingCaptures += countCaptures(value.source || String(value));
       }
     }
@@ -110,8 +110,8 @@ function fromTemplate(constructor, options, template, ...values) {
   if (__rake) {
     pp.push(rakePostprocessor);
   }
-  pp.forEach(pp => pattern = pp(pattern, flags));
-  return new constructor(pattern, (__flagV ? 'v' : 'u') + flags);
+  pp.forEach(pp => expression = pp(expression, flags));
+  return new constructor(expression, (__flagV ? 'v' : 'u') + flags);
 }
 
 /**
@@ -132,17 +132,17 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     // break sandboxing) since other errors would be handled by the invalid generated regex syntax
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
-  const isPartial = value instanceof PartialPattern;
+  const isPattern = value instanceof Pattern;
   let escapedValue;
   if (!(value instanceof RegExp)) {
     value = String(value);
-    if (!isPartial) {
+    if (!isPattern) {
       escapedValue = escapeV(
         value,
         regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT
       );
     }
-    // Check escaped values (not just partials) since possible breakout char `>` isn't escaped
+    // Check escaped values (not just patterns) since possible breakout char `>` isn't escaped
     const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
     if (breakoutChar) {
       throw new Error(`Unescaped stray "${breakoutChar}" in the interpolated value would have side effects outside it`);
@@ -156,13 +156,13 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     charClassContext === CharClassContext.ENCLOSED_TOKEN ||
     charClassContext === CharClassContext.Q_TOKEN
   ) {
-    return isPartial ? value : escapedValue;
+    return isPattern ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
-    if (isPartial) {
+    if (isPattern) {
       if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
-        // Sandboxing so we don't change the chars outside the partial into being part of an
-        // operation they didn't initiate. Same problem as starting a partial with a quantifier
-        throw new Error('Cannot use range or set operator at boundary of partial; move the operation into the partial or the operator outside of it');
+        // Sandboxing so we don't change the chars outside the pattern into being part of an
+        // operation they didn't initiate. Same problem as starting a pattern with a quantifier
+        throw new Error('Cannot use range or set operator at boundary of interpolated pattern; move the operation into the pattern or the operator outside of it');
       }
       const sandboxedValue = sandboxLoneCharClassCaret(sandboxLoneDoublePunctuatorChar(value));
       // Atomize via nested character class `[…]` if it contains implicit or explicit union (check
@@ -179,7 +179,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     // Sandbox and atomize; if we used a pattern modifier it has the same effect
     return transformed.usedModifier ? backrefsAdjusted : `(?:${backrefsAdjusted})`;
   }
-  if (isPartial) {
+  if (isPattern) {
     // Sandbox and atomize
     return `(?:${value})`;
   }
@@ -241,4 +241,4 @@ function transformForLocalFlags(re, outerFlags) {
   return {value};
 }
 
-export {regex, partial};
+export {regex, pattern};

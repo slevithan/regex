@@ -56,8 +56,8 @@ describe('regex', () => {
   });
 
   it('should allow binding to any constructor', () => {
-    function fn(pattern, flags) {
-      return new RegExp(pattern, flags);
+    function fn(expression, flags) {
+      return new RegExp(expression, flags);
     }
     expect(regex.bind(fn)`a`).toBeInstanceOf(RegExp);
     expect('a').toMatch(regex.bind(fn)`a`);
@@ -73,8 +73,8 @@ describe('regex', () => {
   });
 
   it('should allow adding postprocessors', () => {
-    const wiggle = pattern => pattern.replace(/~/g, 'wiggle');
-    const removeDoubleChars = pattern => pattern.replace(/(\w)\1/g, '$1');
+    const wiggle = expression => expression.replace(/~/g, 'wiggle');
+    const removeDoubleChars = expression => expression.replace(/(\w)\1/g, '$1');
     expect('wigle').toMatch(regex({postprocessors: [wiggle, removeDoubleChars]})`^~$`);
   });
 

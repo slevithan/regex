@@ -14,16 +14,16 @@ const token = new RegExp(String.raw`
 /**
 Applies flag v rules when using flag u, for forward compatibility.
 Assumes flag u and doesn't worry about syntax errors that are caught by it.
-@param {string} pattern
+@param {string} expression
 @param {string} flags
 @returns {string}
 */
-export function backcompatPostprocessor(pattern, flags) {
+export function backcompatPostprocessor(expression, flags) {
   const unescapedLiteralHyphenMsg = 'Invalid unescaped "-" in character class';
   let inCharClass = false;
   let inNegatedCharClass = false;
   let result = '';
-  for (const {0: m, groups: {dp, vOnlyEscape}} of pattern.matchAll(token)) {
+  for (const {0: m, groups: {dp, vOnlyEscape}} of expression.matchAll(token)) {
     if (m[0] === '[') {
       if (inCharClass) {
         throw new Error('Invalid nested character class when flag v not supported; possibly from interpolation');

@@ -1,4 +1,4 @@
-import {RegexContext, getEndContextForIncompletePattern, noncapturingStart} from './utils.js';
+import {RegexContext, getEndContextForIncompleteExpression, noncapturingStart} from './utils.js';
 
 const token = new RegExp(String.raw`
 ${noncapturingStart}
@@ -7,14 +7,14 @@ ${noncapturingStart}
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
+// Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
 export function flagNPreprocessor(value, runningContext) {
   value = String(value);
-  let pattern = '';
+  let expression = '';
   let transformed = '';
   for (const {0: m, groups: {backrefNum}} of value.matchAll(token)) {
-    pattern += m;
-    runningContext = getEndContextForIncompletePattern(pattern, runningContext);
+    expression += m;
+    runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext} = runningContext;
     if (regexContext === RegexContext.DEFAULT) {
       if (m === '(') {

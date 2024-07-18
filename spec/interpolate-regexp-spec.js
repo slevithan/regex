@@ -59,11 +59,11 @@ describe('interpolation: regexes', () => {
       expect('aabb').toMatch(regex`^${/(.)\1/}${/(.)\1/}$`);
     });
 
-    it('should adjust the backreferences of interpolated regexes based on preceding captures in a partial', function() {
-      expect('aa').toMatch(regex`^${partial`(?<n>)`}${/(.)\1/}$`);
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated pattern', function() {
+      expect('aa').toMatch(regex`^${pattern`(?<n>)`}${/(.)\1/}$`);
     });
 
-    it('should treat pattern modifiers as noncapturing', () => {
+    it('should treat pattern modifiers as noncapturing when adjusting backreferences', () => {
       if (patternModsSupported) {
         expect('abb').toMatch(regex`^(?i:a)${/(b)\1/}$`);
       } else {

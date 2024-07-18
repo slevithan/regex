@@ -2,12 +2,12 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {noncapturingStart} from './utils.js';
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {string}
 */
-export function atomicGroupsPostprocessor(pattern) {
-  if (!hasUnescaped(pattern, '\\(\\?>', Context.DEFAULT)) {
-    return pattern;
+export function atomicGroupsPostprocessor(expression) {
+  if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
+    return expression;
   }
   const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingStart})|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
   const aGDelim = '(?>';
@@ -23,7 +23,7 @@ export function atomicGroupsPostprocessor(pattern) {
     let inAG = false;
     let match;
     token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
-    while (match = token.exec(pattern)) {
+    while (match = token.exec(expression)) {
       const {0: m, index: pos, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
@@ -42,11 +42,11 @@ export function atomicGroupsPostprocessor(pattern) {
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
-            // Replace pattern and use `\k<$$N>` as a temporary shield for the backref since
-            // numbered backrefs are prevented separately
-            pattern = `${pattern.slice(0, aGPos)}${emulatedAGDelim}${
-              pattern.slice(aGPos + aGDelim.length, pos)
-            }))\\k<$$${aGCount + capturingGroupCount}>)${pattern.slice(pos + 1)}`;
+            // Replace `expression` and use `\k<$$N>` as a temporary shield for the backref
+            // since numbered backrefs are prevented separately
+            expression = `${expression.slice(0, aGPos)}${emulatedAGDelim}${
+                expression.slice(aGPos + aGDelim.length, pos)
+              }))\\k<$$${aGCount + capturingGroupCount}>)${expression.slice(pos + 1)}`;
             hasProcessedAG = true;
             break;
           }
@@ -67,11 +67,11 @@ export function atomicGroupsPostprocessor(pattern) {
   // contains additional atomic groups
   } while (hasProcessedAG);
   // Replace `\k<$$N>` added as a shield from the check for invalid numbered backrefs
-  pattern = replaceUnescaped(
-    pattern,
+  expression = replaceUnescaped(
+    expression,
     String.raw`\\k<\$\$(?<backrefNum>\d+)>`,
     ({groups: {backrefNum}}) => `\\${backrefNum}`,
     Context.DEFAULT
   );
-  return pattern;
+  return expression;
 }

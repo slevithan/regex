@@ -1,5 +1,5 @@
 describe('subroutines', () => {
-  it('should match the pattern within the referenced group', () => {
+  it('should match the expression within the referenced group', () => {
     expect('aa').toMatch(regex`^(?<n>a)\g<n>$`);
     expect('babab').toMatch(regex`^b(?<n>a)b\g<n>b$`);
   });

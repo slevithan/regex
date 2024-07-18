@@ -1,3 +1,3 @@
-import {regex, partial} from '../../src/index.js';
+import {regex, pattern} from '../../src/index.js';
 
-Object.assign(globalThis, {regex, partial});
+Object.assign(globalThis, {regex, pattern});

@@ -14,22 +14,22 @@ ${subroutinePattern}
 `.replace(/\s+/g, ''), 'gsu');
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {string}
 */
-export function subroutinesPostprocessor(pattern) {
-  if (!hasUnescaped(pattern, '\\\\g<', Context.DEFAULT)) {
-    return pattern;
+export function subroutinesPostprocessor(expression) {
+  if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
+    return expression;
   }
-  const capturingGroups = getNamedCapturingGroups(pattern);
+  const capturingGroups = getNamedCapturingGroups(expression);
   const backrefIncrements = [0];
-  const numCapturesBeforeFirstReferencedBySubroutine = countCapturesBeforeFirstReferencedBySubroutine(pattern);
+  const numCapturesBeforeFirstReferencedBySubroutine = countCapturesBeforeFirstReferencedBySubroutine(expression);
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let openSubroutinesMap = new Map();
   let openSubroutinesStack = [];
   let numCharClassesOpen = 0;
-  let result = pattern;
+  let result = expression;
   let match;
   token.lastIndex = 0;
   while (match = token.exec(result)) {
@@ -117,7 +117,7 @@ export function subroutinesPostprocessor(pattern) {
           }
           if (found) {
             // Point to the group, then let normal renumbering work in the next loop iteration
-            const adjusted = `\\${getCaptureNum(pattern, backrefName)}`;
+            const adjusted = `\\${getCaptureNum(expression, backrefName)}`;
             result = spliceStr(result, pos, m, adjusted);
             token.lastIndex -= m.length;
           }
@@ -140,18 +140,18 @@ export function subroutinesPostprocessor(pattern) {
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {number}
 */
-function countCapturesBeforeFirstReferencedBySubroutine(pattern) {
+function countCapturesBeforeFirstReferencedBySubroutine(expression) {
   const subroutines = new Set();
-  forEachUnescaped(pattern, subroutinePattern, ({groups: {subroutineName}}) => {
+  forEachUnescaped(expression, subroutinePattern, ({groups: {subroutineName}}) => {
     subroutines.add(subroutineName);
   }, Context.DEFAULT);
   let num = 0;
   let pos = 0;
   let match;
-  while (match = execUnescaped(pattern, capturingStartPattern, pos, Context.DEFAULT)) {
+  while (match = execUnescaped(expression, capturingStartPattern, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
     if (subroutines.has(captureName)) {
       break;
@@ -163,15 +163,15 @@ function countCapturesBeforeFirstReferencedBySubroutine(pattern) {
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @param {string} groupName
 @returns {number}
 */
-function getCaptureNum(pattern, groupName) {
+function getCaptureNum(expression, groupName) {
   let num = 0;
   let pos = 0;
   let match;
-  while (match = execUnescaped(pattern, capturingStartPattern, pos, Context.DEFAULT)) {
+  while (match = execUnescaped(expression, capturingStartPattern, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
     num++;
     if (captureName === groupName) {
@@ -194,28 +194,33 @@ function spliceStr(str, pos, oldValue, newValue) {
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {Map<string, Array<{contents: string, endPos: number}>>}
 */
-function getNamedCapturingGroups(pattern) {
+function getNamedCapturingGroups(expression) {
   const capturingGroups = new Map();
-  forEachUnescaped(pattern, String.raw`\(\?<(?<captureName>[^>]+)>`, ({0: m, index, groups: {captureName}}) => {
-    // If there are duplicate capture names, subroutines refer to the first instance of the given
-    // group (matching the behavior of PCRE and Perl)
-    if (!capturingGroups.has(captureName)) {
-      capturingGroups.set(captureName, getGroupContents(pattern, index + m.length));
-    }
-  }, Context.DEFAULT);
+  forEachUnescaped(
+    expression,
+    String.raw`\(\?<(?<captureName>[^>]+)>`,
+    ({0: m, index, groups: {captureName}}) => {
+      // If there are duplicate capture names, subroutines refer to the first instance of the given
+      // group (matching the behavior of PCRE and Perl)
+      if (!capturingGroups.has(captureName)) {
+        capturingGroups.set(captureName, getGroupContents(expression, index + m.length));
+      }
+    },
+    Context.DEFAULT
+  );
   return capturingGroups;
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {number}
 */
-function countSubgroups(pattern) {
+function countSubgroups(expression) {
   let num = 0;
-  forEachUnescaped(pattern, String.raw`\(`, () => num++, Context.DEFAULT);
+  forEachUnescaped(expression, String.raw`\(`, () => num++, Context.DEFAULT);
   return num;
 }
 

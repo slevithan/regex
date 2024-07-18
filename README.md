@@ -51,7 +51,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 ## 🪧 Examples
 
 ```js
-import {regex, partial} from 'regex';
+import {regex, pattern} from 'regex';
 
 // Subroutines
 const record = regex('gm')`^
@@ -73,7 +73,7 @@ const re = regex('m')`
   ^ ${'a.b'}+ $
   |
   # This string is contextually sandboxed but not escaped
-  ${partial('^ a.b $')}
+  ${pattern('^ a.b $')}
 `;
 
 // Adjusts numbered backreferences in interpolated regexes
@@ -89,7 +89,7 @@ npm install regex
 ```
 
 ```js
-import {regex, partial} from 'regex';
+import {regex, pattern} from 'regex';
 ```
 
 In browsers:
@@ -97,7 +97,7 @@ In browsers:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
 <script>
-  const {regex, partial} = Regex;
+  const {regex, pattern} = Regex;
 </script>
 ```
 
@@ -267,8 +267,8 @@ const re = regex`
   # whitespace by embedding it as a string
   ${' '}+
 
-  # Partials are directly embedded, so they use free spacing
-  ${partial`\d + | [a - z]`}
+  # Patterns are directly embedded, so they use free spacing
+  ${pattern`\d + | [a - z]`}
 
   # Interpolated regexes use their own flags, so they preserve their whitespace
   ${/^Hakuna matata$/m}
@@ -384,13 +384,13 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
 
-For all of these cases, you can interpolate `partial(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` partial`…` `` as a tag, as shorthand for ``partial(String.raw`…`)``.
+For all of these cases, you can interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 
-Apart from edge cases, `partial` just embeds the provided string or other value directly. But because it handles the edge cases, partial patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
+Apart from edge cases, `pattern` just embeds the provided string or other value directly. But because it handles the edge cases, patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
-> As with all interpolation in `regex`, partials are sandboxed and treated as complete units. This is relevant e.g. if a partial is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range or set operator.
+> As with all interpolation in `regex`, patterns are sandboxed and treated as complete units. This is relevant e.g. if a pattern is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range, subtraction, or intersection operator.
 
-If you want to understand the handling of partial patterns more deeply, let's look at some edge cases…
+If you want to understand the handling of interpolated patterns more deeply, let's look at some edge cases…
 
 <details>
   <summary>👉 <b>Show me some edge cases</b></summary>
@@ -398,37 +398,37 @@ If you want to understand the handling of partial patterns more deeply, let's lo
 First, let's consider:
 
 ```js
-regex`[${partial`^`}]`
-regex`[a${partial`^`}]`
+regex`[${pattern`^`}]`
+regex`[a${pattern`^`}]`
 ```
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` partial`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
+Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
-> If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the partial.
+> If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the pattern.
 
-Moving on, the following lines all throw because otherwise the partial patterns would break out of their interpolation sandboxes and change the meaning of their surrounding patterns:
+Moving on, the following lines all throw because otherwise the embedded patterns would break out of their interpolation sandboxes and change the meaning of surrounding syntax:
 
 ```js
-regex`(${partial(')')})`
-regex`[${partial(']')}]`
-regex`[${partial('a\\')}]]`
+regex`(${pattern(')')})`
+regex`[${pattern(']')}]`
+regex`[${pattern('a\\')}]]`
 ```
 
 But these are fine since they don't break out:
 
 ```js
-regex`(${partial('()')})`
-regex`[\w--${partial('[_]')}]`
-regex`[${partial('\\\\')}]`
+regex`(${pattern('()')})`
+regex`[\w--${pattern('[_]')}]`
+regex`[${pattern('\\\\')}]`
 ```
 
-Partials can be embedded within any token scope:
+Patterns can be embedded within any token scope:
 
 ```js
-// Not using `partial` for values that are not escaped anyway, but the behavior
-// would be the same if providing a partial
+// Not using `pattern` for values that are not escaped anyway, but the behavior
+// would be the same if you did
 regex`.{1,${6}}`
 regex`\p{${'Letter'}}`
 regex`\u{${'000A'}}`
@@ -440,25 +440,25 @@ regex`[\w--${'_'}]`
 But again, changing the meaning or error status of characters outside the interpolation is an error:
 
 ```js
-// Not using `partial` for values that are not escaped anyway
+// Not using `pattern` for values that are not escaped anyway
 /* 1.*/ regex`\u${'000A'}`
-/* 2.*/ regex`\u{${partial`A}`}`
-/* 3.*/ regex`(${partial`?:`}…)`
+/* 2.*/ regex`\u{${pattern`A}`}`
+/* 3.*/ regex`(${pattern`?:`}…)`
 ```
 
 These last examples are all errors due to the corresponding reasons below:
 
 1. This is an uncompleted `\u` token (which is an error) followed by the tokens `0`, `0`, `0`, `A`. That's because the interpolation doesn't happen within an enclosed `\u{…}` context.
-2. The unescaped `}` within the partial is not allowed to break out of its interpolation sandbox.
+2. The unescaped `}` within the interpolated pattern is not allowed to break out of its sandbox.
 3. The group opening `(` can't be quantified with `?`.
 
-> Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the partial.
+> Characters outside the interpolation such as a preceding, unescaped `\` or an escaped number also can't change the meaning of tokens inside the embedded pattern.
 
 And since interpolated values are handled as complete units, consider the following:
 
 ```js
 // This works fine
-regex`[\0-${partial`\cZ`}]`
+regex`[\0-${pattern`\cZ`}]`
 
 // But this is an error since you can't create a range from 'a' to the set 'de'
 regex`[a-${'de'}]`
@@ -476,22 +476,26 @@ regex`[a-${'d'}e]`
 
 ```js
 // Instead of
-new RegExp(`^(?:${arr.map(RegExp.escape).join('|')})$`)
+new RegExp(`^(?:${
+  arr.map(RegExp.escape).join('|')
+})$`)
 
 // You can say
-regex`^${partial(
+regex`^${pattern(
   arr.map(a => regex`${a}`.source).join('|')
 )}$`
 
-// And you could add your own sugar that returns a partial
+// And you could add your own sugar that returns a `pattern` value
 regex`^${anyOfEscaped(arr)}$`
 
-// You could do the same thing without `partial` by calling `regex` as a
+// You could do the same thing without `pattern` by calling `regex` as a
 // function instead of using it with backticks, then assembling the arguments
 // list dynamically and holding your nose
 regex({raw: ['^(', ...Array(arr.length - 1).fill('|'), ')$']}, ...arr)
 ```
 </details>
+
+> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`. So, if you wanted to, you could use it anywhere values are coerced to strings.
 
 ### Interpolation principles
 
@@ -510,7 +514,7 @@ The above descriptions of interpolation might feel complex. But there are three 
     <th>Context</th>
     <th>Example</th>
     <th>String / coerced</th>
-    <th>Partial pattern</th>
+    <th>Pattern</th>
     <th>RegExp</th>
   </tr>
   <tr>
@@ -562,7 +566,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 The following edge cases rely on modern JavaScript features:
 
-- To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token partials/strings into character classes.
+- To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome, Edge, and Opera 125+. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ

@@ -16,10 +16,10 @@ describe('flag n', () => {
     expect(() => regex`()\1`).toThrow();
   });
 
-  it('should not allow numbered backreferences within partials', function() {
-    expect(() => regex`${partial`()\1`}`).toThrow();
-    expect(() => regex`()${partial`\1`}`).toThrow();
-    expect(() => regex`${partial`()`}\1`).toThrow();
+  it('should not allow numbered backreferences within interpolated patterns', function() {
+    expect(() => regex`${pattern`()\1`}`).toThrow();
+    expect(() => regex`()${pattern`\1`}`).toThrow();
+    expect(() => regex`${pattern`()`}\1`).toThrow();
   });
 
   it('should not apply to interpolated regexes', () => {

@@ -1,5 +1,5 @@
 import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
-import {PartialPattern, partial} from './partial.js';
+import {Pattern, pattern} from './pattern.js';
 
 export const RegexContext = {
   DEFAULT: 'R_DEFAULT',
@@ -83,16 +83,16 @@ Converts `\0` tokens to `\u{0}` in the given context.
 @returns {string}
 */
 export function sandboxUnsafeNulls(str, context) {
-  // regex`[\0${0}]` and regex`[${partial`\0`}0]` can't be guarded against via nested `[…]`
+  // regex`[\0${0}]` and regex`[${pattern`\0`}0]` can't be guarded against via nested `[…]`
   // sandboxing in character classes if the interpolated value doesn't contain union (since it
-  // might be placed on a range boundary). So escape \0 in character classes as \u{0}
+  // might be placed on a range boundary). So escape `\0` in character classes as `\u{0}`
   return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', context);
 }
 
 // No special handling for escaped versions of the characters
-function getUnbalancedChar(pattern, leftChar, rightChar) {
+function getUnbalancedChar(expression, leftChar, rightChar) {
   let numOpen = 0;
-  for (const [m] of pattern.matchAll(new RegExp(`[${escapeV(leftChar + rightChar, Context.CHAR_CLASS)}]`, 'g'))) {
+  for (const [m] of expression.matchAll(new RegExp(`[${escapeV(leftChar + rightChar, Context.CHAR_CLASS)}]`, 'g'))) {
     numOpen += m === leftChar ? 1 : -1;
     if (numOpen < 0) {
       return rightChar;
@@ -105,8 +105,8 @@ function getUnbalancedChar(pattern, leftChar, rightChar) {
 }
 
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
-export function getBreakoutChar(pattern, regexContext, charClassContext) {
-  const escapesRemoved = pattern.replace(/\\./gsu, '');
+export function getBreakoutChar(expression, regexContext, charClassContext) {
+  const escapesRemoved = expression.replace(/\\./gsu, '');
   // Trailing unescaped `\`; checking `.includes('\\')` would also work
   if (escapesRemoved.endsWith('\\')) {
     return '\\';
@@ -151,9 +151,9 @@ const contextToken = new RegExp(String.raw`
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Accepts and returns its full state so it doesn't have to reprocess pattern parts that it's
-// already seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
-export function getEndContextForIncompletePattern(partialPattern, {
+// Accepts and returns its full state so it doesn't have to reprocess parts that have already been
+// seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
+export function getEndContextForIncompleteExpression(incompleteExpression, {
   regexContext = RegexContext.DEFAULT,
   charClassContext = CharClassContext.DEFAULT,
   charClassDepth = 0,
@@ -161,7 +161,7 @@ export function getEndContextForIncompletePattern(partialPattern, {
 }) {
   contextToken.lastIndex = lastPos;
   let match;
-  while (match = contextToken.exec(partialPattern)) {
+  while (match = contextToken.exec(incompleteExpression)) {
     const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
     if (m === '[') {
       charClassDepth++;
@@ -215,28 +215,28 @@ export function getEndContextForIncompletePattern(partialPattern, {
     regexContext,
     charClassContext,
     charClassDepth,
-    lastPos: partialPattern.length,
+    lastPos: incompleteExpression.length,
   };
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @returns {number}
 */
-export function countCaptures(pattern) {
+export function countCaptures(expression) {
   let num = 0;
-  forEachUnescaped(pattern, String.raw`\((?:(?!\?)|\?<[^>]+>)`, () => num++, Context.DEFAULT);
+  forEachUnescaped(expression, String.raw`\((?:(?!\?)|\?<[^>]+>)`, () => num++, Context.DEFAULT);
   return num;
 }
 
 /**
-@param {string} pattern
+@param {string} expression
 @param {number} precedingCaptures
 @returns {string}
 */
-export function adjustNumberedBackrefs(pattern, precedingCaptures) {
+export function adjustNumberedBackrefs(expression, precedingCaptures) {
   return replaceUnescaped(
-    pattern,
+    expression,
     String.raw`\\(?<num>[1-9]\d*)`,
     ({groups: {num}}) => `\\${+num + precedingCaptures}`,
     Context.DEFAULT
@@ -270,8 +270,8 @@ const charClassUnionToken = new RegExp(String.raw`
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
 export function containsCharClassUnion(charClassPattern) {
-  // Return `true` if contains:
-  // - Lowercase `\p` and name is a property of strings (case sensitive).
+  // Return `true` if it contains:
+  // - `\p` (lowercase only) and the name is a property of strings (case sensitive).
   // - `\q`.
   // - Two single-char-matching tokens in sequence.
   // - One single-char-matching token followed immediately by unescaped `[`.
@@ -304,7 +304,7 @@ export function containsCharClassUnion(charClassPattern) {
 
 /**
 Returns transformed versions of a template and values, using the given preprocessor. Expects the
-template to contain a `raw` array, and only processes values that are instanceof `PartialPattern`.
+template to contain a `raw` array, and only processes values that are instanceof `Pattern`.
 @param {TemplateStringsArray} template
 @param {any[]} values
 @param {(value, runningContext) => {transformed: string; runningContext: Object}} preprocessor
@@ -320,9 +320,9 @@ export function preprocess(template, values, preprocessor) {
     runningContext = result.runningContext;
     if (i < template.raw.length - 1) {
       const value = values[i];
-      if (value instanceof PartialPattern) {
+      if (value instanceof Pattern) {
         const result = preprocessor(value, {...runningContext, lastPos: 0});
-        newValues.push(partial(result.transformed));
+        newValues.push(pattern(result.transformed));
         runningContext = result.runningContext;
       } else {
         newValues.push(value);

@@ -1,5 +1,5 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompletePattern, noncapturingStart, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompleteExpression, noncapturingStart, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -21,13 +21,13 @@ const token = new RegExp(String.raw`
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Applied to the outer regex and interpolated partials, but not interpolated regexes or strings
+// Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
 export function flagXPreprocessor(value, runningContext) {
   value = String(value);
   let ignoringWs = false;
   let ignoringCharClassWs = false;
   let ignoringComment = false;
-  let pattern = '';
+  let expression = '';
   let transformed = '';
   let lastSignificantToken = '';
   let lastSignificantCharClassContext = '';
@@ -58,8 +58,8 @@ export function flagXPreprocessor(value, runningContext) {
       ignoringCharClassWs = false;
     }
 
-    pattern += m;
-    runningContext = getEndContextForIncompletePattern(pattern, runningContext);
+    expression += m;
+    runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (
       m === '-' &&
@@ -132,20 +132,20 @@ export function flagXPreprocessor(value, runningContext) {
 }
 
 // Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
-export function rakePostprocessor(pattern) {
+export function rakePostprocessor(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
-  pattern = replaceUnescaped(pattern, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
+  expression = replaceUnescaped(expression, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
   // - Before one of `()|$\`.
   // - After one of `()|>^`, `(?:`, or a lookaround opening.
-  pattern = replaceUnescaped(
-    pattern,
+  expression = replaceUnescaped(
+    expression,
     String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|$\\])|(?<=[()|>^]|\(\?(?:[:=!]|<[=!]))${sep}`,
     '',
     Context.DEFAULT
   );
-  return pattern;
+  return expression;
 }
