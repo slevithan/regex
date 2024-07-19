@@ -167,7 +167,11 @@ describe('interpolation: patterns', () => {
       expect(() => regex`[a${pattern`]`}b]`).toThrow();
       expect(']').toMatch(regex`[${pattern(String.raw`\]`)}]`);
       expect(() => regex`[a${pattern(String.raw`\\]`)}b]`).toThrow();
-      expect(']').toMatch(regex`[${pattern(String.raw`\\\]`)}]`);
+      if (flagVSupported) {
+        expect(']').toMatch(regex`[${pattern(String.raw`\\\]`)}]`);
+      } else {
+        expect(() => regex`[${pattern(String.raw`\\\]`)}]`).toThrow();
+      }
     });
 
     it('should not let an unescaped [ that is not part of a self-contained nested class start a class', () => {
@@ -175,7 +179,11 @@ describe('interpolation: patterns', () => {
       expect(() => regex`[a${pattern`[`}b]`).toThrow();
       expect('[').toMatch(regex`[${pattern(String.raw`\[`)}]`);
       expect(() => regex`[a${pattern(String.raw`\\[`)}b]`).toThrow();
-      expect('[').toMatch(regex`[${pattern(String.raw`\\\[`)}]`);
+      if (flagVSupported) {
+        expect('[').toMatch(regex`[${pattern(String.raw`\\\[`)}]`);
+      } else {
+        expect(() => regex`[${pattern(String.raw`\\\[`)}]`).toThrow();
+      }
     });
 
     it('should not let } end an enclosed token', () => {
@@ -193,8 +201,12 @@ describe('interpolation: patterns', () => {
     it('should not let an unescaped } end an enclosed \\q token', () => {
       expect(() => regex`[\q{${pattern`a}`}]`).toThrow();
       expect(() => regex`[\q{${pattern`a}`}}]`).toThrow();
-      expect('a}').toMatch(regex`[\q{${pattern`a\}`}}]`);
       expect(() => regex`[\q{${pattern`a\\}`}}]`).toThrow();
+      if (flagVSupported) {
+        expect('a}').toMatch(regex`[\q{${pattern`a\}`}}]`);
+      } else {
+        expect(() => regex`[\q{${pattern`a\}`}}]`).toThrow();
+      }
     });
 
     it('should not let a trailing unescaped \\ change the character after the interpolation', () => {
@@ -253,8 +265,15 @@ describe('interpolation: patterns', () => {
     });
 
     it('should allow a self-contained set operation', () => {
-      expect('a').toMatch(regex`[${pattern`\w--_`}]`);
-      expect('a').toMatch(regex`[${pattern`\w&&[a-z]`}]`);
+      if (flagVSupported) {
+        expect('a').toMatch(regex`[${pattern`\w--_`}]`);
+        expect('a').toMatch(regex`[${pattern`\w&&a`}]`);
+        expect('a').toMatch(regex`[${pattern`\w&&[a-z]`}]`);
+      } else {
+        expect(() => regex`[${pattern`\w--_`}]`).toThrow();
+        expect(() => regex`[${pattern`\w&&a`}]`).toThrow();
+        expect(() => regex`[${pattern`\w&&[a-z]`}]`).toThrow();
+      }
     });
 
     it('should throw for a double punctuator without operands', () => {
@@ -296,25 +315,29 @@ describe('interpolation: patterns', () => {
     });
 
     it('should not throw if a lone double-punctuator character in an implicit union is bordered by itself', () => {
-      expect('&').toMatch(regex`[${pattern`a&`}&]`);
-      expect('!').toMatch(regex`[${pattern`a!`}!]`);
-      expect('#').toMatch(regex`[${pattern`a#`}#]`);
-      expect('$').toMatch(regex`[${pattern`a$`}$]`);
-      expect('%').toMatch(regex`[${pattern`a%`}%]`);
-      expect('*').toMatch(regex`[${pattern`a*`}*]`);
-      expect('+').toMatch(regex`[${pattern`a+`}+]`);
-      expect(',').toMatch(regex`[${pattern`a,`},]`);
-      expect('.').toMatch(regex`[${pattern`a.`}.]`);
-      expect(':').toMatch(regex`[${pattern`a:`}:]`);
-      expect(';').toMatch(regex`[${pattern`a;`};]`);
-      expect('<').toMatch(regex`[${pattern`a<`}<]`);
-      expect('=').toMatch(regex`[${pattern`a=`}=]`);
-      expect('>').toMatch(regex`[${pattern`a>`}>]`);
-      expect('?').toMatch(regex`[${pattern`a?`}?]`);
-      expect('@').toMatch(regex`[${pattern`a@`}@]`);
-      expect('^').toMatch(regex`[${pattern`a^`}^]`);
-      expect('`').toMatch(regex`[${pattern`a\``}\`]`);
-      expect('~').toMatch(regex`[${pattern`a~`}~]`);
+      if (flagVSupported) {
+        expect('&').toMatch(regex`[${pattern`a&`}&]`);
+        expect('!').toMatch(regex`[${pattern`a!`}!]`);
+        expect('#').toMatch(regex`[${pattern`a#`}#]`);
+        expect('$').toMatch(regex`[${pattern`a$`}$]`);
+        expect('%').toMatch(regex`[${pattern`a%`}%]`);
+        expect('*').toMatch(regex`[${pattern`a*`}*]`);
+        expect('+').toMatch(regex`[${pattern`a+`}+]`);
+        expect(',').toMatch(regex`[${pattern`a,`},]`);
+        expect('.').toMatch(regex`[${pattern`a.`}.]`);
+        expect(':').toMatch(regex`[${pattern`a:`}:]`);
+        expect(';').toMatch(regex`[${pattern`a;`};]`);
+        expect('<').toMatch(regex`[${pattern`a<`}<]`);
+        expect('=').toMatch(regex`[${pattern`a=`}=]`);
+        expect('>').toMatch(regex`[${pattern`a>`}>]`);
+        expect('?').toMatch(regex`[${pattern`a?`}?]`);
+        expect('@').toMatch(regex`[${pattern`a@`}@]`);
+        expect('^').toMatch(regex`[${pattern`a^`}^]`);
+        expect('`').toMatch(regex`[${pattern`a\``}\`]`);
+        expect('~').toMatch(regex`[${pattern`a~`}~]`);
+      } else {
+        expect(() => regex`[${pattern`a&`}&]`).toThrow();
+      }
     });
   });
 });

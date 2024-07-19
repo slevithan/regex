@@ -15,11 +15,13 @@ describe('regex', () => {
     expect(regex('')``.global).toBeFalse();
     expect(regex('g')``.global).toBeTrue();
     expect(regex('imgs')``.global).toBeTrue();
-    expect(regex('d')``.hasIndices).toBeTrue();
     expect(regex('i')``.ignoreCase).toBeTrue();
     expect(regex('m')``.multiline).toBeTrue();
     expect(regex('s')``.dotAll).toBeTrue();
     expect(regex('y')``.sticky).toBeTrue();
+    if (flagDSupported) {
+      expect(regex('d')``.hasIndices).toBeTrue();
+    }
   });
 
   it('should accept empty arguments', () => {
@@ -33,6 +35,8 @@ describe('regex', () => {
       expect(regex``.flags).toContain('v');
       expect(regex``.unicodeSets).toBeTrue();
       expect(regex('g')``.unicodeSets).toBeTrue();
+    } else {
+      expect(regex``.flags).not.toContain('v');
     }
   });
 

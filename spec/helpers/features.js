@@ -24,3 +24,12 @@ globalThis.flagVSupported = (() => {
   }
   return true;
 })();
+
+globalThis.flagDSupported = (() => {
+  try {
+    new RegExp('', 'd');
+  } catch (e) {
+    return false;
+  }
+  return true;
+})();

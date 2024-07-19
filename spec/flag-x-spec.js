@@ -175,6 +175,8 @@ describe('flag x', () => {
         expect('a').toMatch(regex`[\w && [a-z]]`);
         expect('a').toMatch(regex`[\w&& [a-z]]`);
         expect('a').toMatch(regex`[\w &&[a-z]]`);
+      } else {
+        expect(() => regex`[\w -- _]`).toThrow();
       }
     });
 
@@ -193,6 +195,8 @@ describe('flag x', () => {
       expect('t ').toMatch(regex`^[\ t]{2}$`);
       if (flagVSupported) {
         expect(' ').toMatch(regex`^[\q{ \ }]$`);
+      } else {
+        expect(() => regex`^[\q{ \ }]$`).toThrow();
       }
     });
 
@@ -202,17 +206,21 @@ describe('flag x', () => {
       expect(() => regex`[\u{ 0 }]`).toThrow();
     });
 
-    if (flagVSupported) {
-      it('should treat whitespace in [\\q{}] as insignificant', () => {
+    it('should treat whitespace in [\\q{}] as insignificant', () => {
+      if (flagVSupported) {
         expect('ab').toMatch(regex`^[\q{ a b | c }]$`);
-      });
-    }
+      } else {
+        expect(() => regex`^[\q{ a b | c }]$`).toThrow();
+      }
+    });
 
     it('should handle empty character classes with insignificant whitespace', () => {
       expect(/[]/.test('a')).toBe(regex`[ ]`.test('a'));
       expect(/[^]/.test('a')).toBe(regex`[^ ]`.test('a'));
       if (flagVSupported) {
         expect(new RegExp('[\\q{}]', 'v').test('a')).toBe(regex`[ \q{ } ]`.test('a'));
+      } else {
+        expect(() => regex`[ \q{ } ]`).toThrow();
       }
     });
   });
