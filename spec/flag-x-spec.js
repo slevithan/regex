@@ -209,8 +209,8 @@ describe('flag x', () => {
     }
 
     it('should handle empty character classes with insignificant whitespace', () => {
-      expect(/[]/v.test('a')).toBe(regex`[ ]`.test('a'));
-      expect(/[^]/v.test('a')).toBe(regex`[^ ]`.test('a'));
+      expect(/[]/.test('a')).toBe(regex`[ ]`.test('a'));
+      expect(/[^]/.test('a')).toBe(regex`[^ ]`.test('a'));
       if (flagVSupported) {
         expect(/[\q{}]/v.test('a')).toBe(regex`[ \q{ } ]`.test('a'));
       }
