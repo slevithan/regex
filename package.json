@@ -18,7 +18,7 @@
     "pretest": "npm run build",
     "test": "jasmine",
     "types": "tsc src/index.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
-    "prepublish": "npm test"
+    "prepare": "npm test"
   },
   "files": [
     "src",
