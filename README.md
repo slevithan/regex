@@ -1,6 +1,9 @@
 <a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" height="130" alt="regex logo"></a>
 
-`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight (6.5 KB minified and brotlied) and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
+[![Build Status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
+[![Bundle Size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
+
+`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
