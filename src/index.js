@@ -27,39 +27,44 @@ Can be called in multiple ways:
 3. `` regex({flags: 'gi'})`…` `` - With options.
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 
-@type {{
-  (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
+@overload
+@param {TemplateStringsArray} template
+@param {...any} substitutions
+@returns {RegExp}
 
-  (flags?: string) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
+@overload
+@param {string} [flags]
+@returns {(template: TemplateStringsArray, ...substitutions: any[]) => RegExp}
 
-  (options: RegexTagOptions) => (templateStrings: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp,
-}}
+@overload
+@param {RegexTagOptions} options
+@returns {(template: TemplateStringsArray, ...substitutions: any[]) => RegExp}
 */
-const regex = function(first, ...values) {
+function regex(first, ...substitutions) {
   // Allow binding to other constructors
   const constructor = this instanceof Function ? this : RegExp;
   // Given a template
   if (Array.isArray(first?.raw)) {
-    return fromTemplate(constructor, {flags: ''}, first, ...values);
+    return fromTemplate(constructor, {flags: ''}, first, ...substitutions);
   // Given flags
-  } else if ((typeof first === 'string' || first === undefined) && !values.length) {
+  } else if ((typeof first === 'string' || first === undefined) && !substitutions.length) {
     return fromTemplate.bind(null, constructor, {flags: first});
   // Given an options object
-  } else if ({}.toString.call(first) === '[object Object]' && !values.length) {
+  } else if ({}.toString.call(first) === '[object Object]' && !substitutions.length) {
     return fromTemplate.bind(null, constructor, first);
   }
-  throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...values])}`);
-};
+  throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...substitutions])}`);
+}
 
 /**
-Makes a UnicodeSets-mode RegExp from a template and values to fill the template holes.
-@param {new (expression: string, flags: string) => RegExp} constructor
+Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the template holes.
+@param {new (expression: string, flags?: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
-@param {...any} values
+@param {...any} substitutions
 @returns {RegExp}
 */
-function fromTemplate(constructor, options, template, ...values) {
+function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
     postprocessors = [],
@@ -75,16 +80,16 @@ function fromTemplate(constructor, options, template, ...values) {
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
   if (__flagX) {
-    ({template, values} = preprocess(template, values, flagXPreprocessor));
+    ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
   }
   if (__flagN) {
-    ({template, values} = preprocess(template, values, flagNPreprocessor));
+    ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
   }
 
   let precedingCaptures = 0;
   let expression = '';
   let runningContext = {};
-  // Intersperse template raw strings and values
+  // Intersperse template raw strings and substitutions
   template.raw.forEach((raw, i) => {
     const wrapEscapedStr = !!(template.raw[i] || template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
@@ -95,10 +100,12 @@ function fromTemplate(constructor, options, template, ...values) {
     runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (i < template.raw.length - 1) {
-      const value = values[i];
-      expression += interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
-      if (value instanceof RegExp || value instanceof Pattern) {
-        precedingCaptures += countCaptures(value.source || String(value));
+      const substitution = substitutions[i];
+      expression += interpolate(substitution, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+      if (substitution instanceof RegExp) {
+        precedingCaptures += countCaptures(substitution.source);
+      } else if (substitution instanceof Pattern) {
+        precedingCaptures += countCaptures(String(substitution));
       }
     }
   });
@@ -142,7 +149,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
         regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT
       );
     }
-    // Check escaped values (not just patterns) since possible breakout char `>` isn't escaped
+    // Check `escapedValue` (not just patterns) since possible breakout char `>` isn't escaped
     const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
     if (breakoutChar) {
       throw new Error(`Unescaped stray "${breakoutChar}" in the interpolated value would have side effects outside it`);

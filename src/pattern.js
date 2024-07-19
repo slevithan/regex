@@ -16,21 +16,26 @@ export class Pattern {
 }
 
 /**
-Returns a value that can be interpolated into a `regex` template without having its special
+Returns a value that can be interpolated into a `regex` template string without having its special
 characters escaped.
 
-Can be called in two ways:
-1. `pattern(value)` - For strings or values coerced to strings
-2. `` pattern`…` `` - Shorthand for ``pattern(String.raw`…`)``
+Can be called as a function or template tag:
+- `pattern(value)` - String or value coerced to string.
+- `` pattern`…` `` - Same as ``pattern(String.raw`…`)``.
 
-@param {any} first
-@param {...any} substitutions Values to fill the template holes.
+@overload
+@param {any} value
+@returns {Pattern}
+
+@overload
+@param {TemplateStringsArray} template
+@param {...any} substitutions
 @returns {Pattern}
 */
 export function pattern(first, ...substitutions) {
   if (Array.isArray(first?.raw)) {
     return new Pattern(
-      // Intersperse template raw strings and values
+      // Intersperse template raw strings and substitutions
       first.raw.flatMap((raw, i) => i < first.raw.length - 1 ? [raw, substitutions[i]] : raw).join('')
     );
   } else if (!substitutions.length) {

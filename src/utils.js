@@ -303,34 +303,34 @@ export function containsCharClassUnion(charClassPattern) {
 }
 
 /**
-Returns transformed versions of a template and values, using the given preprocessor. Expects the
-template to contain a `raw` array, and only processes values that are instanceof `Pattern`.
+Returns transformed versions of a template and substitutions, using the given preprocessor. Only
+processes substitutions that are instanceof `Pattern`.
 @param {TemplateStringsArray} template
-@param {any[]} values
+@param {any[]} substitutions
 @param {(value, runningContext) => {transformed: string; runningContext: Object}} preprocessor
-@returns {{template: TemplateStringsArray; values: any[]}}
+@returns {{template: TemplateStringsArray; substitutions: any[]}}
 */
-export function preprocess(template, values, preprocessor) {
+export function preprocess(template, substitutions, preprocessor) {
   let newTemplate = {raw: []};
-  let newValues = [];
+  let newSubstitutions = [];
   let runningContext = {};
   template.raw.forEach((raw, i) => {
     const result = preprocessor(raw, {...runningContext, lastPos: 0});
     newTemplate.raw.push(result.transformed);
     runningContext = result.runningContext;
     if (i < template.raw.length - 1) {
-      const value = values[i];
-      if (value instanceof Pattern) {
-        const result = preprocessor(value, {...runningContext, lastPos: 0});
-        newValues.push(pattern(result.transformed));
+      const substitution = substitutions[i];
+      if (substitution instanceof Pattern) {
+        const result = preprocessor(substitution, {...runningContext, lastPos: 0});
+        newSubstitutions.push(pattern(result.transformed));
         runningContext = result.runningContext;
       } else {
-        newValues.push(value);
+        newSubstitutions.push(substitution);
       }
     }
   });
   return {
     template: newTemplate,
-    values: newValues,
+    substitutions: newSubstitutions,
   };
 }
