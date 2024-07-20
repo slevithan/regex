@@ -229,7 +229,7 @@ See the next section on definition groups for another way to do this.
 
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used as a place to define subpatterns used by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, using a definition group has the advantage that named groups within it won't appear on a match's `groups` object.
+The syntax `(?(DEFINE)…)` can be used to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that named groups within them don't appear on a match's `groups` object.
 
 Example:
 
