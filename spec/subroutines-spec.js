@@ -175,7 +175,7 @@ describe('subroutines', () => {
       });
 
       // `(?:)` separators can be added by the flag x preprocessor
-      it('should not allow anything other than named groups, (?:), and whitespace', () => {
+      it('should not allow anything other than named groups, whitespace, comments, and (?:) at the top level', () => {
         expect(() => regex`(?(DEFINE)(?<a>)?)`).toThrow();
         expect(() => regex`(?(DEFINE)(?<a>).)`).toThrow();
         expect(() => regex`(?(DEFINE).(?<a>))`).toThrow();
