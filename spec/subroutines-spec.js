@@ -42,7 +42,7 @@ describe('subroutines', () => {
   });
 
   it('should rewrite named and numbered backreferences as needed', () => {
-    // Test the *output* to make sure each adjustment is precise and works correctly even in cases
+    // Test the *output* to ensure each adjustment is precise and works correctly even in cases
     // where there are discrete backreferences that each match empty strings
     const cases = [
       [String.raw`()(?<a>\1)\g<a>`, String.raw`()(?<a>\1)(\1)`],
@@ -59,10 +59,12 @@ describe('subroutines', () => {
       [String.raw`(?<a>)\g<a>()\2\g<a>()\3`, String.raw`(?<a>)()()\3()()\5`],
       [String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3\g<a>\1\2\3()\1\2\3\g<a>\1\2\3()\1\2\3`, String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3(\3\4\5()\3\4\5)\1\2\5()\1\2\5(\6\7\8()\6\7\8)\1\2\5()\1\2\5`],
       [String.raw`\g<a>(?<a>\1)`, String.raw`(\1)(?<a>\2)`],
-      [String.raw`(?<a>\k<a>)\g<a>`, String.raw`(?<a>\k<a>)(\k<a>)`],
-      [String.raw`\g<a>(?<a>\k<a>)`, String.raw`(\k<a>)(?<a>\k<a>)`],
+      [String.raw`(?<a>\k<a>)\g<a>`, String.raw`(?<a>\k<a>)(\2)`],
+      [String.raw`\g<a>(?<a>\k<a>)`, String.raw`(\1)(?<a>\k<a>)`],
       [String.raw`(?<a>(?<b>)\k<b>)\g<a>`, String.raw`(?<a>(?<b>)\k<b>)(()\4)`],
       [String.raw`\g<a>(?<a>(?<b>)\k<b>)`, String.raw`(()\2)(?<a>(?<b>)\k<b>)`],
+      [String.raw`(?<a>(?<b>\k<a>\k<b>))\g<a>\g<b>`, String.raw`(?<a>(?<b>\k<a>\k<b>))((\3\4))(\k<a>\5)`],
+      [String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))\g<a>\g<b>\g<c>`, String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))(((\4\5\6)))((\k<a>\7\8))(\k<a>\k<b>\9)`],
     ];
     cases.forEach(([input, output]) => {
       expect(regex({__flagN: false})({raw: [input]}).source).toBe(output);

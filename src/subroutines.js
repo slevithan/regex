@@ -41,7 +41,6 @@ function processSubroutines(expression, namedGroups) {
     return expression;
   }
   const backrefIncrements = [0];
-  const numCapturesBeforeFirstReferencedBySubroutine = countCapturesBeforeFirstReferencedBySubroutine(expression);
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let openSubroutinesMap = new Map();
@@ -103,12 +102,13 @@ function processSubroutines(expression, namedGroups) {
       } else if (backrefNum) {
         // Beware: backref renumbering with subroutines is complicated
         const num = +backrefNum;
-        let increment;
+        let increment = 0;
         if (openSubroutinesMap.size) {
-          if (num > numCapturesBeforeFirstReferencedBySubroutine) {
+          const numCapturesBeforeReferencedGroup = countCapturesBeforeGroupName(expression, openSubroutinesStack[0]);
+          if (num > numCapturesBeforeReferencedGroup) {
             increment = numCapturesPassedOutsideSubroutines +
               numCapturesPassedInsideSubroutines -
-              numCapturesBeforeFirstReferencedBySubroutine -
+              numCapturesBeforeReferencedGroup -
               subroutine.numCaptures;
           }
         } else {
@@ -121,19 +121,23 @@ function processSubroutines(expression, namedGroups) {
         }
       } else if (backrefName) {
         if (openSubroutinesMap.size) {
-          // Search for the corresponding group in the contents of the subroutine stack
-          let found = false;
-          for (const s of openSubroutinesStack) {
-            if (hasUnescaped(
-              openSubroutinesMap.get(s).contents,
-              String.raw`\(\?<${backrefName}>`,
-              Context.DEFAULT
-            )) {
-              found = true;
-              break;
+          let isGroupFromThisSubroutine = false;
+          if (backrefName === openSubroutinesStack[0]) {
+            isGroupFromThisSubroutine = true;
+          // Search for the group in the contents of the subroutine stack
+          } else {
+            for (const s of openSubroutinesStack) {
+              if (hasUnescaped(
+                openSubroutinesMap.get(s).contents,
+                String.raw`\(\?<${backrefName}>`,
+                Context.DEFAULT
+              )) {
+                isGroupFromThisSubroutine = true;
+                break;
+              }
             }
           }
-          if (found) {
+          if (isGroupFromThisSubroutine) {
             // Point to the group, then let normal renumbering work in the next loop iteration
             const adjusted = `\\${getCaptureNum(expression, backrefName)}`;
             result = spliceStr(result, index, m, adjusted);
@@ -213,19 +217,16 @@ function getGroup(expression, delimMatch) {
 
 /**
 @param {string} expression
+@param {string} groupName
 @returns {number}
 */
-function countCapturesBeforeFirstReferencedBySubroutine(expression) {
-  const subroutines = new Set();
-  forEachUnescaped(expression, subroutinePattern, ({groups: {subroutineName}}) => {
-    subroutines.add(subroutineName);
-  }, Context.DEFAULT);
+function countCapturesBeforeGroupName(expression, groupName) {
   let num = 0;
   let pos = 0;
   let match;
   while (match = execUnescaped(expression, capturingStartPattern, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
-    if (subroutines.has(captureName)) {
+    if (captureName === groupName) {
       break;
     }
     num++;
