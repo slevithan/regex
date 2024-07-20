@@ -87,6 +87,11 @@ describe('subroutines', () => {
     expect(() => regex`^(?<n>a)\g<${'n>'}>$`).toThrow();
   });
 
+  it('should not reference lookbehind', () => {
+    expect(() => regex`(?<=n>)\g<=n>`).toThrow();
+    expect(() => regex`(?<!n>)\g<!n>`).toThrow();
+  });
+
   it('should support referencing a named capture added via interpolating a regex', () => {
     expect('aa').toMatch(regex`^${/(?<n>a)/}\g<n>$`);
     expect('abbb').toMatch(regex`^(?<a>a)${/(b)(?<n>\1)/}\g<n>$`);
@@ -102,5 +107,95 @@ describe('subroutines', () => {
 
   it('should handle subroutines added by postprocessors', () => {
     expect('aa').toMatch(regex({postprocessors: [p => p.replace(/\$$/, String.raw`\g<n>$`)]})`^(?<n>a)$`);
+  });
+
+  describe('DEFINE group', () => {
+    it('should not have its groups appear on the groups object of matches', () => {
+      expect(regex`\g<n>(?(DEFINE)(?<n>.))`.exec('a').groups).toBeUndefined();
+      expect('n' in regex`(?<a>\g<n>)(?(DEFINE)(?<n>.))`.exec('a').groups).toBeFalse();
+    });
+
+    it('should not prevent groups outside of DEFINE from appearing on the groups object', () => {
+      expect(regex`(?<a>\g<n>)(?(DEFINE)(?<n>.))`.exec('a').groups.a).toBe('a');
+      // Property `a` is present, but its value is undefined
+      expect('a' in regex`|(?<a>)(?(DEFINE))`.exec('a').groups).toBeTrue();
+    });
+
+    // Just documenting current behavior
+    it('should not allow at positions other than the end of the regex', () => {
+      expect(() => regex`(?(DEFINE)).`).toThrow();
+      expect(() => regex`(?(DEFINE))$`).toThrow();
+    });
+
+    it('should allow trailing whitespace', () => {
+      expect('').toMatch(regex`  (?(DEFINE))  `);
+      expect('a').toMatch(regex` ^ \g<a> $ (?(DEFINE) (?<a> a ) ) `);
+    });
+
+    // Just documenting current behavior
+    it('should not allow multiple DEFINE groups', () => {
+      expect(() => regex`(?(DEFINE))(?(DEFINE))`).toThrow();
+      expect(() => regex`(?(DEFINE)) . (?(DEFINE))`).toThrow();
+    });
+
+    it('should treat DEFINE as case sensitive', () => {
+      expect(() => regex('i')`(?(define))`).toThrow();
+      expect(() => regex('i')`(?(Define))`).toThrow();
+    });
+
+    it('should throw if unclosed', () => {
+      expect(() => regex`(?(DEFINE)`).toThrow();
+      expect(() => regex`(?(DEFINE)\)`).toThrow();
+      expect(() => regex`(?(DEFINE)[)`).toThrow();
+      expect(() => regex`(?(DEFINE)(?<a>)`).toThrow();
+      expect(() => regex`(?(DEFINE)()`).toThrow();
+    });
+
+    describe('contents', () => {
+      it('should allow an empty value', () => {
+        expect('a').toMatch(regex`^.$(?(DEFINE))`);
+        expect('a').toMatch(regex`^.$(?(DEFINE) )`);
+        expect('a').toMatch(regex`^.$(?(DEFINE)
+          # comment
+        )`);
+        expect('a').toMatch(regex`^.$(?(DEFINE)(?:))`);
+      });
+
+      // Just documenting current behavior; this probably shouldn't be relied on
+      it('should allow unreferenced groups', () => {
+        expect('a').toMatch(regex`^.$(?(DEFINE)(?<n>))`);
+        expect('a').toMatch(regex`^.$(?(DEFINE)(?<n>x))`);
+        expect('a').toMatch(regex`^\g<n>$(?(DEFINE)(?<n>.)(?<x>x))`);
+      });
+
+      it('should not allow duplicate group names', () => {
+        expect(() => regex`(?(DEFINE)(?<a>)(?<a>))`).toThrow();
+        expect(() => regex`(?(DEFINE)(?<a>)(?<b>(?<a>)))`).toThrow();
+        expect(() => regex`(?<a>)(?(DEFINE)(?<a>))`).toThrow();
+      });
+
+      // `(?:)` separators can be added by the flag x preprocessor
+      it('should not allow anything other than named groups, (?:), and whitespace', () => {
+        expect(() => regex`(?(DEFINE)(?<a>)?)`).toThrow();
+        expect(() => regex`(?(DEFINE)(?<a>).)`).toThrow();
+        expect(() => regex`(?(DEFINE).(?<a>))`).toThrow();
+        expect(() => regex`(?(DEFINE)[])`).toThrow();
+        expect(() => regex`(?(DEFINE)\0)`).toThrow();
+      });
+
+      it('should allow whitespace and comments to separate groups', () => {
+        expect('ab').toMatch(
+          regex`
+            ^ \g<a> \g<b> $
+
+            (?(DEFINE)
+              (?<a>a)
+              # comment
+              (?<b>b)
+            )
+          `
+        );
+      });
+    });
   });
 });

@@ -38,7 +38,7 @@ export const flagVSupported = (() => {
 
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
-export const noncapturingStart = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!])`;
+export const noncapturingStart = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
 Escape special characters for the given context, assuming flag v.

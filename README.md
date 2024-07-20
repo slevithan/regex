@@ -22,6 +22,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 - [New regex syntax](#-new-regex-syntax)
   - [Atomic groups](#atomic-groups)
   - [Subroutines](#subroutines)
+  - [Definition groups](#definition-groups)
   - [Recursion](#recursion)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
@@ -49,6 +50,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 - **New regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
   - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
+  - Definition groups allow you to define subpatterns for use by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -59,12 +61,18 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 ```js
 import {regex, pattern} from 'regex';
 
-// Subroutines
-const record = regex('gm')`^
-  Born: (?<date> \d{4}-\d{2}-\d{2} ) \n
-  Admitted: \g<date> \n
-  Released: \g<date>
-$`;
+// Subroutines and a definition group
+const record = regex`
+  ^ Admitted:\ (?<admitted> \g<date>) \n
+    Released:\ (?<released> \g<date>) $
+
+  (?(DEFINE)
+    (?<date>  \g<year>-\g<month>-\g<day>)
+    (?<year>  \d{4})
+    (?<month> \d{2})
+    (?<day>   \d{2})
+  )
+`;
 
 // Atomic group. Avoids ReDoS from the nested, overlapping quantifier
 const words = regex`^(?>\w+\s?)+$`;
@@ -120,7 +128,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and, in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward and backward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -192,10 +200,9 @@ regex`\b \g<byte> (\.\g<byte>){3} \b
 
 // Matches a record with several date fields and captures each value
 regex`
-  ^ Name:\   (?<name>.*)           \n
-  Born:\     (?<born>    \g<date>) \n
-  Admitted:\ (?<admitted>\g<date>) \n
-  Released:\ (?<released>\g<date>) $
+  ^ Born:\     (?<born>     \g<date>) \n
+    Admitted:\ (?<admitted> \g<date>) \n
+    Released:\ (?<released> \g<date>) $
 
   # Define subpatterns
   ( (?<date>  \g<year>-\g<month>-\g<day>)
@@ -206,6 +213,8 @@ regex`
 `
 ```
 
+See the next section on definition groups for another way to do this.
+
 > [!NOTE]
 > Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not always act as independent subpatterns.
 
@@ -214,9 +223,38 @@ regex`
 
 - Subroutines can appear before the groups they reference, as shown in examples above.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
-- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see the next section).
+- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
 - As with all new syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
+
+### Definition groups
+
+The syntax `(?(DEFINE)…)` can be used as a place to define subpatterns used by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, using a definition group has the advantage that named groups within it won't appear on a match's `groups` object.
+
+Example:
+
+```js
+const record = 'Admitted: 2022-01-01\nReleased: 2022-01-02';
+const match = regex`
+  ^ Admitted:\ (?<admitted> \g<date>) \n
+    Released:\ (?<released> \g<date>) $
+
+  (?(DEFINE)
+    (?<date>  \g<year>-\g<month>-\g<day>)
+    (?<year>  \d{4})
+    (?<month> \d{2})
+    (?<day>   \d{2})
+  )
+`.exec(record);
+
+console.log(match.groups);
+// → {admitted: '2022-01-01', released: '2022-01-02'}
+```
+
+Only one definition group can be added per regex, and it must appear at the end of the pattern. It also can't contain anything other than named groups (which must use unique names), whitespace, and comments.
+
+> [!NOTE]
+> Definition groups are based on the feature in PCRE and Perl. Compared to those flavors, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 ### Recursion
 

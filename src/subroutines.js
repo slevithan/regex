@@ -1,10 +1,23 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
 import {countCaptures} from './utils.js';
 
+/**
+@param {string} expression
+@returns {string}
+*/
+export function subroutinesPostprocessor(expression) {
+  const namedGroups = getNamedCapturingGroups(expression);
+  return processDefineGroup(
+    processSubroutines(expression, namedGroups),
+    namedGroups
+  );
+}
+
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
 const subroutinePattern = String.raw`\\g<(?<subroutineName>[^>&]+)>`;
-const capturingStartPattern = String.raw`\((?:(?!\?)|\?<(?![=!])(?<captureName>[^>]+)>)`;
+const namedCapturingStartPattern = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
+const capturingStartPattern = String.raw`\((?!\?)|${namedCapturingStartPattern}`;
 const token = new RegExp(String.raw`
 ${subroutinePattern}
 | (?<capturingStart>${capturingStartPattern})
@@ -14,14 +27,19 @@ ${subroutinePattern}
 `.replace(/\s+/g, ''), 'gsu');
 
 /**
+@typedef {Map<string, {contents: string; isUnique: boolean}>} NamedCapturingGroupsMap
+*/
+
+/**
+Transform syntax `\g<name>`
 @param {string} expression
+@param {NamedCapturingGroupsMap} namedGroups
 @returns {string}
 */
-export function subroutinesPostprocessor(expression) {
+function processSubroutines(expression, namedGroups) {
   if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
     return expression;
   }
-  const capturingGroups = getNamedCapturingGroups(expression);
   const backrefIncrements = [0];
   const numCapturesBeforeFirstReferencedBySubroutine = countCapturesBeforeFirstReferencedBySubroutine(expression);
   let numCapturesPassedOutsideSubroutines = 0;
@@ -33,20 +51,20 @@ export function subroutinesPostprocessor(expression) {
   let match;
   token.lastIndex = 0;
   while (match = token.exec(result)) {
-    const {0: m, index: pos, groups: {subroutineName, capturingStart, backrefNum, backrefName}} = match;
+    const {0: m, index, groups: {subroutineName, capturingStart, backrefNum, backrefName}} = match;
     if (m === '[') {
       numCharClassesOpen++;
     } else if (!numCharClassesOpen) {
 
       const subroutine = openSubroutinesMap.size ? openSubroutinesMap.get(lastOf(openSubroutinesStack)) : null;
       if (subroutineName) {
-        if (!capturingGroups.has(subroutineName)) {
+        if (!namedGroups.has(subroutineName)) {
           throw new Error(`Invalid named capture referenced by subroutine ${m}`);
         }
         if (openSubroutinesMap.has(subroutineName)) {
           throw new Error(`Subroutine ${m} followed a recursive reference`);
         }
-        const contents = capturingGroups.get(subroutineName);
+        const contents = namedGroups.get(subroutineName).contents;
         const numCaptures = countCaptures(contents) + 1; // Plus '(' wrapper
         numCapturesPassedInsideSubroutines += numCaptures;
         // Wrap value in case it has top-level alternation or is followed by a quantifier. The
@@ -61,7 +79,7 @@ export function subroutinesPostprocessor(expression) {
         });
         openSubroutinesStack.push(subroutineName);
         // Expand the subroutine's contents into the pattern we're looping over
-        result = spliceStr(result, pos, m, subroutineValue);
+        result = spliceStr(result, index, m, subroutineValue);
         token.lastIndex -= m.length;
       } else if (capturingStart) {
         // Somewhere within an expanded subroutine
@@ -72,7 +90,7 @@ export function subroutinesPostprocessor(expression) {
             // it can't be helped since we need any backrefs to this named capture to work. Given
             // that implicit flag n prevents unnamed capture and requires you to rely on named
             // backrefs and `groups`, this essentially accomplishes not creating a capture
-            result = spliceStr(result, pos, m, '(');
+            result = spliceStr(result, index, m, '(');
             token.lastIndex -= m.length;
           }
           backrefIncrements.push(lastOf(backrefIncrements) + subroutine.numCaptures);
@@ -98,7 +116,7 @@ export function subroutinesPostprocessor(expression) {
         }
         if (increment) {
           const adjusted = `\\${num + increment}`;
-          result = spliceStr(result, pos, m, adjusted);
+          result = spliceStr(result, index, m, adjusted);
           token.lastIndex += adjusted.length - m.length;
         }
       } else if (backrefName) {
@@ -118,7 +136,7 @@ export function subroutinesPostprocessor(expression) {
           if (found) {
             // Point to the group, then let normal renumbering work in the next loop iteration
             const adjusted = `\\${getCaptureNum(expression, backrefName)}`;
-            result = spliceStr(result, pos, m, adjusted);
+            result = spliceStr(result, index, m, adjusted);
             token.lastIndex -= m.length;
           }
           // Else, leave as is
@@ -137,6 +155,60 @@ export function subroutinesPostprocessor(expression) {
     }
   }
   return result;
+}
+
+/**
+Strip a valid, trailing `(?(DEFINE)…)` group
+@param {string} expression
+@param {NamedCapturingGroupsMap} namedGroups
+@returns {string}
+*/
+function processDefineGroup(expression, namedGroups) {
+  const defineMatch = execUnescaped(expression, String.raw`\(\?\(DEFINE\)`, 0, Context.DEFAULT);
+  if (!defineMatch) {
+    return expression;
+  }
+  const defineGroup = getGroup(expression, defineMatch);
+  // This also covers when the DEFINE group is unclosed
+  if (defineGroup.afterPos !== expression.length) {
+    // DEFINE is only supported at the end of the regex because otherwise it would significantly
+    // complicate edge-case backref handling
+    throw new Error('DEFINE group can only be used at the end of a regex');
+  }
+  // `(?:)` separators can be added by the flag x preprocessor
+  const contentsToken = new RegExp(String.raw`${namedCapturingStartPattern}|\(\?:\)|(?<unsupported>\\?.)`, 'gsu');
+  let match;
+  while (match = contentsToken.exec(defineGroup.contents)) {
+    const {captureName, unsupported} = match.groups;
+    if (captureName) {
+      if (!namedGroups.get(captureName).isUnique) {
+        throw new Error('Names within DEFINE group must be unique');
+      }
+      contentsToken.lastIndex = getGroup(defineGroup.contents, match).afterPos;
+      continue;
+    }
+    if (unsupported) {
+      // Since the DEFINE group is stripped from the expression, we can't easily check if
+      // unreferenced syntax is valid. Since it adds no value, it's easiest to just not allow it
+      throw new Error(`DEFINE group can only contain named groups; found ${unsupported}`);
+    }
+  }
+  return expression.slice(0, defineMatch.index);
+}
+
+/**
+@param {string} expression
+@param {RegExpExecArray} delimMatch
+@returns {{contents: string; afterPos: number}}
+*/
+function getGroup(expression, delimMatch) {
+  const contentsStart = delimMatch.index + delimMatch[0].length;
+  const contents = getGroupContents(expression, contentsStart);
+  const afterPos = contentsStart + contents.length + 1;
+  return {
+    contents,
+    afterPos,
+  };
 }
 
 /**
@@ -195,23 +267,28 @@ function spliceStr(str, pos, oldValue, newValue) {
 
 /**
 @param {string} expression
-@returns {Map<string, Array<{contents: string, endPos: number}>>}
+@returns {NamedCapturingGroupsMap}
 */
 function getNamedCapturingGroups(expression) {
-  const capturingGroups = new Map();
+  const namedGroups = new Map();
   forEachUnescaped(
     expression,
-    String.raw`\(\?<(?<captureName>[^>]+)>`,
+    namedCapturingStartPattern,
     ({0: m, index, groups: {captureName}}) => {
       // If there are duplicate capture names, subroutines refer to the first instance of the given
       // group (matching the behavior of PCRE and Perl)
-      if (!capturingGroups.has(captureName)) {
-        capturingGroups.set(captureName, getGroupContents(expression, index + m.length));
+      if (namedGroups.has(captureName)) {
+        namedGroups.get(captureName).isUnique = false;
+      } else {
+        namedGroups.set(captureName, {
+          contents: getGroupContents(expression, index + m.length),
+          isUnique: true,
+        });
       }
     },
     Context.DEFAULT
   );
-  return capturingGroups;
+  return namedGroups;
 }
 
 /**
