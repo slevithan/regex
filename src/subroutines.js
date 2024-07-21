@@ -161,7 +161,7 @@ function processSubroutines(expression, namedGroups) {
 }
 
 /**
-Strip a valid, trailing `(?(DEFINE)…)`
+Strip `(?(DEFINE)…)`
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @returns {string}
@@ -173,8 +173,8 @@ function processDefinitionGroup(expression, namedGroups) {
   }
   const defineGroup = getGroup(expression, defineDelim);
   if (defineGroup.afterPos < expression.length) {
-    // Supporting DEFINE at positions other than the end of regexes would significantly complicate
-    // edge-case backref handling. Note: Flag x in fact permits trailing whitespace and comments
+    // Supporting DEFINE at positions other than the end would significantly complicate edge-case
+    // backref handling. Note: Flag x's preprocessing permits trailing whitespace and comments
     throw new Error('DEFINE group allowed only at the end of a regex');
   } else if (defineGroup.afterPos > expression.length) {
     throw new Error('DEFINE group is unclosed');
@@ -185,16 +185,29 @@ function processDefinitionGroup(expression, namedGroups) {
   while (match = contentsToken.exec(defineGroup.contents)) {
     const {captureName, unsupported} = match.groups;
     if (captureName) {
+      let group = getGroup(defineGroup.contents, match);
+      let duplicateName;
       if (!namedGroups.get(captureName).isUnique) {
-        throw new Error('Group names within DEFINE group must be unique');
+        duplicateName = captureName;
+      } else {
+        const nestedNamedGroups = getNamedCapturingGroups(group.contents);
+        for (const name of nestedNamedGroups.keys()) {
+          if (!namedGroups.get(name).isUnique) {
+            duplicateName = name;
+            break;
+          }
+        }
       }
-      contentsToken.lastIndex = getGroup(defineGroup.contents, match).afterPos;
+      if (duplicateName) {
+        throw new Error(`Group names within DEFINE must be unique; has duplicate "${duplicateName}"`);
+      }
+      contentsToken.lastIndex = group.afterPos;
       continue;
     }
     if (unsupported) {
       // Since a DEFINE group is stripped from its expression, we can't easily check if
-      // unreferenced syntax within it is valid. Such syntax adds no value, so it's easiest to just
-      // not allow it
+      // unreferenced top-level syntax within it is valid. Such syntax serves no purpose, so it's
+      // easiest to not allow it
       throw new Error(`DEFINE group includes unsupported syntax at top level`);
     }
   }

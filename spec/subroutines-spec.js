@@ -219,7 +219,7 @@ describe('subroutines', () => {
           regex`^.$(?(DEFINE) # comment
           )`
         );
-
+        // Flag x off
         expect(() => regex({__flagX: false})`^.$(?(DEFINE) )`).toThrow();
         expect(() => {
           regex({__flagX: false})`^.$(?(DEFINE) # comment
@@ -240,17 +240,22 @@ describe('subroutines', () => {
         );
       });
 
-      // Just documenting current behavior; this probably shouldn't be relied on
+      // Just documenting current behavior; this shouldn't be relied on
       it('should allow unreferenced groups', () => {
         expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>))`);
         expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>x))`);
         expect('a').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>.)(?<b>x))`);
       });
 
-      it('should not allow duplicate group names', () => {
+      it('should not allow top-level groups to use duplicate names', () => {
         expect(() => regex`(?(DEFINE)(?<a>)(?<a>))`).toThrow();
         expect(() => regex`(?(DEFINE)(?<a>)(?<b>(?<a>)))`).toThrow();
         expect(() => regex`(?<a>)(?(DEFINE)(?<a>))`).toThrow();
+      });
+
+      it('should not allow nested groups to use duplicate names', () => {
+        expect(() => regex`(?(DEFINE)(?<a>(?<b>))(?<c>(?<b>)))`).toThrow();
+        expect(() => regex`(?<a>)(?(DEFINE)(?<b>(?<a>)))`).toThrow();
       });
     });
   });
