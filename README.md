@@ -230,7 +230,7 @@ See the next section on definition groups for another way to do this.
 
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that the named groups within them don't appear on a match's `groups` object.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that the named groups within them don't appear on a match's `groups` object.
 
 Example:
 
@@ -258,9 +258,10 @@ console.log(match.groups);
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Only one definition group is allowed per regex, and it must appear at the end of its pattern.
+- Only one definition group is allowed per regex, and it must appear at the end of its pattern. Trailing whitespace and comments are allowed by implicit flag <kbd>x</kbd>.
 - At the top level of definition groups, only named groups, whitespace, and comments are allowed.
 - Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
+- The word `DEFINE` must appear in uppercase.
 </details>
 
 ### Recursion
