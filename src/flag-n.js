@@ -1,7 +1,7 @@
-import {RegexContext, getEndContextForIncompleteExpression, noncapturingStart} from './utils.js';
+import {RegexContext, getEndContextForIncompleteExpression, noncapturingDelim} from './utils.js';
 
 const token = new RegExp(String.raw`
-${noncapturingStart}
+${noncapturingDelim}
 | \(\?<
 | (?<backrefNum>\\[1-9]\d*)
 | \\?.

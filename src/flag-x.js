@@ -1,5 +1,5 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompleteExpression, noncapturingStart, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompleteExpression, noncapturingDelim, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -14,7 +14,7 @@ const token = new RegExp(String.raw`
   | 0\d+
 )
 | \[\^
-| ${noncapturingStart}
+| ${noncapturingDelim}
 | \(\?<
 | (?<dp>[${doublePunctuatorChars}])\k<dp>
 | --

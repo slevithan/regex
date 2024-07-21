@@ -38,7 +38,9 @@ export const flagVSupported = (() => {
 
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
-export const noncapturingStart = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
+export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
+export const capturingDelim = String.raw`\((?!\?)|${namedCapturingDelim}`;
+export const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
 Escape special characters for the given context, assuming flag v.
@@ -225,7 +227,7 @@ export function getEndContextForIncompleteExpression(incompleteExpression, {
 */
 export function countCaptures(expression) {
   let num = 0;
-  forEachUnescaped(expression, String.raw`\((?:(?!\?)|\?<[^>]+>)`, () => num++, Context.DEFAULT);
+  forEachUnescaped(expression, capturingDelim, () => num++, Context.DEFAULT);
   return num;
 }
 

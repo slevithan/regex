@@ -1,12 +1,12 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped} from 'regex-utilities';
-import {countCaptures} from './utils.js';
+import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
 
 /**
 @param {string} expression
 @returns {string}
 */
 export function subroutinesPostprocessor(expression) {
-  const namedGroups = getNamedCapturingGroups(expression);
+  const namedGroups = getNamedCapturingGroups(expression, true);
   return processDefinitionGroup(
     processSubroutines(expression, namedGroups),
     namedGroups
@@ -16,22 +16,24 @@ export function subroutinesPostprocessor(expression) {
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
 // `regex-recursion` for recursive subroutines via `\g<name&R=N>`
 const subroutinePattern = String.raw`\\g<(?<subroutineName>[^>&]+)>`;
-const namedCapturingStartPattern = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
-const capturingStartPattern = String.raw`\((?!\?)|${namedCapturingStartPattern}`;
 const token = new RegExp(String.raw`
 ${subroutinePattern}
-| (?<capturingStart>${capturingStartPattern})
+| (?<capturingStart>${capturingDelim})
 | \\(?<backrefNum>[1-9]\d*)
 | \\k<(?<backrefName>[^>]+)>
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 /**
-@typedef {Map<string, {contents: string; isUnique: boolean}>} NamedCapturingGroupsMap
+@typedef {
+  Map<string, {
+    isUnique: boolean;
+    contents?: string;
+  }>} NamedCapturingGroupsMap
 */
 
 /**
-Transform syntax `\g<name>`
+Transform `\g<name>`
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @returns {string}
@@ -41,10 +43,10 @@ function processSubroutines(expression, namedGroups) {
     return expression;
   }
   const backrefIncrements = [0];
+  const openSubroutinesMap = new Map();
+  const openSubroutinesStack = [];
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
-  let openSubroutinesMap = new Map();
-  let openSubroutinesStack = [];
   let numCharClassesOpen = 0;
   let result = expression;
   let match;
@@ -105,7 +107,8 @@ function processSubroutines(expression, namedGroups) {
         if (openSubroutinesMap.size) {
           const numCapturesBeforeReferencedGroup = countCapturesBeforeGroupName(expression, openSubroutinesStack[0]);
           if (num > numCapturesBeforeReferencedGroup) {
-            increment = numCapturesPassedOutsideSubroutines +
+            increment =
+              numCapturesPassedOutsideSubroutines +
               numCapturesPassedInsideSubroutines -
               numCapturesBeforeReferencedGroup -
               subroutine.numCaptures;
@@ -167,11 +170,11 @@ Strip `(?(DEFINE)…)`
 @returns {string}
 */
 function processDefinitionGroup(expression, namedGroups) {
-  const defineDelim = execUnescaped(expression, String.raw`\(\?\(DEFINE\)`, 0, Context.DEFAULT);
-  if (!defineDelim) {
+  const defineStart = execUnescaped(expression, String.raw`\(\?\(DEFINE\)`, 0, Context.DEFAULT);
+  if (!defineStart) {
     return expression;
   }
-  const defineGroup = getGroup(expression, defineDelim);
+  const defineGroup = getGroup(expression, defineStart);
   if (defineGroup.afterPos < expression.length) {
     // Supporting DEFINE at positions other than the end would significantly complicate edge-case
     // backref handling. Note: Flag x's preprocessing permits trailing whitespace and comments
@@ -180,7 +183,7 @@ function processDefinitionGroup(expression, namedGroups) {
     throw new Error('DEFINE group is unclosed');
   }
   // `(?:)` separators can be added by the flag x preprocessor
-  const contentsToken = new RegExp(String.raw`${namedCapturingStartPattern}|\(\?:\)|(?<unsupported>\\?.)`, 'gsu');
+  const contentsToken = new RegExp(String.raw`${namedCapturingDelim}|\(\?:\)|(?<unsupported>\\?.)`, 'gsu');
   let match;
   while (match = contentsToken.exec(defineGroup.contents)) {
     const {captureName, unsupported} = match.groups;
@@ -199,7 +202,7 @@ function processDefinitionGroup(expression, namedGroups) {
         }
       }
       if (duplicateName) {
-        throw new Error(`Group names within DEFINE must be unique; has duplicate "${duplicateName}"`);
+        throw new Error(`Duplicate group name "${duplicateName}" within DEFINE"`);
       }
       contentsToken.lastIndex = group.afterPos;
       continue;
@@ -211,7 +214,7 @@ function processDefinitionGroup(expression, namedGroups) {
       throw new Error(`DEFINE group includes unsupported syntax at top level`);
     }
   }
-  return expression.slice(0, defineDelim.index);
+  return expression.slice(0, defineStart.index);
 }
 
 /**
@@ -238,7 +241,7 @@ function countCapturesBeforeGroupName(expression, groupName) {
   let num = 0;
   let pos = 0;
   let match;
-  while (match = execUnescaped(expression, capturingStartPattern, pos, Context.DEFAULT)) {
+  while (match = execUnescaped(expression, capturingDelim, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
     if (captureName === groupName) {
       break;
@@ -258,7 +261,7 @@ function getCaptureNum(expression, groupName) {
   let num = 0;
   let pos = 0;
   let match;
-  while (match = execUnescaped(expression, capturingStartPattern, pos, Context.DEFAULT)) {
+  while (match = execUnescaped(expression, capturingDelim, pos, Context.DEFAULT)) {
     const {0: m, index, groups: {captureName}} = match;
     num++;
     if (captureName === groupName) {
@@ -282,13 +285,14 @@ function spliceStr(str, pos, oldValue, newValue) {
 
 /**
 @param {string} expression
+@param {boolean} [includeContents] Leave off if unneeded, for perf
 @returns {NamedCapturingGroupsMap}
 */
-function getNamedCapturingGroups(expression) {
+function getNamedCapturingGroups(expression, includeContents) {
   const namedGroups = new Map();
   forEachUnescaped(
     expression,
-    namedCapturingStartPattern,
+    namedCapturingDelim,
     ({0: m, index, groups: {captureName}}) => {
       // If there are duplicate capture names, subroutines refer to the first instance of the given
       // group (matching the behavior of PCRE and Perl)
@@ -296,8 +300,12 @@ function getNamedCapturingGroups(expression) {
         namedGroups.get(captureName).isUnique = false;
       } else {
         namedGroups.set(captureName, {
-          contents: getGroupContents(expression, index + m.length),
           isUnique: true,
+          ...(
+            includeContents ? {
+              contents: getGroupContents(expression, index + m.length),
+            } : null
+          ),
         });
       }
     },
