@@ -7,7 +7,7 @@
 [![size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features that make them dramatically more readable and powerful, and it returns native `RegExp` instances that maintain or exceed native performance. It's lightweight and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
+`regex` is a template tag that extends JavaScript regular expressions with features that can make them dramatically more readable and powerful, and it returns native `RegExp` instances that maintain or exceed native performance. It's lightweight, and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -259,9 +259,8 @@ console.log(match.groups);
   <summary>👉 <b>Show more details</b></summary>
 
 - Only one definition group is allowed per regex, and it must appear at the end of its pattern.
-- At the top level of a definition group, only named groups, whitespace, and comments are allowed.
-- Named groups within definition groups must use unique names.
-- Named groups within definition groups are not included on a resulting match's `groups` object. This is true even for nested named groups.
+- At the top level of definition groups, only named groups, whitespace, and comments are allowed.
+- All named groups (including nested groups) within definition groups must use unique names, and are excluded from the `groups` object of resulting matches.
 </details>
 
 ### Recursion
