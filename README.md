@@ -2,14 +2,14 @@
 
 <a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" height="130" alt="regex logo"></a>
 
-[![build](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
+[![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
 [![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
-[![size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
+[![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features that can make them dramatically more readable and powerful, and it returns native `RegExp` instances that maintain or exceed native performance. It's lightweight, and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
+`regex` is a template tag that extends JavaScript regular expressions with key features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that maintain or exceed native performance. It's also lightweight, supports all ES2024+ regex functionality, and can be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` that enable powerful composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, and maybe surpassing C++, Java, .NET, and Python.
 
@@ -260,7 +260,7 @@ console.log(match.groups);
 
 - Only one definition group is allowed per regex, and it must appear at the end of its pattern.
 - At the top level of definition groups, only named groups, whitespace, and comments are allowed.
-- All named groups (including nested groups) within definition groups must use unique names, and are excluded from the `groups` object of resulting matches.
+- Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
 </details>
 
 ### Recursion
@@ -645,7 +645,7 @@ You can make extensions easier to use by wrapping the use of these features in y
 
 ## 🏷️ About
 
-`regex` was partly inspired by [`XRegExp`](https://github.com/slevithan/xregexp)`.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` extensions.
+`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` extensions.
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.

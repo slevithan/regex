@@ -7,7 +7,7 @@ import {countCaptures} from './utils.js';
 */
 export function subroutinesPostprocessor(expression) {
   const namedGroups = getNamedCapturingGroups(expression);
-  return processDefineGroup(
+  return processDefinitionGroup(
     processSubroutines(expression, namedGroups),
     namedGroups
   );
@@ -100,7 +100,6 @@ function processSubroutines(expression, namedGroups) {
           }
         }
       } else if (backrefNum) {
-        // Beware: backref renumbering with subroutines is complicated
         const num = +backrefNum;
         let increment = 0;
         if (openSubroutinesMap.size) {
@@ -124,8 +123,8 @@ function processSubroutines(expression, namedGroups) {
           let isGroupFromThisSubroutine = false;
           if (backrefName === openSubroutinesStack[0]) {
             isGroupFromThisSubroutine = true;
-          // Search for the group in the contents of the subroutine stack
           } else {
+            // Search for the group in the contents of the subroutine stack
             for (const s of openSubroutinesStack) {
               if (hasUnescaped(
                 openSubroutinesMap.get(s).contents,
@@ -162,22 +161,23 @@ function processSubroutines(expression, namedGroups) {
 }
 
 /**
-Strip a valid, trailing `(?(DEFINE)…)` group
+Strip a valid, trailing `(?(DEFINE)…)`
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @returns {string}
 */
-function processDefineGroup(expression, namedGroups) {
-  const defineMatch = execUnescaped(expression, String.raw`\(\?\(DEFINE\)`, 0, Context.DEFAULT);
-  if (!defineMatch) {
+function processDefinitionGroup(expression, namedGroups) {
+  const defineDelim = execUnescaped(expression, String.raw`\(\?\(DEFINE\)`, 0, Context.DEFAULT);
+  if (!defineDelim) {
     return expression;
   }
-  const defineGroup = getGroup(expression, defineMatch);
-  // This also covers when the DEFINE group is unclosed
-  if (defineGroup.afterPos !== expression.length) {
-    // DEFINE is only supported at the end of the regex because otherwise it would significantly
-    // complicate edge-case backref handling
-    throw new Error('DEFINE group can only be used at the end of a regex');
+  const defineGroup = getGroup(expression, defineDelim);
+  if (defineGroup.afterPos < expression.length) {
+    // Supporting DEFINE at positions other than the end of regexes would significantly complicate
+    // edge-case backref handling. Note: Flag x in fact permits trailing whitespace and comments
+    throw new Error('DEFINE group allowed only at the end of a regex');
+  } else if (defineGroup.afterPos > expression.length) {
+    throw new Error('DEFINE group is unclosed');
   }
   // `(?:)` separators can be added by the flag x preprocessor
   const contentsToken = new RegExp(String.raw`${namedCapturingStartPattern}|\(\?:\)|(?<unsupported>\\?.)`, 'gsu');
@@ -186,18 +186,19 @@ function processDefineGroup(expression, namedGroups) {
     const {captureName, unsupported} = match.groups;
     if (captureName) {
       if (!namedGroups.get(captureName).isUnique) {
-        throw new Error('Names within DEFINE group must be unique');
+        throw new Error('Group names within DEFINE group must be unique');
       }
       contentsToken.lastIndex = getGroup(defineGroup.contents, match).afterPos;
       continue;
     }
     if (unsupported) {
-      // Since the DEFINE group is stripped from the expression, we can't easily check if
-      // unreferenced syntax is valid. Since it adds no value, it's easiest to just not allow it
-      throw new Error(`DEFINE group can only contain named groups; found ${unsupported}`);
+      // Since a DEFINE group is stripped from its expression, we can't easily check if
+      // unreferenced syntax within it is valid. Such syntax adds no value, so it's easiest to just
+      // not allow it
+      throw new Error(`DEFINE group includes unsupported syntax at top level`);
     }
   }
-  return expression.slice(0, defineMatch.index);
+  return expression.slice(0, defineDelim.index);
 }
 
 /**
