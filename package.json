@@ -1,7 +1,7 @@
 {
   "name": "regex",
-  "version": "2.1.0",
-  "description": "Context-aware regex template tag with advanced features and best practices built-in",
+  "version": "3.0.0",
+  "description": "Regex template tag with extended syntax, context-aware interpolation, and always-on best practices",
   "author": "Steven Levithan",
   "license": "MIT",
   "type": "module",
