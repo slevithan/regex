@@ -7,7 +7,7 @@
 [![size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` creates **readable, high performance, *native* JavaScript regular expressions** with advanced features and best practices built-in. It's lightweight and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
+`regex` is a template tag that extends JavaScript regular expressions with features that make them dramatically more readable and powerful, and it returns native `RegExp` instances that maintain or exceed native performance. It's lightweight and supports all ES2024+ regex functionality. It can also be used dependency-free as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex).
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` which can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` which enable powerful composition, and context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
@@ -44,14 +44,14 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 ## 💎 Features
 
 - **A modern regex baseline** so you don't need to continually opt-in to best practices.
-  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors. In environments without <kbd>v</kbd>, flag <kbd>u</kbd> is used with <kbd>v</kbd>'s rules applied.
-  - Always-on implicit flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-  - Always-on implicit flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
+  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors. In environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is used with <kbd>v</kbd>'s rules applied.
+  - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+  - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **New regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
   - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Definition groups allow you to define subpatterns for use by reference only.
+  - Definition groups via `(?(DEFINE)…)` allow defining subpatterns for use by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -62,7 +62,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 ```js
 import {regex, pattern} from 'regex';
 
-// Subroutines and a definition group
+// Definition group and subroutines
 const record = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
@@ -129,13 +129,13 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be **beautiful, grammatical, and easy to understand**.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and, in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward and backward compatible). It supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and, in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward and backward compatible). It also supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 New regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, C++, Java, .NET, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, Java, .NET, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -199,7 +199,7 @@ regex`\b \g<byte> (\.\g<byte>){3} \b
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
 `
 
-// Matches a record with several date fields and captures each value
+// Matches a record with several date fields, and captures each value
 regex`
   ^ Born:\     (?<born>     \g<date>) \n
     Admitted:\ (?<admitted> \g<date>) \n
@@ -230,12 +230,12 @@ See the next section on definition groups for another way to do this.
 
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that named groups within them don't appear on a match's `groups` object.
+The syntax `(?(DEFINE)…)` can be used to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that the named groups within them don't appear on a match's `groups` object.
 
 Example:
 
 ```js
-const record = 'Admitted: 2022-01-01\nReleased: 2022-01-02';
+const record = 'Admitted: 2024-01-01\nReleased: 2024-01-02';
 const match = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
@@ -249,13 +249,20 @@ const match = regex`
 `.exec(record);
 
 console.log(match.groups);
-// → {admitted: '2022-01-01', released: '2022-01-02'}
+// → {admitted: '2024-01-01', released: '2024-01-02'}
 ```
 
-Only one definition group can be added per regex, and it must appear at the end of the pattern. It also can't contain anything other than named groups (which must use unique names), whitespace, and comments.
-
 > [!NOTE]
-> Definition groups are based on the feature in PCRE and Perl. Compared to those flavors, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
+> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
+
+<details>
+  <summary>👉 <b>Show more details</b></summary>
+
+- Only one definition group is allowed per regex, and it must appear at the end of its pattern.
+- At the top level of a definition group, only named groups, whitespace, and comments are allowed.
+- Named groups within definition groups must use unique names.
+- Named groups within definition groups are not included on a resulting match's `groups` object. This is true even for nested named groups.
+</details>
 
 ### Recursion
 
