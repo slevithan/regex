@@ -258,7 +258,7 @@ console.log(match.groups);
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Only one definition group is allowed per regex, and it must appear at the end of its pattern. Trailing whitespace and comments are allowed by implicit flag <kbd>x</kbd>.
+- Only one definition group is allowed per regex, and it must appear at the end of its pattern (trailing whitespace and comments are allowed by implicit flag <kbd>x</kbd>).
 - At the top level of definition groups, only named groups, whitespace, and comments are allowed.
 - Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
 - The word `DEFINE` must appear in uppercase.

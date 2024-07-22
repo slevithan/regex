@@ -202,7 +202,7 @@ function processDefinitionGroup(expression, namedGroups) {
         }
       }
       if (duplicateName) {
-        throw new Error(`Duplicate group name "${duplicateName}" within DEFINE"`);
+        throw new Error(`Duplicate group name "${duplicateName}" within DEFINE`);
       }
       contentsToken.lastIndex = group.afterPos;
       continue;
