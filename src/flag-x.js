@@ -139,11 +139,11 @@ export function rakePostprocessor(expression) {
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
-  // - Before one of `()|$\`.
-  // - After one of `()|>^`, `(?:`, or a lookaround opening.
+  // - Before one of `()|.[$\`.
+  // - After one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
   expression = replaceUnescaped(
     expression,
-    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|$\\])|(?<=[()|>^]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|.[$\\])|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!]))${sep}`,
     '',
     Context.DEFAULT
   );

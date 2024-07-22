@@ -102,6 +102,10 @@ describe('flag x', () => {
       expect(() => regex`(?< n >)`).toThrow();
       expect(() => regex`(?<n>)\k< n >`).toThrow();
     });
+
+    it('should avoid adding token separators when it is safe to do so', () => {
+      expect(regex` ^ (?! a \s b . c | d [] e ) $ `.source).toBe('^(?!a\\sb.c|d[]e)$');
+    });
   });
 
   describe('in character class context', () => {

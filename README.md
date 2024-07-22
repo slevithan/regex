@@ -163,15 +163,17 @@ The following example illustrates how subroutines and backreferences differ:
 ```js
 // A backreference with \k<name>
 regex`(?<prefix>sens|respons)e\ and\ \k<prefix>ibility`
-/* Matches: - 'sense and sensibility'
-            - 'response and responsibility' */
+/* Matches:
+- 'sense and sensibility'
+- 'response and responsibility' */
 
 // A subroutine with \g<name>
 regex`(?<prefix>sens|respons)e\ and\ \g<prefix>ibility`
-/* Matches: - 'sense and sensibility'
-            - 'sense and responsibility'
-            - 'response and sensibility'
-            - 'response and responsibility' */
+/* Matches:
+- 'sense and sensibility'
+- 'sense and responsibility'
+- 'response and sensibility'
+- 'response and responsibility' */
 ```
 
 Subroutines go beyond the composition benefits of [interpolation](#-interpolation). Apart from the obvious difference that they don't require variables to be defined outside of the regex, they also don't simply insert the referenced subpattern.
