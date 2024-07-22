@@ -139,11 +139,20 @@ export function rakePostprocessor(expression) {
   // No need for separators at:
   // - The beginning, if not followed by a quantifier.
   // - The end.
-  // - Before one of `()|.[$\`.
-  // - After one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
+  // - Outside of character classes:
+  //   - If followed by one of `)|.[$\`, or `(` if that's not followed by `DEFINE)`.
+  //     - Technically we shouldn't rake if followed by `)` and preceded by `(?(DEFINE`, but in
+  //       this case flag x injects `(?:)` between the preceding invalid `(?` to sandbox the `?`.
+  //   - If preceded by one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
+  //     - So long as the separator is not followed by a quantifier.
+  // Examples of things that are not safe to rake at the boundaries of:
+  // - Anywhere: Letters, numbers, or any of `-=_,<?*+{}`.
+  // - If followed by any of `:!>`.
+  // - If preceded by any of `\[cgkpPux]`.
+  // - Anything inside character classes.
   expression = replaceUnescaped(
     expression,
-    String.raw`^${sep}(?![?*+{])|${sep}$|${sep}(?=[()|.[$\\])|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!]))${sep}`,
+    String.raw`${sep}(?=[)|.[$\\]|\((?!DEFINE)|$)|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!])|^)${sep}(?![?*+{])`,
     '',
     Context.DEFAULT
   );

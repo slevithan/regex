@@ -30,9 +30,10 @@ describe('flag x', () => {
       expect('aaa').toMatch(regex({raw: ['^a#comment\n+$']}));
       expect('aaa').toMatch(regex({raw: ['^a  #comment\n +$']}));
       expect(() => regex`a | ?`).toThrow();
+      expect(() => regex` ?`).toThrow();
     });
 
-    it('should not allow quantifiers to follow other quantifiers', function() {
+    it('should not allow quantifiers to follow other complete quantifiers', function() {
       expect(() => regex`a?? ?`).toThrow();
       expect(() => regex`a*? ?`).toThrow();
       expect(() => regex`a+? ?`).toThrow();
@@ -103,8 +104,54 @@ describe('flag x', () => {
       expect(() => regex`(?<n>)\k< n >`).toThrow();
     });
 
-    it('should avoid adding token separators when it is safe to do so', () => {
-      expect(regex` ^ (?! a \s b . c | d [] e ) $ `.source).toBe('^(?!a\\sb.c|d[]e)$');
+    describe('token separator cleanup (rake)', () => {
+      it('should avoid adding token separators when it is safe to do so', () => {
+        expect(regex` ^ (?! a \s b . c | d [] e ) $ `.source).toBe('^(?!a\\sb.c|d[]e)$');
+      });
+
+      it('should not remove (?:) when followed by a quantifier', () => {
+        expect('').toMatch(regex`(?:)?`);
+        expect('').toMatch(regex`^(?:)?$`);
+        expect(':').toMatch(regex`^((?:)?:)$`);
+        expect('=').toMatch(regex`^((?:)?=)$`);
+        expect('!').toMatch(regex`^((?:)?!)$`);
+        expect('DEFINE').toMatch(regex`^((?:)?(DEFINE))$`);
+      });
+
+      it('should maintain the error status of invalid syntax', () => {
+        expect(() => regex`(?(?:):)`).toThrow();
+        expect(() => regex`(?(?:)=)`).toThrow();
+        expect(() => regex`(?(?:)!)`).toThrow();
+        expect(() => regex`(?(?:)i:)`).toThrow();
+        expect(() => regex`(?i(?:):)`).toThrow();
+        expect(() => regex`(?i-(?:):)`).toThrow();
+        expect(() => regex`(?i-m(?:):)`).toThrow();
+        expect(() => regex`(?(?:)-i:)`).toThrow();
+        expect(() => regex`(?-(?:)i:)`).toThrow();
+        expect(() => regex`(?-i(?:):)`).toThrow();
+        expect(() => regex`(?(?:)(DEFINE))`).toThrow();
+        expect(() => regex`(?((?:)DEFINE))`).toThrow();
+        expect(() => regex`(?(DEFINE(?:)))`).toThrow();
+        expect(() => regex`\c(?:)A`).toThrow();
+        expect(() => regex`\x(?:)00`).toThrow();
+        expect(() => regex`\u(?:)0000`).toThrow();
+        expect(() => regex`\p(?:){Letter}`).toThrow();
+        expect(() => regex`\p{(?:)Letter}`).toThrow();
+        expect(() => regex`\p{Letter(?:)}`).toThrow();
+        expect(() => regex`.{(?:)1}`).toThrow();
+        expect(() => regex`.{1(?:)}`).toThrow();
+        expect(() => regex`.{1(?:),2}`).toThrow();
+        expect(() => regex`.{1,(?:)2}`).toThrow();
+        expect(() => regex`(?(?:)<a>)`).toThrow();
+        expect(() => regex`(?<(?:)a>)`).toThrow();
+        expect(() => regex`(?<a(?:)>)`).toThrow();
+        expect(() => regex`(?<a>)\k(?:)<a>`).toThrow();
+        expect(() => regex`(?<a>)\k<(?:)a>`).toThrow();
+        expect(() => regex`(?<a>)\k<a(?:)>`).toThrow();
+        expect(() => regex`(?<a>)\g(?:)<a>`).toThrow();
+        expect(() => regex`(?<a>)\g<(?:)a>`).toThrow();
+        expect(() => regex`(?<a>)\g<a(?:)>`).toThrow();
+      });
     });
   });
 
