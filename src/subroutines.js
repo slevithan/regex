@@ -89,11 +89,12 @@ function processSubroutines(expression, namedGroups) {
         if (openSubroutinesMap.size) {
           // Named capturing group
           if (m !== '(') {
-            // Replace named with unnamed capture. Subroutines shouldn't create new captures, but
-            // it can't be helped since we need any backrefs to this named capture to work. Given
-            // that implicit flag n prevents unnamed capture and requires you to rely on named
-            // backrefs and `groups`, this essentially accomplishes not creating a capture
-            result = spliceStr(result, index, m, '(');
+            // Replace named with unnamed capture. Subroutines ideally wouldn't create any new
+            // captures, but it can't be helped since we need any backrefs to this named capture to
+            // work. Given that flag n prevents unnamed capture and thereby requires you to rely on
+            // named backrefs and `groups`, switching to unnamed essentially accomplishes not
+            // creating a capture. Fully avoid capturing if there are no backrefs in the expression
+            result = spliceStr(result, index, m, '(' + (hasBackrefs ? '' : '?:'));
             token.lastIndex -= m.length;
           }
           backrefIncrements.push(lastOf(backrefIncrements) + subroutine.numCaptures);

@@ -227,6 +227,7 @@ See the next section on definition groups for another way to do this.
 - Subroutines can appear before the groups they reference, as shown in examples above.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
+- Like backreferences, subroutines can't be used from *within* character classes.
 - As with all new syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
 
