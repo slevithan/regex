@@ -67,7 +67,7 @@ export function escapeV(str, context) {
 //   followed by the same unescaped symbol outside an interpolation, and since it won't be wrapped,
 //   the second symbol wouldn't be sandboxed from the one following it.
 export function sandboxLoneDoublePunctuatorChar(str) {
-  return str.replace(new RegExp(String.raw`^([${doublePunctuatorChars}])(?!\1)`), (m, _, pos) => {
+  return str.replace(new RegExp(`^([${doublePunctuatorChars}])(?!\\1)`), (m, _, pos) => {
     return `\\${m}${pos + 1 === str.length ? '' : m}`;
   });
 }

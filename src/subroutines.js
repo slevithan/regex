@@ -74,7 +74,7 @@ function processSubroutines(expression, namedGroups) {
         // `unclosedGroupCount`. If there are any backrefs in the expression, wrap with '()'
         // instead of '(?:)' so that backrefs line up, in case there are backrefs inside the
         // subroutine that refer to their parent capturing group
-        const subroutineValue = `${hasBackrefs ? '(' : '(?:'}${contents})`;
+        const subroutineValue = `(${hasBackrefs ? '' : '?:'}${contents})`;
         openSubroutinesMap.set(subroutineName, {
           contents,
           unclosedGroupCount: countSubgroups(subroutineValue),
@@ -245,7 +245,7 @@ function countCapturesBeforeGroupName(expression, groupName) {
 */
 function countSubgroups(expression) {
   let num = 0;
-  forEachUnescaped(expression, String.raw`\(`, () => num++, Context.DEFAULT);
+  forEachUnescaped(expression, '\\(', () => num++, Context.DEFAULT);
   return num;
 }
 
