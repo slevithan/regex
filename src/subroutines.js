@@ -6,7 +6,7 @@ import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
 @returns {string}
 */
 export function subroutinesPostprocessor(expression) {
-  const namedGroups = getNamedCapturingGroups(expression, true);
+  const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
   return processDefinitionGroup(
     processSubroutines(expression, namedGroups),
     namedGroups
@@ -28,7 +28,7 @@ ${subroutinePattern}
 @typedef {
   Map<string, {
     isUnique: boolean;
-    contents?: string;
+    contents: string | null;
   }>} NamedCapturingGroupsMap
 */
 
@@ -285,10 +285,10 @@ function spliceStr(str, pos, oldValue, newValue) {
 
 /**
 @param {string} expression
-@param {boolean} [includeContents] Leave off if unneeded, for perf
+@param {Object<includeContents?: boolean>} [options]
 @returns {NamedCapturingGroupsMap}
 */
-function getNamedCapturingGroups(expression, includeContents) {
+function getNamedCapturingGroups(expression, {includeContents} = {}) {
   const namedGroups = new Map();
   forEachUnescaped(
     expression,
@@ -301,11 +301,7 @@ function getNamedCapturingGroups(expression, includeContents) {
       } else {
         namedGroups.set(captureName, {
           isUnique: true,
-          ...(
-            includeContents ? {
-              contents: getGroupContents(expression, index + m.length),
-            } : null
-          ),
+          contents: includeContents ? getGroupContents(expression, index + m.length) : null,
         });
       }
     },

@@ -112,10 +112,10 @@ describe('flag x', () => {
       it('should not remove (?:) when followed by a quantifier', () => {
         expect('').toMatch(regex`(?:)?`);
         expect('').toMatch(regex`^(?:)?$`);
-        expect(':').toMatch(regex`^((?:)?:)$`);
-        expect('=').toMatch(regex`^((?:)?=)$`);
-        expect('!').toMatch(regex`^((?:)?!)$`);
-        expect('DEFINE').toMatch(regex`^((?:)?(DEFINE))$`);
+        expect(':').toMatch(regex({__flagN: false})`^((?:)?:)$`);
+        expect('=').toMatch(regex({__flagN: false})`^((?:)?=)$`);
+        expect('!').toMatch(regex({__flagN: false})`^((?:)?!)$`);
+        expect('DEFINE').toMatch(regex({__flagN: false})`^((?:)?(DEFINE))$`);
       });
 
       it('should maintain the error status of invalid syntax', () => {
