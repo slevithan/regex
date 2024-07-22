@@ -42,6 +42,7 @@ function processSubroutines(expression, namedGroups) {
   if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
     return expression;
   }
+  const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
   const backrefIncrements = [0];
   const openSubroutinesMap = new Map();
   const openSubroutinesStack = [];
@@ -70,9 +71,10 @@ function processSubroutines(expression, namedGroups) {
         numCapturesPassedInsideSubroutines += numCaptures;
         // Wrap value in case it has top-level alternation or is followed by a quantifier. The
         // wrapper also marks the end of the expanded contents, which we'll track using
-        // `unclosedGroupCount`. Wrap with '()' instead of '(?:)' so that backrefs line up, in case
-        // there are backrefs inside the subroutine that refer to their parent capturing group
-        const subroutineValue = `(${contents})`;
+        // `unclosedGroupCount`. If there are any backrefs in the expression, wrap with '()'
+        // instead of '(?:)' so that backrefs line up, in case there are backrefs inside the
+        // subroutine that refer to their parent capturing group
+        const subroutineValue = `${hasBackrefs ? '(' : '(?:'}${contents})`;
         openSubroutinesMap.set(subroutineName, {
           contents,
           unclosedGroupCount: countSubgroups(subroutineValue),
@@ -219,21 +221,6 @@ function processDefinitionGroup(expression, namedGroups) {
 
 /**
 @param {string} expression
-@param {RegExpExecArray} delimMatch
-@returns {{contents: string; afterPos: number}}
-*/
-function getGroup(expression, delimMatch) {
-  const contentsStart = delimMatch.index + delimMatch[0].length;
-  const contents = getGroupContents(expression, contentsStart);
-  const afterPos = contentsStart + contents.length + 1;
-  return {
-    contents,
-    afterPos,
-  };
-}
-
-/**
-@param {string} expression
 @param {string} groupName
 @returns {number}
 */
@@ -249,6 +236,16 @@ function countCapturesBeforeGroupName(expression, groupName) {
     num++;
     pos = index + m.length;
   }
+  return num;
+}
+
+/**
+@param {string} expression
+@returns {number}
+*/
+function countSubgroups(expression) {
+  let num = 0;
+  forEachUnescaped(expression, String.raw`\(`, () => num++, Context.DEFAULT);
   return num;
 }
 
@@ -273,14 +270,18 @@ function getCaptureNum(expression, groupName) {
 }
 
 /**
-@param {string} str
-@param {number} pos
-@param {string} oldValue
-@param {string} newValue
-@returns {string}
+@param {string} expression
+@param {RegExpExecArray} delimMatch
+@returns {{contents: string; afterPos: number}}
 */
-function spliceStr(str, pos, oldValue, newValue) {
-  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
+function getGroup(expression, delimMatch) {
+  const contentsStart = delimMatch.index + delimMatch[0].length;
+  const contents = getGroupContents(expression, contentsStart);
+  const afterPos = contentsStart + contents.length + 1;
+  return {
+    contents,
+    afterPos,
+  };
 }
 
 /**
@@ -311,20 +312,21 @@ function getNamedCapturingGroups(expression, {includeContents} = {}) {
 }
 
 /**
-@param {string} expression
-@returns {number}
-*/
-function countSubgroups(expression) {
-  let num = 0;
-  forEachUnescaped(expression, String.raw`\(`, () => num++, Context.DEFAULT);
-  return num;
-}
-
-/**
-Remove when support for ES2022 string/array method `at` (Node.js 16.6+) is no longer an issue
+Remove when support for ES2022 string/array method `at` (Node.js 16.6) is no longer an issue
 @param {string | any[]} strOrArr
 @returns {any}
 */
 function lastOf(strOrArr) {
   return strOrArr[strOrArr.length - 1];
+}
+
+/**
+@param {string} str
+@param {number} pos
+@param {string} oldValue
+@param {string} newValue
+@returns {string}
+*/
+function spliceStr(str, pos, oldValue, newValue) {
+  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
 }
