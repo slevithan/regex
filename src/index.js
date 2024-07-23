@@ -82,6 +82,8 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   if (__flagX) {
     ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
   }
+  // Implicit flag n is a preprocessor because capturing groups affects subsequent handling with
+  // backreference rewriting
   if (__flagN) {
     ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
   }

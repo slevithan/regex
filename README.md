@@ -7,9 +7,9 @@
 [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2024+ regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any dependencies or runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2024+ regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` that enable powerful composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and definition groups via `(?(DEFINE)…)` that enable powerful composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, and maybe surpassing C++, Java, .NET, and Python.
 
