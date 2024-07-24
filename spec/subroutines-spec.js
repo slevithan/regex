@@ -56,8 +56,11 @@ describe('subroutines', () => {
       [String.raw`(?<a>)\g<a>\1\g<a>\1`, String.raw`(?<a>)()\1()\1`],
       [String.raw`(?<a>)\g<a>()\1\g<a>()\1`, String.raw`(?<a>)()()\1()()\1`],
       [String.raw`(?<a>)\g<a>()\2\g<a>()\3`, String.raw`(?<a>)()()\3()()\5`],
-      [String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3\g<a>\1\2\3()\1\2\3\g<a>\1\2\3()\1\2\3`, String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3(\3\4\5()\3\4\5)\1\2\5()\1\2\5(\6\7\8()\6\7\8)\1\2\5()\1\2\5`],
+      [String.raw`(?<a>\1\2\3())\g<a>()`, String.raw`(?<a>\1\2\5())(\3\4\5())()`],
+      [String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3\g<a>\1\2\3()\1\2\3\g<a>\1\2\3()\1\2\3`, String.raw`\1\2\5(?<a>\1\2\5()\1\2\5)\1\2\5(\3\4\5()\3\4\5)\1\2\5()\1\2\5(\6\7\5()\6\7\5)\1\2\5()\1\2\5`],
       [String.raw`\g<a>(?<a>\1)`, String.raw`(\1)(?<a>\2)`],
+      [String.raw`\g<a>()(?<a>\1)`, String.raw`(\2)()(?<a>\2)`],
+      [String.raw`\g<a>(?<a>\2)()`, String.raw`(\3)(?<a>\3)()`],
       [String.raw`(?<a>\k<a>)\g<a>`, String.raw`(?<a>\k<a>)(\2)`],
       [String.raw`\g<a>(?<a>\k<a>)`, String.raw`(\1)(?<a>\k<a>)`],
       [String.raw`(?<a>(?<b>)\k<b>)\g<a>`, String.raw`(?<a>(?<b>)\k<b>)(()\4)`],
@@ -72,11 +75,8 @@ describe('subroutines', () => {
 
   it('should throw with out of bounds numbered backreferences', () => {
     const cases = [
-      String.raw`(?<a>)\g<a>\1\2`, // To: String.raw`(?<a>)()\1\3`
-      // TO FIX: The emitted \2→\3 should be \2→\4 (or otherwise throw) so it remains an out of
-      // bounds reference error. Low priority since `regex`'s implicit flag n prevents using this,
-      // plus out of bounds backrefs are invalid (with flag u/v) and this is an extreme edge case
-      // String.raw`(?<a>)\g<a>\1\2\g<a>`, // To: String.raw`(?<a>)()\1\3()`
+      String.raw`(?<a>)\g<a>\2`,
+      String.raw`(?<a>)\g<a>\2\g<a>`,
     ];
     cases.forEach(input => {
       expect(() => regex({__flagN: false})({raw: [input]})).toThrow();
