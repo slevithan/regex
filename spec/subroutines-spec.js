@@ -41,7 +41,7 @@ describe('subroutines', () => {
     expect('abbaccc').not.toMatch(regex`^(?<a>a(?<b>.)\k<b>)\g<a>\k<b>$`);
   });
 
-  it('should rewrite named and numbered backreferences as needed', () => {
+  it('should rewrite backreferences as needed', () => {
     // Test the *output* to ensure each adjustment is precise and works correctly even in cases
     // where there are discrete backreferences that each match empty strings
     const cases = [
@@ -196,6 +196,17 @@ describe('subroutines', () => {
 
       // It's okay if backrefs are not to independent top-level groups
       expect(() => regex`\g<a>(?(DEFINE)(?<a>(?<b>\k<a>)\k<b>))`).not.toThrow();
+    });
+
+    it('should rewrite backreferences as needed', () => {
+      // Test the *output* to ensure each adjustment is precise and works correctly even in cases
+      // where there are discrete backreferences that each match empty strings
+      const cases = [
+        [String.raw`\g<b>\g<a>(?(DEFINE)(?<a>\1)(?<b>))`, String.raw`()(\2)`],
+      ];
+      cases.forEach(([input, output]) => {
+        expect(regex({__flagN: false})({raw: [input]}).source).toBe(output);
+      });
     });
 
     describe('contents', () => {

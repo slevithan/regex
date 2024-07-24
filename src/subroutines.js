@@ -6,7 +6,7 @@ import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
 @returns {string}
 */
 export function subroutinesPostprocessor(expression) {
-  // Note that subroutines and definition groups fully support numbered backreferences and unnamed
+  // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
@@ -45,7 +45,7 @@ function processSubroutines(expression, namedGroups) {
   if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
     return expression;
   }
-  // Can skip a lot of processing if there are no backrefs
+  // Can skip a lot of processing and avoid adding captures if there are no backrefs
   const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
   const subroutineWrapper = hasBackrefs ? '(' : '(?:';
   const openSubroutines = new Map();
@@ -85,7 +85,7 @@ function processSubroutines(expression, namedGroups) {
         }
         openSubroutines.set(subroutineName, {
           // Incrementally decremented to track when we've left the group
-          unclosedGroupCount: countSubgroups(subroutineValue),
+          unclosedGroupCount: countOpenParens(subroutineValue),
         });
         openSubroutinesStack.push(subroutineName);
         // Expand the subroutine's contents into the pattern we're looping over
@@ -196,7 +196,7 @@ Strip `(?(DEFINE)…)`
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 IMPORTANT: Avoid using the `contents` property of `namedGroups` objects, because at this point
-subroutine substitution has been performed on them in `expression`
+subroutine substitution has been performed on the corresponding substrings in `expression`
 @returns {string}
 */
 function processDefinitionGroup(expression, namedGroups) {
@@ -207,7 +207,7 @@ function processDefinitionGroup(expression, namedGroups) {
   const defineGroup = getGroup(expression, defineMatch);
   if (defineGroup.afterPos < expression.length) {
     // Supporting DEFINE at positions other than the end would complicate backref handling.
-    // Note: Flag x's preprocessing permits trailing whitespace and comments
+    // NOTE: Flag x's preprocessing permits trailing whitespace and comments
     throw new Error('DEFINE group allowed only at the end of a regex');
   } else if (defineGroup.afterPos > expression.length) {
     throw new Error('DEFINE group is unclosed');
@@ -249,7 +249,7 @@ Counts unescaped open parens outside of character classes, regardless of group t
 @param {string} expression
 @returns {number}
 */
-function countSubgroups(expression) {
+function countOpenParens(expression) {
   let num = 0;
   forEachUnescaped(expression, '\\(', () => num++, Context.DEFAULT);
   return num;

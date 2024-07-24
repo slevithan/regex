@@ -39,7 +39,7 @@ export const flagVSupported = (() => {
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 
 export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
-export const capturingDelim = String.raw`\((?!\?)|${namedCapturingDelim}`;
+export const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;
 export const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
