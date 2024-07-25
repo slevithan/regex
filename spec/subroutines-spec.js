@@ -41,42 +41,87 @@ describe('subroutines', () => {
     expect('abbaccc').not.toMatch(regex`^(?<a>a(?<b>.)\k<b>)\g<a>\k<b>$`);
   });
 
-  it('should rewrite backreferences as needed', () => {
-    // Test the *output* to ensure each adjustment is precise and works correctly even in cases
-    // where there are discrete backreferences that each match empty strings
+  it('should rewrite a collection of backreferences as needed', () => {
+    // Testing output is not ideal because output could change without a change in meaning, but
+    // this allows ensuring that each adjustment is precise and works correctly even in cases where
+    // there are discrete backreferences that each match empty strings (which is necessarily true
+    // when backreferencing a parent, nonparticipating, or not-yet-participating group).
+    // The following list is tested with implicit flag n disabled, so we can test both named and
+    // numbered captures and backreferences
     const cases = [
+      // Non-nested subroutine, with backref that references within its parent group
+      //   └ With the subroutine coming after its referenced group:
+      [String.raw`(?<a>\k<a>)\g<a>`, String.raw`(?<a>\k<a>)(\2)`],
+      [String.raw`(?<a>\1)\g<a>`, String.raw`(?<a>\1)(\2)`],
+      [String.raw`(?<a>(?<b>\k<a>))\g<a>`, String.raw`(?<a>(?<b>\k<a>))((\3))`],
+      [String.raw`(?<a>(\k<a>))\g<a>`, String.raw`(?<a>(\k<a>))((\3))`],
+      [String.raw`(?<a>(?<b>\1))\g<a>`, String.raw`(?<a>(?<b>\1))((\3))`],
+      [String.raw`(?<a>(\1))\g<a>`, String.raw`(?<a>(\1))((\3))`],
+      [String.raw`(?<a>(?<b>)\k<a>)\g<a>`, String.raw`(?<a>(?<b>)\k<a>)(()\3)`],
+      [String.raw`(?<a>()\k<a>)\g<a>`, String.raw`(?<a>()\k<a>)(()\3)`],
+      [String.raw`(?<a>(?<b>)\1)\g<a>`, String.raw`(?<a>(?<b>)\1)(()\3)`],
+      [String.raw`(?<a>()\1)\g<a>`, String.raw`(?<a>()\1)(()\3)`],
+      [String.raw`(?<a>(?<b>)\k<b>)\g<a>`, String.raw`(?<a>(?<b>)\k<b>)(()\4)`],
+      [String.raw`(?<a>(?<b>)\2)\g<a>`, String.raw`(?<a>(?<b>)\2)(()\4)`],
+      [String.raw`(?<a>()\2)\g<a>`, String.raw`(?<a>()\2)(()\4)`],
+      [String.raw`(?<a>(?<b>\k<b>))\g<a>`, String.raw`(?<a>(?<b>\k<b>))((\4))`],
+      [String.raw`(?<a>(?<b>\2))\g<a>`, String.raw`(?<a>(?<b>\2))((\4))`],
+      [String.raw`(?<a>(\2))\g<a>`, String.raw`(?<a>(\2))((\4))`],
+      //   └ With the self-referencing group coming after other captures:
+      [String.raw`()(?<a>()\2)\g<a>`, String.raw`()(?<a>()\2)(()\4)`],
+      [String.raw`()(?<a>()\2)()\g<a>`, String.raw`()(?<a>()\2)()(()\5)`],
+      //   └ With the subroutine coming before its referenced group:
+      [String.raw`\g<a>(?<a>\k<a>)`, String.raw`(\1)(?<a>\k<a>)`],
+      [String.raw`\g<a>(?<a>\1)`, String.raw`(\1)(?<a>\2)`],
+      [String.raw`\g<a>()(?<a>\2)`, String.raw`(\1)()(?<a>\3)`],
+      [String.raw`\g<a>\g<a>()(?<a>\2)`, String.raw`(\1)(\2)()(?<a>\4)`],
+      [String.raw`\g<a>(?<a>()\2)`, String.raw`(()\2)(?<a>()\4)`],
+      // Non-nested subroutine, with backref that references outside its parent group
+      //   └ With the subroutine coming after its referenced group:
       [String.raw`()(?<a>\1)\g<a>`, String.raw`()(?<a>\1)(\1)`],
+      [String.raw`()(?<a>()\1)()\g<a>`, String.raw`()(?<a>()\1)()(()\1)`],
+      [String.raw`(?<a>()\3)()\g<a>`, String.raw`(?<a>()\3)()(()\3)`],
+      [String.raw`(?<a>()\3)\g<a>()`, String.raw`(?<a>()\5)(()\5)()`],
+      //   └ With the subroutine coming before its referenced group:
+      [String.raw`\g<a>()(?<a>\1)`, String.raw`(\2)()(?<a>\2)`],
+      [String.raw`\g<a>(?<a>\2)()`, String.raw`(\3)(?<a>\3)()`],
+      // Non-nested subroutine, with mixed references to inside and outside its parent group
       [String.raw`()(?<a>\1\2)\g<a>`, String.raw`()(?<a>\1\2)(\1\3)`],
       [String.raw`()()(?<a>\1\2\3)\g<a>`, String.raw`()()(?<a>\1\2\3)(\1\2\4)`],
-      [String.raw`(?<a>\1)\g<a>`, String.raw`(?<a>\1)(\2)`],
-      [String.raw`(?<a>()\1)\g<a>`, String.raw`(?<a>()\1)(()\3)`],
-      [String.raw`(?<a>()\2)\g<a>`, String.raw`(?<a>()\2)(()\4)`],
+      [String.raw`(?<a>\1\2\3())\g<a>()`, String.raw`(?<a>\1\2\5())(\3\4\5())()`],
+      [String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3\g<a>\1\2\3()\1\2\3\g<a>\1\2\3()\1\2\3`, String.raw`\1\2\5(?<a>\1\2\5()\1\2\5)\1\2\5(\3\4\5()\3\4\5)\1\2\5()\1\2\5(\6\7\5()\6\7\5)\1\2\5()\1\2\5`],
+      // Nested subroutine, with backref that references within its parent group
+      //   └ With the subroutine coming after its referenced group:
+      [String.raw`(?<a>(?<b>)\k<b>)\g<a>`, String.raw`(?<a>(?<b>)\k<b>)(()\4)`],
+      [String.raw`(?<a>\1)(?<b>\g<a>)\g<b>`, String.raw`(?<a>\1)(?<b>(\3))((\5))`],
+      [String.raw`(?<a>()\2)(?<b>\g<a>)\g<b>`, String.raw`(?<a>()\2)(?<b>(()\5))((()\8))`],
+      [String.raw`(?<a>\g<b>)(?<b>\2)\g<a>`, String.raw`(?<a>(\2))(?<b>\3)((\5))`],
+      //   └ With the subroutine coming before its referenced group:
+      [String.raw`\g<a>(?<a>(?<b>)\k<b>)`, String.raw`(()\2)(?<a>(?<b>)\k<b>)`],
+      // Nested subroutine, with backref that references outside its parent group
+      [String.raw`()(?<a>\1)(?<b>\g<a>)\g<b>`, String.raw`()(?<a>\1)(?<b>(\1))((\1))`],
+      [String.raw`(?<a>\3)(?<b>\g<a>)\g<b>()`, String.raw`(?<a>\6)(?<b>(\6))((\6))()`],
+      // Nested subroutine, with mixed references to inside and outside its parent group
+      [String.raw`(?<a>(?<b>\k<a>\k<b>))\g<a>\g<b>`, String.raw`(?<a>(?<b>\k<a>\k<b>))((\3\4))(\k<a>\5)`],
+      [String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))\g<a>\g<b>\g<c>`, String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))(((\4\5\6)))((\k<a>\7\8))(\k<a>\k<b>\9)`],
+      [String.raw`(?<a>(?<b>\k<a>\k<b>\k<c>))\g<a>\g<b>\g<c>(?<c>)`, String.raw`(?<a>(?<b>\k<a>\k<b>\k<c>))((\3\4\k<c>))(\k<a>\5\k<c>)()(?<c>)`],
+      // Standalone backref, not used within a subroutine-referenced group
       [String.raw`(?<a>)\g<a>\1`, String.raw`(?<a>)()\1`],
       [String.raw`(?<a>)\g<a>()\2`, String.raw`(?<a>)()()\3`],
       [String.raw`(?<a>)\g<a>\1\g<a>\1`, String.raw`(?<a>)()\1()\1`],
       [String.raw`(?<a>)\g<a>()\1\g<a>()\1`, String.raw`(?<a>)()()\1()()\1`],
       [String.raw`(?<a>)\g<a>()\2\g<a>()\3`, String.raw`(?<a>)()()\3()()\5`],
-      [String.raw`(?<a>\1\2\3())\g<a>()`, String.raw`(?<a>\1\2\5())(\3\4\5())()`],
-      [String.raw`\1\2\3(?<a>\1\2\3()\1\2\3)\1\2\3\g<a>\1\2\3()\1\2\3\g<a>\1\2\3()\1\2\3`, String.raw`\1\2\5(?<a>\1\2\5()\1\2\5)\1\2\5(\3\4\5()\3\4\5)\1\2\5()\1\2\5(\6\7\5()\6\7\5)\1\2\5()\1\2\5`],
-      [String.raw`\g<a>(?<a>\1)`, String.raw`(\1)(?<a>\2)`],
-      [String.raw`\g<a>()(?<a>\1)`, String.raw`(\2)()(?<a>\2)`],
-      [String.raw`\g<a>(?<a>\2)()`, String.raw`(\3)(?<a>\3)()`],
-      [String.raw`(?<a>\k<a>)\g<a>`, String.raw`(?<a>\k<a>)(\2)`],
-      [String.raw`\g<a>(?<a>\k<a>)`, String.raw`(\1)(?<a>\k<a>)`],
-      [String.raw`(?<a>(?<b>)\k<b>)\g<a>`, String.raw`(?<a>(?<b>)\k<b>)(()\4)`],
-      [String.raw`\g<a>(?<a>(?<b>)\k<b>)`, String.raw`(()\2)(?<a>(?<b>)\k<b>)`],
-      [String.raw`(?<a>(?<b>\k<a>\k<b>))\g<a>\g<b>`, String.raw`(?<a>(?<b>\k<a>\k<b>))((\3\4))(\k<a>\5)`],
-      [String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))\g<a>\g<b>\g<c>`, String.raw`(?<a>(?<b>(?<c>\k<a>\k<b>\k<c>)))(((\4\5\6)))((\k<a>\7\8))(\k<a>\k<b>\9)`],
     ];
     cases.forEach(([input, output]) => {
       expect(regex({__flagN: false})({raw: [input]}).source).toBe(output);
     });
   });
 
-  it('should throw with out of bounds numbered backreferences', () => {
+  it('should throw with out-of-bounds numbered backreferences', () => {
     const cases = [
       String.raw`(?<a>)\g<a>\2`,
       String.raw`(?<a>)\g<a>\2\g<a>`,
+      String.raw`(?<a>()\3)\g<a>`,
     ];
     cases.forEach(input => {
       expect(() => regex({__flagN: false})({raw: [input]})).toThrow();
@@ -182,31 +227,29 @@ describe('subroutines', () => {
       expect(() => regex`(?(DEFINE)()`).toThrow();
     });
 
-    // In PCRE, it's not invalid but can never match (due to different rules than JS for backrefs
-    // to nonparticipating capturing groups)
+    // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
+    // nonparticipating capturing groups)
     it('should not allow backreferences to groups within DEFINE groups', () => {
       expect(() => regex`\k<a>(?(DEFINE)(?<a>))`).toThrow();
     });
 
-    // In PCRE, it's not invalid but can never match (due to different rules than JS for backrefs
-    // to nonparticipating capturing groups)
+    // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
+    // nonparticipating capturing groups)
     it('should not allow referencing groups with backreferences to independent top-level groups within DEFINE groups', () => {
       expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<b>)(?<b>))`).toThrow();
       expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<c>)(?<b>(?<c>)))`).toThrow();
-
-      // It's okay if backrefs are not to independent top-level groups
-      expect(() => regex`\g<a>(?(DEFINE)(?<a>(?<b>\k<a>)\k<b>))`).not.toThrow();
     });
 
-    it('should rewrite backreferences as needed', () => {
-      // Test the *output* to ensure each adjustment is precise and works correctly even in cases
-      // where there are discrete backreferences that each match empty strings
-      const cases = [
-        [String.raw`\g<b>\g<a>(?(DEFINE)(?<a>\1)(?<b>))`, String.raw`()(\2)`],
-      ];
-      cases.forEach(([input, output]) => {
-        expect(regex({__flagN: false})({raw: [input]}).source).toBe(output);
-      });
+    it('should allow referencing groups with backreferences to non-independent groups within DEFINE groups', () => {
+      expect('bba').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>(?<b>\k<a>b)\k<b>a))`);
+      expect('ba').toMatch(regex`^\g<b>\g<a>$(?(DEFINE)(?<a>\k<a>a)(?<b>b))`);
+      // By disabling flag n, this tests both that the numbered backref is rewritten correctly and
+      // that `(DEFINE)` is not interpreted as a capturing group when counting captures
+      expect('ba').toMatch(regex({__flagN: false})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
+    });
+
+    it('should work when flag n is disabled', () => {
+      expect('a').toMatch(regex({__flagN: false})`^a$(?(DEFINE))`);
     });
 
     describe('contents', () => {
