@@ -9,7 +9,7 @@
 
 `regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2024+ regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and definition groups via `(?(DEFINE)…)` that enable powerful composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, and maybe surpassing C++, Java, .NET, and Python.
 
@@ -125,13 +125,13 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
 2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
-3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding (which has some surprising effects like making the ASCII-based `\b` match boundaries of [`\u017F`](https://codepoints.net/U+017F) and [`\u212A`](https://codepoints.net/U+212A)), and adds support for new syntax `\u{…}`, `\p{…}`, and `\P{…}`.
-4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds support for new features/syntax. The new features are nested character classes, set operators for subtraction and intersection, multicharacter "properties of strings" used via `\p{…}`, and the ability for character classes to match multiple characters via `\p{…}` and new syntax `\q{…|…}`.
+3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds support for new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (and, in environments without native flag <kbd>v</kbd>, it enforces <kbd>v</kbd>'s rules so your regexes are forward and backward compatible). It also supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 New regex syntax
 
@@ -297,7 +297,7 @@ JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode suppor
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
-> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while still enforcing flag <kbd>v</kbd>'s rules. So your regexes are forward and backward compatible.
+> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible.
 
 ### Flag `x`
 
