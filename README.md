@@ -50,8 +50,8 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **New regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
-  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Definition groups via `(?(DEFINE)…)` allow defining subpatterns for use by reference only.
+  - Subroutines via `\g<name>` enable powerful subpattern composition, improving readability and maintainability.
+  - Definition groups via `(?(DEFINE)…)` allow defining subpatterns within them for use by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -645,6 +645,17 @@ Yes. There are two approaches for this:
 2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
 
 You can make extensions easier to use by wrapping the use of these features in your own function or template tag. See extension [`regex-recursion`](https://github.com/slevithan/regex-recursion) for an example of using all of these features. For a much simpler example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
+</details>
+
+<details>
+  <summary><b>Why are flags added via <code>regex('g')`…`</code> rather than <code>regex`/…/g`</code>?</b></summary>
+
+There are several disadvantages to the alternative syntax:
+
+- It doesn't match the `RegExp` constructor's syntax.
+- It doesn't match regex literal syntax either, since there are no multiline regex literals (and they're not planned for the future), plus regex literals don't allow unescaped `/` outside of character classes.
+- Flags-up-front can be more readable, particularly with long and/or multiline regexes. Since some flags affect the meaning of regex syntax, it helps to read the flags first. The presence of flags is also easier to miss when they're at the end.
+- It would most likely be incompatible with any future standardized regex template tag. There has been some discussion by/with TC39 about a standardized tagged template for regexes, and such discussions have not favored the `` `/…/g` `` format.
 </details>
 
 ## 🏷️ About
