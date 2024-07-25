@@ -13,12 +13,12 @@
   },
   "scripts": {
     "esbuild": "esbuild src/index.js --bundle --minify --outfile=dist/regex.min.js --global-name=Regex",
-    "prebuild": "rimraf dist types",
+    "prebuild": "rimraf --glob dist/* types/*",
     "build": "npm run esbuild && npm run types",
-    "pretest": "npm run build",
+    "pretest": "npm run esbuild",
     "test": "jasmine",
     "types": "tsc src/index.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
-    "prepare": "npm test"
+    "prepare": "npm test && npm run types"
   },
   "files": [
     "src",
