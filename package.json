@@ -7,17 +7,17 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./src/index.js"
+      "types": "./types/regex.d.ts",
+      "import": "./src/regex.js"
     }
   },
   "scripts": {
-    "esbuild": "esbuild src/index.js --bundle --minify --outfile=dist/regex.min.js --global-name=Regex",
+    "esbuild": "esbuild src/regex.js --bundle --minify --outfile=dist/regex.min.js --global-name=Regex",
     "prebuild": "rimraf --glob dist/* types/*",
     "build": "npm run esbuild && npm run types",
     "pretest": "npm run esbuild",
     "test": "jasmine",
-    "types": "tsc src/index.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
+    "types": "tsc src/regex.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
     "prepare": "npm test && npm run types"
   },
   "files": [

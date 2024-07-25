@@ -7,7 +7,6 @@ export class Pattern {
     this.#value = value;
   }
   /**
-  @override
   @returns {string}
   */
   toString() {
