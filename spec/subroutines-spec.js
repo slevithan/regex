@@ -113,7 +113,7 @@ describe('subroutines', () => {
       [String.raw`(?<a>)\g<a>()\2\g<a>()\3`, String.raw`(?<a>)()()\3()()\5`],
     ];
     cases.forEach(([input, output]) => {
-      expect(regex({__flagN: false})({raw: [input]}).source).toBe(output);
+      expect(regex({__flagN: false, __extendSyntax: true})({raw: [input]}).source).toBe(output);
     });
   });
 
@@ -124,7 +124,7 @@ describe('subroutines', () => {
       String.raw`(?<a>()\3)\g<a>`,
     ];
     cases.forEach(input => {
-      expect(() => regex({__flagN: false})({raw: [input]})).toThrow();
+      expect(() => regex({__flagN: false, __extendSyntax: true})({raw: [input]})).toThrow();
     });
   });
 
@@ -243,13 +243,11 @@ describe('subroutines', () => {
     it('should allow referencing groups with backreferences to non-independent groups within DEFINE groups', () => {
       expect('bba').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>(?<b>\k<a>b)\k<b>a))`);
       expect('ba').toMatch(regex`^\g<b>\g<a>$(?(DEFINE)(?<a>\k<a>a)(?<b>b))`);
-      // By disabling flag n, this tests both that the numbered backref is rewritten correctly and
-      // that `(DEFINE)` is not interpreted as a capturing group when counting captures
-      expect('ba').toMatch(regex({__flagN: false})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
+      expect('ba').toMatch(regex({__flagN: false, __extendSyntax: true})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
     });
 
-    it('should work when flag n is disabled', () => {
-      expect('a').toMatch(regex({__flagN: false})`^a$(?(DEFINE))`);
+    it('should not be interpreted as a capturing group when flag n is disabled', () => {
+      expect('a').toMatch(regex({__flagN: false, __extendSyntax: true})`^a$(?(DEFINE))`);
     });
 
     describe('contents', () => {

@@ -11,6 +11,7 @@ import {backcompatPostprocessor} from './backcompat.js';
 @typedef {Object} RegexTagOptions
 @prop {string} [flags]
 @prop {Array<(expression: string, flags: string) => string>} [postprocessors]
+@prop {boolean} [__extendSyntax]
 @prop {boolean} [__flagN]
 @prop {boolean} [__flagV]
 @prop {boolean} [__flagX]
@@ -68,6 +69,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
     postprocessors = [],
+    __extendSyntax = options.__flagN ?? true,
     __flagN = true,
     __flagV = flagVSupported,
     __flagX = true,
@@ -82,7 +84,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   if (__flagX) {
     ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
   }
-  // Implicit flag n is a preprocessor because capturing groups affects subsequent handling with
+  // Implicit flag n is a preprocessor because capturing groups affect subsequent handling with
   // backreference rewriting
   if (__flagN) {
     ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
@@ -91,7 +93,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   let precedingCaptures = 0;
   let expression = '';
   let runningContext = {};
-  // Intersperse template raw strings and substitutions
+  // Intersperse raw template strings and substitutions
   template.raw.forEach((raw, i) => {
     const wrapEscapedStr = !!(template.raw[i] || template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
@@ -112,7 +114,10 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const pp = [...postprocessors, atomicGroupsPostprocessor, subroutinesPostprocessor];
+  const pp = [...postprocessors];
+  if (__extendSyntax) {
+    pp.push(atomicGroupsPostprocessor, subroutinesPostprocessor);
+  }
   if (!__flagV) {
     pp.push(backcompatPostprocessor);
   }

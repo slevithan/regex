@@ -21,8 +21,9 @@ describe('atomic groups', () => {
   });
 
   it('should work when unnamed capturing groups present', () => {
-    expect('abcc').toMatch(regex({__flagN: false})`^()a(?>bc|b)c$`);
-    expect('abc').not.toMatch(regex({__flagN: false})`^()a(?>bc|b)c$`);
+    const options = {__flagN: false, __extendSyntax: true};
+    expect('abcc').toMatch(regex(options)`^()a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex(options)`^()a(?>bc|b)c$`);
   });
 
   it('should work when capturing groups present via interpolation', () => {

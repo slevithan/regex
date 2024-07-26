@@ -288,7 +288,13 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 <details>
   <summary>🐜 Debugging</summary>
 
-For debugging purposes, you can disable implicit flags via experimental options:<br> `` regex({__flagX: false, __flagN: false, __flagV: false})`…` ``.
+For debugging purposes, you can disable implicit flags via experimental options:
+
+```js
+regex({__flagV: false, __flagX: false, __flagN: false})`…`
+```
+
+However, disabling flag <kbd>n</kbd> also disables extended syntax. This is because flag <kbd>n</kbd>'s behavior is needed to emulate atomic groups and subroutines without side effects.
 </details>
 
 ### Flag `v`
@@ -617,7 +623,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and Node.js 20. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 14 and 2020-era browsers (2017-era with a build step that transpiles private class fields, string `matchAll`, array `flatMap`, and the `?.` operator).
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and Node.js 20. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 14 and 2020-era browsers (2017-era with a build step that transpiles private class fields, string `matchAll`, array `flatMap`, and the `??` and `?.` operators).
 
 The following edge cases rely on modern JavaScript features:
 

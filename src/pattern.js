@@ -34,7 +34,7 @@ Can be called as a function or template tag:
 export function pattern(first, ...substitutions) {
   if (Array.isArray(first?.raw)) {
     return new Pattern(
-      // Intersperse template raw strings and substitutions
+      // Intersperse raw template strings and substitutions
       first.raw.flatMap((raw, i) => i < first.raw.length - 1 ? [raw, substitutions[i]] : raw).join('')
     );
   } else if (!substitutions.length) {

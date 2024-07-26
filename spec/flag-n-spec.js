@@ -28,6 +28,11 @@ describe('flag n', () => {
 
   it('should set flag n status with an experimental option', () => {
     expect(() => regex({__flagN: true})`()\1`).toThrow();
-    expect('aa').toMatch(regex({__flagN: false})`(a)\1`);
+    expect(() => regex({__flagN: false})`()\1`).not.toThrow();
+  });
+
+  it('should disable extended syntax by default when flag n is disabled', () => {
+    expect(() => regex({__flagN: false})`(?>)`).toThrow();
+    expect(() => regex({__flagN: false, __extendSyntax: true})`(?>)`).not.toThrow();
   });
 });
