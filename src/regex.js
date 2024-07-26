@@ -69,6 +69,9 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
     postprocessors = [],
+    // Set defaults for options used for debugging and testing
+    // Extended syntax follows flag n by default, since flag n's behavior is required to emulate
+    // atomic groups and subroutines without side effects
     __extendSyntax = options.__flagN ?? true,
     __flagN = true,
     __flagV = flagVSupported,
