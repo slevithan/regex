@@ -324,12 +324,13 @@ function getNamedCapturingGroups(expression, {includeContents} = {}) {
 }
 
 /**
-Remove when support for ES2022 string/array method `at` (Node.js 16.6) is no longer an issue
-@param {string | any[]} strOrArr
+@param {Array<any>} arr
 @returns {any}
 */
-function lastOf(strOrArr) {
-  return strOrArr[strOrArr.length - 1];
+function lastOf(arr) {
+  // Remove when support for ES2022 array method `at` (Node.js 16.6) is no longer an issue:
+  // <https://caniuse.com/mdn-javascript_builtins_array_at>
+  return arr[arr.length - 1];
 }
 
 /**

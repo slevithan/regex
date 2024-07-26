@@ -1,7 +1,7 @@
 export class Pattern {
   #value;
   /**
-  @param {any} value
+  @param {string} value
   */
   constructor(value) {
     this.#value = value;
@@ -23,12 +23,12 @@ Can be called as a function or template tag:
 - `` pattern`…` `` - Same as ``pattern(String.raw`…`)``.
 
 @overload
-@param {any} value
+@param {string} value
 @returns {Pattern}
 
 @overload
 @param {TemplateStringsArray} template
-@param {...any} substitutions
+@param {...string} substitutions
 @returns {Pattern}
 */
 export function pattern(first, ...substitutions) {

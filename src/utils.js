@@ -308,9 +308,9 @@ export function containsCharClassUnion(charClassPattern) {
 Returns transformed versions of a template and substitutions, using the given preprocessor. Only
 processes substitutions that are instanceof `Pattern`.
 @param {TemplateStringsArray} template
-@param {any[]} substitutions
+@param {Array<string | RegExp | Pattern>} substitutions
 @param {(value, runningContext) => {transformed: string; runningContext: Object}} preprocessor
-@returns {{template: TemplateStringsArray; substitutions: any[]}}
+@returns {{template: TemplateStringsArray; substitutions: Array<string | RegExp | Pattern>}}
 */
 export function preprocess(template, substitutions, preprocessor) {
   let newTemplate = {raw: []};

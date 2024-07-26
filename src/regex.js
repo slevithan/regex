@@ -29,16 +29,16 @@ Can be called in multiple ways:
 
 @overload
 @param {TemplateStringsArray} template
-@param {...any} substitutions
+@param {...(string | RegExp | Pattern)} substitutions
 @returns {RegExp}
 
 @overload
 @param {string} [flags]
-@returns {(template: TemplateStringsArray, ...substitutions: any[]) => RegExp}
+@returns {(template: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp}
 
 @overload
 @param {RegexTagOptions} options
-@returns {(template: TemplateStringsArray, ...substitutions: any[]) => RegExp}
+@returns {(template: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp}
 */
 function regex(first, ...substitutions) {
   // Allow binding to other constructors
@@ -61,7 +61,7 @@ Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the 
 @param {new (expression: string, flags?: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
-@param {...any} substitutions
+@param {...(string | RegExp | Pattern)} substitutions
 @returns {RegExp}
 */
 function fromTemplate(constructor, options, template, ...substitutions) {
@@ -124,7 +124,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
 }
 
 /**
-@param {any} value
+@param {string | RegExp | Pattern} value
 @param {string} flags
 @param {string} regexContext
 @param {string} charClassContext
