@@ -50,8 +50,8 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **New regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
-  - Subroutines via `\g<name>` enable powerful subpattern composition, improving readability and maintainability.
-  - Definition groups via `(?(DEFINE)…)` allow defining subpatterns within them for use by reference only.
+  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
+  - Definition groups via `(?(DEFINE)…)` allow the subpatterns within them to be used by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
