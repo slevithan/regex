@@ -20,8 +20,8 @@
     "prebuild": "rimraf --glob dist/* types/*",
     "build": "npm run bundle && npm run types",
     "pretest": "npm run bundle",
-    "test": "jasmine",
-    "prepare": "npm run build && jasmine"
+    "test": "jasmine && tsc --project tsconfig.test.json",
+    "prepare": "npm run build && jasmine && tsc --project tsconfig.test.json"
   },
   "files": [
     "dist",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.23.0",
+    "expect-type": "^0.19.0",
     "jasmine": "^5.2.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.4"
