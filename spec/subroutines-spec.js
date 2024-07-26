@@ -167,148 +167,148 @@ describe('subroutines', () => {
   it('should handle subroutines added by postprocessors', () => {
     expect('aa').toMatch(regex({postprocessors: [p => p.replace(/\$$/, String.raw`\g<n>$`)]})`^(?<n>a)$`);
   });
+});
 
-  describe('DEFINE group', () => {
-    it('should not have its groups appear on the groups object of matches', () => {
-      expect(regex`\g<a>(?(DEFINE)(?<a>.))`.exec('a').groups).toBeUndefined();
-      expect('b' in regex`(?<a>\g<b>)(?(DEFINE)(?<b>.))`.exec('a').groups).toBeFalse();
+describe('definition groups', () => {
+  it('should not have its groups appear on the groups object of matches', () => {
+    expect(regex`\g<a>(?(DEFINE)(?<a>.))`.exec('a').groups).toBeUndefined();
+    expect('b' in regex`(?<a>\g<b>)(?(DEFINE)(?<b>.))`.exec('a').groups).toBeFalse();
+  });
+
+  // Follows PCRE
+  it('should not have its nested groups appear on the groups object of matches', () => {
+    expect(regex`\g<a>(?(DEFINE)(?<a>(?<b>.)))`.exec('a').groups).toBeUndefined();
+    expect('c' in regex`(?<a>\g<b>)(?(DEFINE)(?<b>(?<c>.)))`.exec('a').groups).toBeFalse();
+  });
+
+  it('should not prevent groups outside of definition groups from appearing on the groups object', () => {
+    expect(regex`(?<a>\g<b>)(?(DEFINE)(?<b>.))`.exec('a').groups.a).toBe('a');
+    // Property `a` is present, but its value is `undefined`
+    expect('a' in regex`|(?<a>)(?(DEFINE))`.exec('a').groups).toBeTrue();
+  });
+
+  it('should not allow at positions other than the end of the regex', () => {
+    expect(() => regex`(?(DEFINE)).`).toThrow();
+    expect(() => regex`(?(DEFINE))$`).toThrow();
+  });
+
+  it('should allow trailing whitespace and comments', () => {
+    expect('').toMatch(regex`(?(DEFINE)) `);
+    expect('a').toMatch(regex`
+      ^\g<a>$
+      (?(DEFINE)(?<a>a))
+      # comment
+    `);
+  });
+
+  it('should not allow trailing whitespace or comments with flag x disabled', () => {
+    expect(() => regex({__flagX: false})`(?(DEFINE)) `).toThrow();
+    expect(() => regex({__flagX: false})`
+      ^\g<a>$
+      (?(DEFINE)(?<a>a))
+      # comment
+    `).toThrow();
+  });
+
+  it('should not allow multiple definition groups', () => {
+    expect(() => regex`(?(DEFINE))(?(DEFINE))`).toThrow();
+    expect(() => regex`(?(DEFINE)) . (?(DEFINE))`).toThrow();
+  });
+
+  it('should require DEFINE to use uppercase', () => {
+    expect(() => regex('i')`(?(define))`).toThrow();
+    expect(() => regex('i')`(?(Define))`).toThrow();
+  });
+
+  it('should throw if unclosed', () => {
+    expect(() => regex`(?(DEFINE)`).toThrow();
+    expect(() => regex`(?(DEFINE)\)`).toThrow();
+    expect(() => regex`(?(DEFINE)[)`).toThrow();
+    expect(() => regex`(?(DEFINE)(?<a>)`).toThrow();
+    expect(() => regex`(?(DEFINE)()`).toThrow();
+  });
+
+  // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
+  // nonparticipating capturing groups)
+  it('should not allow backreferences to groups within definition groups', () => {
+    expect(() => regex`\k<a>(?(DEFINE)(?<a>))`).toThrow();
+  });
+
+  // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
+  // nonparticipating capturing groups)
+  it('should not allow referencing groups with backreferences to independent top-level groups within definition groups', () => {
+    expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<b>)(?<b>))`).toThrow();
+    expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<c>)(?<b>(?<c>)))`).toThrow();
+  });
+
+  it('should allow referencing groups with backreferences to non-independent groups within definition groups', () => {
+    expect('bba').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>(?<b>\k<a>b)\k<b>a))`);
+    expect('ba').toMatch(regex`^\g<b>\g<a>$(?(DEFINE)(?<a>\k<a>a)(?<b>b))`);
+    expect('ba').toMatch(regex({__flagN: false, __extendSyntax: true})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
+  });
+
+  it('should not be interpreted as a capturing group when flag n is disabled', () => {
+    expect('a').toMatch(regex({__flagN: false, __extendSyntax: true})`^a$(?(DEFINE))`);
+  });
+
+  describe('contents', () => {
+    it('should allow an empty value', () => {
+      expect('a').toMatch(regex`^.$(?(DEFINE))`);
+      // `(?:)` separators are allowed since they can be added by the flag x preprocessor
+      expect('a').toMatch(regex`^.$(?(DEFINE)(?:))`);
     });
 
-    // Follows PCRE
-    it('should not have its nested groups appear on the groups object of matches', () => {
-      expect(regex`\g<a>(?(DEFINE)(?<a>(?<b>.)))`.exec('a').groups).toBeUndefined();
-      expect('c' in regex`(?<a>\g<b>)(?(DEFINE)(?<b>(?<c>.)))`.exec('a').groups).toBeFalse();
+    it('should not allow anything other than named groups at the top level', () => {
+      expect(() => regex`(?(DEFINE)(?<a>)?)`).toThrow();
+      expect(() => regex`(?(DEFINE)(?<a>).)`).toThrow();
+      expect(() => regex`(?(DEFINE).(?<a>))`).toThrow();
+      expect(() => regex`(?(DEFINE)[])`).toThrow();
+      expect(() => regex`(?(DEFINE)\0)`).toThrow();
     });
 
-    it('should not prevent groups outside of DEFINE from appearing on the groups object', () => {
-      expect(regex`(?<a>\g<b>)(?(DEFINE)(?<b>.))`.exec('a').groups.a).toBe('a');
-      // Property `a` is present, but its value is `undefined`
-      expect('a' in regex`|(?<a>)(?(DEFINE))`.exec('a').groups).toBeTrue();
+    it('should allow whitespace and comments with flag x', () => {
+      expect('a').toMatch(regex`^.$(?(DEFINE) )`);
+      expect('a').toMatch(
+        regex`^.$(?(DEFINE) # comment
+        )`
+      );
+      // Flag x off
+      expect(() => regex({__flagX: false})`^.$(?(DEFINE) )`).toThrow();
+      expect(() => {
+        regex({__flagX: false})`^.$(?(DEFINE) # comment
+        )`
+      }).toThrow();
     });
 
-    it('should not allow at positions other than the end of the regex', () => {
-      expect(() => regex`(?(DEFINE)).`).toThrow();
-      expect(() => regex`(?(DEFINE))$`).toThrow();
+    it('should allow whitespace and comments to separate groups with flag x', () => {
+      expect('ab').toMatch(
+        regex`
+          ^ \g<a> \g<b> $
+          (?(DEFINE)
+            (?<a>a)
+            # comment
+            (?<b>b)
+          )
+        `
+      );
     });
 
-    it('should allow trailing whitespace and comments', () => {
-      expect('').toMatch(regex`(?(DEFINE)) `);
-      expect('a').toMatch(regex`
-        ^\g<a>$
-        (?(DEFINE)(?<a>a))
-        # comment
-      `);
+    // Just documenting current behavior; this shouldn't be relied on
+    it('should allow unreferenced groups', () => {
+      expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>))`);
+      expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>x))`);
+      expect('a').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>.)(?<b>x))`);
     });
 
-    it('should not allow trailing whitespace or comments with flag x disabled', () => {
-      expect(() => regex({__flagX: false})`(?(DEFINE)) `).toThrow();
-      expect(() => regex({__flagX: false})`
-        ^\g<a>$
-        (?(DEFINE)(?<a>a))
-        # comment
-      `).toThrow();
+    it('should not allow top-level groups to use duplicate names', () => {
+      expect(() => regex`(?(DEFINE)(?<a>)(?<a>))`).toThrow();
+      expect(() => regex`(?(DEFINE)(?<a>)(?<b>(?<a>)))`).toThrow();
+      expect(() => regex`(?<a>)(?(DEFINE)(?<a>))`).toThrow();
     });
 
-    it('should not allow multiple DEFINE groups', () => {
-      expect(() => regex`(?(DEFINE))(?(DEFINE))`).toThrow();
-      expect(() => regex`(?(DEFINE)) . (?(DEFINE))`).toThrow();
-    });
-
-    it('should require DEFINE to use uppercase', () => {
-      expect(() => regex('i')`(?(define))`).toThrow();
-      expect(() => regex('i')`(?(Define))`).toThrow();
-    });
-
-    it('should throw if unclosed', () => {
-      expect(() => regex`(?(DEFINE)`).toThrow();
-      expect(() => regex`(?(DEFINE)\)`).toThrow();
-      expect(() => regex`(?(DEFINE)[)`).toThrow();
-      expect(() => regex`(?(DEFINE)(?<a>)`).toThrow();
-      expect(() => regex`(?(DEFINE)()`).toThrow();
-    });
-
-    // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
-    // nonparticipating capturing groups)
-    it('should not allow backreferences to groups within DEFINE groups', () => {
-      expect(() => regex`\k<a>(?(DEFINE)(?<a>))`).toThrow();
-    });
-
-    // In PCRE, this is valid but can never match (due to different rules than JS for backrefs to
-    // nonparticipating capturing groups)
-    it('should not allow referencing groups with backreferences to independent top-level groups within DEFINE groups', () => {
-      expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<b>)(?<b>))`).toThrow();
-      expect(() => regex`\g<a>(?(DEFINE)(?<a>\k<c>)(?<b>(?<c>)))`).toThrow();
-    });
-
-    it('should allow referencing groups with backreferences to non-independent groups within DEFINE groups', () => {
-      expect('bba').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>(?<b>\k<a>b)\k<b>a))`);
-      expect('ba').toMatch(regex`^\g<b>\g<a>$(?(DEFINE)(?<a>\k<a>a)(?<b>b))`);
-      expect('ba').toMatch(regex({__flagN: false, __extendSyntax: true})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
-    });
-
-    it('should not be interpreted as a capturing group when flag n is disabled', () => {
-      expect('a').toMatch(regex({__flagN: false, __extendSyntax: true})`^a$(?(DEFINE))`);
-    });
-
-    describe('contents', () => {
-      it('should allow an empty value', () => {
-        expect('a').toMatch(regex`^.$(?(DEFINE))`);
-        // `(?:)` separators are allowed since they can be added by the flag x preprocessor
-        expect('a').toMatch(regex`^.$(?(DEFINE)(?:))`);
-      });
-
-      it('should not allow anything other than named groups at the top level', () => {
-        expect(() => regex`(?(DEFINE)(?<a>)?)`).toThrow();
-        expect(() => regex`(?(DEFINE)(?<a>).)`).toThrow();
-        expect(() => regex`(?(DEFINE).(?<a>))`).toThrow();
-        expect(() => regex`(?(DEFINE)[])`).toThrow();
-        expect(() => regex`(?(DEFINE)\0)`).toThrow();
-      });
-
-      it('should allow whitespace and comments with flag x', () => {
-        expect('a').toMatch(regex`^.$(?(DEFINE) )`);
-        expect('a').toMatch(
-          regex`^.$(?(DEFINE) # comment
-          )`
-        );
-        // Flag x off
-        expect(() => regex({__flagX: false})`^.$(?(DEFINE) )`).toThrow();
-        expect(() => {
-          regex({__flagX: false})`^.$(?(DEFINE) # comment
-          )`
-        }).toThrow();
-      });
-
-      it('should allow whitespace and comments to separate groups with flag x', () => {
-        expect('ab').toMatch(
-          regex`
-            ^ \g<a> \g<b> $
-            (?(DEFINE)
-              (?<a>a)
-              # comment
-              (?<b>b)
-            )
-          `
-        );
-      });
-
-      // Just documenting current behavior; this shouldn't be relied on
-      it('should allow unreferenced groups', () => {
-        expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>))`);
-        expect('a').toMatch(regex`^.$(?(DEFINE)(?<a>x))`);
-        expect('a').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>.)(?<b>x))`);
-      });
-
-      it('should not allow top-level groups to use duplicate names', () => {
-        expect(() => regex`(?(DEFINE)(?<a>)(?<a>))`).toThrow();
-        expect(() => regex`(?(DEFINE)(?<a>)(?<b>(?<a>)))`).toThrow();
-        expect(() => regex`(?<a>)(?(DEFINE)(?<a>))`).toThrow();
-      });
-
-      it('should not allow nested groups to use duplicate names', () => {
-        expect(() => regex`(?(DEFINE)(?<a>(?<b>))(?<c>(?<b>)))`).toThrow();
-        expect(() => regex`(?<a>)(?(DEFINE)(?<b>(?<a>)))`).toThrow();
-      });
+    it('should not allow nested groups to use duplicate names', () => {
+      expect(() => regex`(?(DEFINE)(?<a>(?<b>))(?<c>(?<b>)))`).toThrow();
+      expect(() => regex`(?<a>)(?(DEFINE)(?<b>(?<a>)))`).toThrow();
     });
   });
 });
