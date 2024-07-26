@@ -19,6 +19,24 @@ import {backcompatPostprocessor} from './backcompat.js';
 */
 
 /**
+@template T
+@typedef RegexTag
+@type {{
+    (
+      template: TemplateStringsArray,
+      ...substitutions: ReadonlyArray<string | RegExp | Pattern>
+    ): T;
+
+    (flags?: string): RegexTag<T>;
+    (options: RegexTagOptions): RegexTag<T>;
+
+    // The easiest way to make sure that only valid constructors can be bound is to explicitly
+    // declare `.bind(…)` with more restrictive types.
+    bind<U>(this: any, thisArg: new (expression: string, flags: string) => U): RegexTag<U>;
+  }}
+*/
+
+/**
 Template tag for constructing a regex with advanced features and context-aware interpolation of
 regexes, strings, and patterns.
 
@@ -28,20 +46,9 @@ Can be called in multiple ways:
 3. `` regex({flags: 'gi'})`…` `` - With options.
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 
-@overload
-@param {TemplateStringsArray} template
-@param {...(string | RegExp | Pattern)} substitutions
-@returns {RegExp}
-
-@overload
-@param {string} [flags]
-@returns {(template: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp}
-
-@overload
-@param {RegexTagOptions} options
-@returns {(template: TemplateStringsArray, ...substitutions: Array<string | RegExp | Pattern>) => RegExp}
+@type {RegexTag<RegExp>}
 */
-function regex(first, ...substitutions) {
+const regex = function(first, ...substitutions) {
   // Allow binding to other constructors
   const constructor = this instanceof Function ? this : RegExp;
   // Given a template
