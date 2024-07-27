@@ -20,7 +20,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 - [Examples](#-examples)
 - [Install and use](#️-install-and-use)
 - [Context](#-context)
-- [New regex syntax](#-new-regex-syntax)
+- [Extended regex syntax](#-extended-regex-syntax)
   - [Atomic groups](#atomic-groups)
   - [Subroutines](#subroutines)
   - [Definition groups](#definition-groups)
@@ -48,10 +48,10 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
   - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
   - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- **New regex syntax**.
+- **Extended regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
   - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Definition groups via `(?(DEFINE)…)` allow the subpatterns within them to be used by reference only.
+  - Creating subpatterns within definition groups `(?(DEFINE)…)` allows using them by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -133,7 +133,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 `regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
-## 🦾 New regex syntax
+## 🦾 Extended regex syntax
 
 Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, Java, .NET, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
@@ -228,7 +228,7 @@ See the next section on definition groups for another way to do this.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
 - Like backreferences, subroutines can't be used from *within* character classes.
-- As with all new syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
+- As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
 
 ### Definition groups
@@ -261,7 +261,8 @@ console.log(match.groups);
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Only one definition group is allowed per regex, and it must appear at the end of its pattern (trailing whitespace and comments are allowed by implicit flag <kbd>x</kbd>).
+- Only one definition group is allowed per regex, but it can contain any number of named groups.
+- Apart from trailing whitespace and comments (allowed by implicit flag <kbd>x</kbd>), definition groups must appear at the end of their pattern.
 - At the top level of definition groups, only named groups, whitespace, and comments are allowed.
 - Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
 - The word `DEFINE` must appear in uppercase.
