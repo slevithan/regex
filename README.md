@@ -201,10 +201,9 @@ regex`\b \g<byte> (\.\g<byte>){3} \b
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
 `
 
-// Matches a record with several date fields, and captures each value
+// Matches a record with multiple date fields, and captures each value
 regex`
-  ^ Born:\     (?<born>     \g<date>) \n
-    Admitted:\ (?<admitted> \g<date>) \n
+  ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
 
   # Define subpatterns
