@@ -45,8 +45,9 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 
 - **A modern regex baseline** so you don't need to continually opt-in to best practices.
   - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
-  - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-  - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
+  - New flags:
+    - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+    - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **Extended regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
