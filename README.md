@@ -677,12 +677,12 @@ You can make extensions easier to use by wrapping the use of these features in y
 <details>
   <summary><b>Why are flags added via <code>regex('g')`…`</code> rather than <code>regex`/…/g`</code>?</b></summary>
 
-There are several disadvantages to the alternative syntax:
+The alternative syntax isn't used because it has several disadvantages:
 
 - It doesn't match the `RegExp` constructor's syntax.
 - It doesn't match regex literal syntax either, since there are no multiline regex literals (and they're not planned for the future), plus regex literals don't allow unescaped `/` outside of character classes.
 - Flags-up-front can be more readable, especially with long or multiline regexes that make flags easy to miss when they're at the end. And since some flags change the meaning of regex syntax, it can help to read them first.
-- It would most likely be incompatible with any future standardized regex template tag. To date, TC39 discussions about a standardized tag for regexes have not favored the `` `/…/g` `` format.
+- It would most likely be incompatible if a standardized regex template tag was added to the JavaScript language in the future. To date, TC39 discussions about a standardized tag for regexes have not favored the `` `/…/g` `` format.
 </details>
 
 ## 🏷️ About
