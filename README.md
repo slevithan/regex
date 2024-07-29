@@ -219,7 +219,7 @@ const ipv4 = regex`
 `;
 ```
 
-Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows *defining* the group without *matching* it at that position. The subpattern within it can then be used by reference elsewhere.
+Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows *defining* the group without *matching* it at that position. The subpattern within it can then be used by reference elsewhere within the pattern.
 
 This next regex matches a record with multiple date fields, and captures each value:
 
@@ -239,7 +239,7 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When *using* a regex to find matches, named groups defined this way will still appear on the match's `groups` object, with the value `undefined` (since they don't participate in the match). See the next section on [definition groups](#definition-groups) for a way to prevent groups used only by reference from appearing on the `groups` object of matches.
+When a regex to used to find matches, named groups defined this way will still appear on each match's `groups` object (with the value `undefined`, which is the value for any group that didn't participate in the match). See the next section on [definition groups](#definition-groups) for a way to prevent groups used only by reference from appearing on the `groups` object of matches.
 </details>
 
 > [!NOTE]
@@ -247,9 +247,9 @@ When *using* a regex to find matches, named groups defined this way will still a
 
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. This enables writing regexes in a more grammatical and maintainable way.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with the use of [subroutines](#subroutines), this enables writing regexes in a grammatical way that improves readability and maintainability.
 
-> Named groups within definition groups don't appear on the `groups` object of matches.
+> Groups defined within definition groups don't appear on the `groups` object of matches.
 
 Example:
 
