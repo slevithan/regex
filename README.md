@@ -193,7 +193,7 @@ regex`
 `
 ```
 
-The backreference `\k<double>` matches whatever was matched by capturing group `double`, regardless of what was matched by the subroutine `\g<double>`. For example, the regex matches `'xx!!xx'` but not `'xx!!!!'`.
+The backreference `\k<double>` matches whatever was matched by capturing group `(?<double>…)`, regardless of what was matched in between by the subroutine `\g<double>`. For example, this regex matches `'xx!!xx'`, but not `'xx!!!!'`.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -201,14 +201,14 @@ The backreference `\k<double>` matches whatever was matched by capturing group `
 - Subroutines can appear before the groups they reference.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
-- Like backreferences, subroutines can't be used from *within* character classes.
+- Like backreferences, subroutines can't be used *within* character classes.
 - As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
 
 <details>
   <summary>👉 <b>Show how to define subpatterns for use by reference only</b></summary>
 
-The following example matches an IPv4 address such as `'192.168.12.123'`:
+The following regex matches an IPv4 address such as "192.168.12.123":
 
 ```js
 const ipv4 = regex`
@@ -219,9 +219,9 @@ const ipv4 = regex`
 `;
 ```
 
-Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows defining the group without matching it at that position, while still allowing the contents of the group to be used by reference elsewhere.
+Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows *defining* the group without *matching* it at that position. The subpattern within it can then be used by reference elsewhere.
 
-This next example matches a record with multiple date fields, and captures each value:
+This next regex matches a record with multiple date fields, and captures each value:
 
 ```js
 const record = regex`
@@ -239,7 +239,7 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-Named groups used only by reference still appear on the `groups` object of matches, with the value `undefined` (since they don't participate in the match). See the next section on definition groups for a way to prevent groups used only by reference from polluting the `groups` object.
+When *using* a regex to find matches, named groups defined this way will still appear on the match's `groups` object, with the value `undefined` (since they don't participate in the match). See the next section on [definition groups](#definition-groups) for a way to prevent groups used only by reference from appearing on the `groups` object of matches.
 </details>
 
 > [!NOTE]
@@ -247,7 +247,9 @@ Named groups used only by reference still appear on the `groups` object of match
 
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. Named groups within definition groups don't appear on a match's `groups` object.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. This enables writing regexes in a more grammatical and maintainable way.
+
+> Named groups within definition groups don't appear on the `groups` object of matches.
 
 Example:
 
