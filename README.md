@@ -11,7 +11,7 @@
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
-With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, and maybe surpassing C++, Java, .NET, and Python.
+With the `regex` package, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
 <details>
   <summary><b>Table of contents</b></summary>
@@ -23,7 +23,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 - [Extended regex syntax](#-extended-regex-syntax)
   - [Atomic groups](#atomic-groups)
   - [Subroutines](#subroutines)
-  - [Definition groups](#definition-groups)
+  - [Subroutine definition groups](#subroutine-definition-groups)
   - [Recursion](#recursion)
 - [Flags](#-flags)
   - [Implicit flags](#implicit-flags)
@@ -136,7 +136,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like PCRE, Perl, Java, .NET, and Python. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the `regex` package, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` package, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -239,17 +239,17 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section on [definition groups](#definition-groups) for a way to avoid having such groups appear on the `groups` object.
+When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section on [subroutine definition groups](#subroutine-definition-groups) for a way to avoid having such groups appear on the `groups` object.
 </details>
 
 > [!NOTE]
 > Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not always act as independent subpatterns.
 
-### Definition groups
+### Subroutine definition groups
 
 The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with the use of [subroutines](#subroutines), this enables writing regexes in a grammatical way that improves readability and maintainability.
 
-> Groups defined within definition groups don't appear on the `groups` object of matches.
+> Named groups defined within subroutine definition groups don't appear on the `groups` object of matches.
 
 Example:
 
@@ -276,7 +276,7 @@ console.log(match.groups);
 ```
 
 > [!NOTE]
-> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
+> Subroutine definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
