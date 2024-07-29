@@ -92,9 +92,9 @@ const re = regex('m')`
   ${pattern('^ a.b $')}
 `;
 
-// Adjusts numbered backreferences in interpolated regexes
+// Numbered backreferences in interpolated regexes are adjusted
 const double = /(\w)\1/;
-regex`^ ${double} ${double} $`;
+const re2 = regex`^ ${double} ${double} $`;
 // → /^(\w)\1(\w)\2$/v
 ```
 
@@ -186,24 +186,45 @@ Subroutines go beyond the composition benefits of [interpolation](#-interpolatio
 To illustrate points 2 and 3, consider:
 
 ```js
-regex`(?<double> (?<char>.) \k<char> ) \g<double> \k<double>`
-// The backreference \k<double> matches whatever was matched by capturing group
-// `double`, regardless of what was matched by the subroutine. For example, the
-// regex matches 'xx!!xx' but not 'xx!!!!'
+regex`
+  (?<double> (?<char>.) \k<char> )
+  \g<double>
+  \k<double>
+`
 ```
 
-You can also define subpatterns for use by reference only:
+The backreference `\k<double>` matches whatever was matched by capturing group `double`, regardless of what was matched by the subroutine `\g<double>`. For example, the regex matches `'xx!!xx'` but not `'xx!!!!'`.
+
+<details>
+  <summary>👉 <b>Show more details</b></summary>
+
+- Subroutines can appear before the groups they reference.
+- If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
+- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
+- Like backreferences, subroutines can't be used from *within* character classes.
+- As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
+</details>
+
+<details>
+  <summary>👉 <b>Show how to define subpatterns for use by reference only</b></summary>
+
+The following example matches an IPv4 address such as `'192.168.12.123'`:
 
 ```js
-// Matches an IPv4 address such as '192.168.12.123'
-regex`\b \g<byte> (\.\g<byte>){3} \b
+const ipv4 = regex`
+  \b \g<byte> (\.\g<byte>){3} \b
 
-  # The {0} quantifier allows defining a subpattern without matching it
+  # Define the 'byte' subpattern
   (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
-`
+`;
+```
 
-// Matches a record with multiple date fields, and captures each value
-regex`
+Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows defining the group without matching it at that position, while still allowing the contents of the group to be used by reference elsewhere.
+
+This next example matches a record with multiple date fields, and captures each value:
+
+```js
+const record = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
 
@@ -213,33 +234,25 @@ regex`
     (?<month> \d{2})
     (?<day>   \d{2})
   ){0}
-`
+`;
 ```
 
-See the next section on definition groups for another way to do this.
+Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
+
+Named groups used only by reference still appear on the `groups` object of matches, with the value `undefined` (since they don't participate in the match). See the next section on definition groups for a way to prevent groups used only by reference from polluting the `groups` object.
+</details>
 
 > [!NOTE]
 > Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not always act as independent subpatterns.
 
-<details>
-  <summary>👉 <b>Show more details</b></summary>
-
-- Subroutines can appear before the groups they reference, as shown in examples above.
-- If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
-- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
-- Like backreferences, subroutines can't be used from *within* character classes.
-- As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
-</details>
-
 ### Definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. Compared to the `(…){0}` syntax described in the preceding section on subroutines, definition groups have the advantage that the named groups within them don't appear on a match's `groups` object.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. Named groups within definition groups don't appear on a match's `groups` object.
 
 Example:
 
 ```js
-const record = 'Admitted: 2024-01-01\nReleased: 2024-01-02';
-const match = regex`
+const re = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
 
@@ -249,14 +262,16 @@ const match = regex`
     (?<month> \d{2})
     (?<day>   \d{2})
   )
-`.exec(record);
+`;
 
+const record = 'Admitted: 2024-01-01\nReleased: 2024-01-03';
+const match = re.exec(record); // Same as `record.match(re)`
 console.log(match.groups);
-// → {admitted: '2024-01-01', released: '2024-01-02'}
+/* → {
+  admitted: '2024-01-01',
+  released: '2024-01-03'
+} */
 ```
-
-> [!NOTE]
-> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -267,6 +282,9 @@ console.log(match.groups);
 - Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
 - The word `DEFINE` must appear in uppercase.
 </details>
+
+> [!NOTE]
+> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 ### Recursion
 
@@ -337,9 +355,6 @@ const re = regex`
 `;
 ```
 
-> [!NOTE]
-> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `regex` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
-
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
@@ -350,6 +365,9 @@ const re = regex`
 - Whitespace is not insignificant within most enclosed tokens like `\p{…}` and `\u{…}`. The exception is `[\q{…}]`.
 - Line comments with `#` do not extend into or beyond interpolation, so interpolation effectively acts as a terminating newline for the comment.
 </details>
+
+> [!NOTE]
+> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `regex` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
 
 ### Flag `n`
 
