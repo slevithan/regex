@@ -127,7 +127,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
 2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
 3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
-4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for doubly-negated `[^\P{…}]`, and adds support for new features/syntax.
+4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for `\p` and `\P` within negated `[^…]`, and adds support for new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
