@@ -239,7 +239,7 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section on [subroutine definition groups](#subroutine-definition-groups) for a way to avoid having such groups appear on the `groups` object.
+When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to avoid having such groups appear on the `groups` object.
 </details>
 
 > [!NOTE]
@@ -247,7 +247,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 
 ### Subroutine definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with the use of [subroutines](#subroutines), this enables writing regexes in a grammatical way that improves readability and maintainability.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with [subroutines](#subroutines), this enables writing regexes in a grammatical way that improves readability and maintainability.
 
 > Named groups defined within subroutine definition groups don't appear on the `groups` object of matches.
 
