@@ -239,7 +239,7 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When a regex to used to find matches, named groups defined this way will still appear on each match's `groups` object (with the value `undefined`, which is the value for any group that didn't participate in the match). See the next section on [definition groups](#definition-groups) for a way to prevent groups used only by reference from appearing on the `groups` object of matches.
+When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section on [definition groups](#definition-groups) for a way to avoid having such groups appear on the `groups` object.
 </details>
 
 > [!NOTE]
@@ -275,6 +275,9 @@ console.log(match.groups);
 } */
 ```
 
+> [!NOTE]
+> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
+
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
@@ -284,9 +287,6 @@ console.log(match.groups);
 - Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
 - The word `DEFINE` must appear in uppercase.
 </details>
-
-> [!NOTE]
-> Definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version of definition groups since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 ### Recursion
 
@@ -357,6 +357,9 @@ const re = regex`
 `;
 ```
 
+> [!NOTE]
+> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `regex` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
+
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
@@ -367,9 +370,6 @@ const re = regex`
 - Whitespace is not insignificant within most enclosed tokens like `\p{…}` and `\u{…}`. The exception is `[\q{…}]`.
 - Line comments with `#` do not extend into or beyond interpolation, so interpolation effectively acts as a terminating newline for the comment.
 </details>
-
-> [!NOTE]
-> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `regex` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
 
 ### Flag `n`
 
@@ -577,7 +577,7 @@ regex({raw: ['^(', ...Array(arr.length - 1).fill('|'), ')$']}, ...arr)
 ```
 </details>
 
-> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`. So, if you wanted to, you could use it anywhere values are coerced to strings.
+> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`.
 
 ### Interpolation principles
 
