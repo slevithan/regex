@@ -93,9 +93,9 @@ const re = regex('m')`
 `;
 
 // Numbered backreferences in interpolated regexes are adjusted
-const double = /(\w)\1/;
-const re2 = regex`^ ${double} ${double} $`;
-// → /^(\w)\1(\w)\2$/v
+const double = /(.)\1/;
+const re2 = regex`^ (?first>.) ${double} ${double} $`;
+// re2 → /^(?<first>.)(.)\2(.)\3$/v
 ```
 
 ## 🕹️ Install and use
@@ -111,11 +111,21 @@ import {regex, pattern} from 'regex';
 In browsers:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
+<script type="module">
+  import {regex, pattern} from 'https://cdn.jsdelivr.net/npm/regex@3.1.0/+esm';
+</script>
+```
+
+<details>
+  <summary>Using a global name (no import)</summary>
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/regex@3.1.0/dist/regex.min.js"></script>
 <script>
   const {regex, pattern} = Regex;
 </script>
 ```
+</details>
 
 ## ❓ Context
 
