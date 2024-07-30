@@ -113,6 +113,7 @@ In browsers:
 ```html
 <script type="module">
   import {regex, pattern} from 'https://cdn.jsdelivr.net/npm/regex@3.1.0/+esm';
+  // …
 </script>
 ```
 
@@ -123,6 +124,7 @@ In browsers:
 <script src="https://cdn.jsdelivr.net/npm/regex@3.1.0/dist/regex.min.js"></script>
 <script>
   const {regex, pattern} = Regex;
+  // …
 </script>
 ```
 </details>
