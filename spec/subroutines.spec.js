@@ -164,8 +164,9 @@ describe('subroutines', () => {
     expect(() => regex`(?<n>)[\g<n>]`).toThrow();
   });
 
-  it('should handle subroutines added by postprocessors', () => {
-    expect('aa').toMatch(regex({postprocessors: [p => p.replace(/\$$/, String.raw`\g<n>$`)]})`^(?<n>a)$`);
+  it('should handle subroutines added by plugins', () => {
+    const plugin = str => str.replace(/\$$/, '\\g<n>$');
+    expect('aa').toMatch(regex({plugins: [plugin]})`^(?<n>a)$`);
   });
 });
 

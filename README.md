@@ -681,9 +681,7 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 Yes. There are two approaches for this:
 
 1. **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
-2. **Postprocessors:** `regex` can be called with an options object that includes an array of postprocessor functions. Ex: `` regex({flags: 'g', postprocessors: [myExtension]})`…` ``. Postprocessors are called in order after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
-
-You can make extensions easier to use by wrapping the use of these features in your own function or template tag. See extension [`regex-recursion`](https://github.com/slevithan/regex-recursion) for an example of using all of these features. For a much simpler example of a postprocessor, see `regex`'s built-in `rakePostprocessor`.
+2. **Plugins:** `regex` can be called with an options object that includes an array of plugin functions. Ex: `` regex({flags: 'g', plugins: [plugin]})`…` ``. Plugins are called in order, after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
 </details>
 
 <details>

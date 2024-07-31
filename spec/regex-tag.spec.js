@@ -76,10 +76,10 @@ describe('regex', () => {
     expect(regex({__rake: false})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
   });
 
-  it('should allow adding postprocessors', () => {
-    const wiggle = expression => expression.replace(/~/g, 'wiggle');
-    const removeDoubleChars = expression => expression.replace(/(\w)\1/g, '$1');
-    expect('wigle').toMatch(regex({postprocessors: [wiggle, removeDoubleChars]})`^~$`);
+  it('should allow adding plugins', () => {
+    const wiggle = str => str.replace(/~/g, 'wiggle');
+    const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
+    expect('wigle').toMatch(regex({plugins: [wiggle, removeRepeatedChars]})`^~$`);
   });
 
   it('should not allow unexpected arguments', () => {

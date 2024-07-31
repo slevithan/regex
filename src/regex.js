@@ -1,16 +1,16 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {flagNPreprocessor} from './flag-n.js';
-import {flagXPreprocessor, rakePostprocessor} from './flag-x.js';
+import {flagXPreprocessor, rake} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
-import {atomicGroupsPostprocessor} from './atomic-groups.js';
-import {subroutinesPostprocessor} from './subroutines.js';
-import {backcompatPostprocessor} from './backcompat.js';
+import {atomicGroups} from './atomic-groups.js';
+import {subroutines} from './subroutines.js';
+import {backcompat} from './backcompat.js';
 
 /**
 @typedef {Object} RegexTagOptions
 @prop {string} [flags]
-@prop {Array<(expression: string, flags: string) => string>} [postprocessors]
+@prop {Array<(expression: string, flags: string) => string>} [plugins]
 @prop {boolean} [__extendSyntax]
 @prop {boolean} [__flagN]
 @prop {boolean} [__flagV]
@@ -75,7 +75,7 @@ Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the 
 function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
-    postprocessors = [],
+    plugins = [],
     // Set defaults for options used for debugging and testing
     // Extended syntax follows flag n by default, since flag n's behavior is required to emulate
     // atomic groups and subroutines without side effects
@@ -124,17 +124,17 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const pp = [...postprocessors];
+  const p = [...plugins];
   if (__extendSyntax) {
-    pp.push(atomicGroupsPostprocessor, subroutinesPostprocessor);
+    p.push(atomicGroups, subroutines);
   }
   if (!__flagV) {
-    pp.push(backcompatPostprocessor);
+    p.push(backcompat);
   }
   if (__rake) {
-    pp.push(rakePostprocessor);
+    p.push(rake);
   }
-  pp.forEach(pp => expression = pp(expression, flags));
+  p.forEach(p => expression = p(expression, flags));
   return new constructor(expression, (__flagV ? 'v' : 'u') + flags);
 }
 

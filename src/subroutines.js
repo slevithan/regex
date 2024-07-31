@@ -5,7 +5,7 @@ import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
 @param {string} expression
 @returns {string}
 */
-export function subroutinesPostprocessor(expression) {
+export function subroutines(expression) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result

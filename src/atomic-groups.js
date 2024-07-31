@@ -5,7 +5,7 @@ import {noncapturingDelim} from './utils.js';
 @param {string} expression
 @returns {string}
 */
-export function atomicGroupsPostprocessor(expression) {
+export function atomicGroups(expression) {
   if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
     return expression;
   }

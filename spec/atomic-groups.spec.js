@@ -46,8 +46,8 @@ describe('atomic groups', () => {
     expect(() => regex`[(?>)]`).toThrow();
   });
 
-  it('should handle atomic groups added by postprocessors', () => {
-    const addAGFn = p => p.replace(/\$$/, '(?>b+)$');
-    expect('aabb').toMatch(regex({postprocessors: [addAGFn]})`^(?>a+)$`);
+  it('should handle atomic groups added by plugins', () => {
+    const plugin = str => str.replace(/\$$/, '(?>b+)$');
+    expect('aabb').toMatch(regex({plugins: [plugin]})`^(?>a+)$`);
   });
 });
