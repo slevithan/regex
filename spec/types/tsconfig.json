@@ -1,0 +1,13 @@
+{
+  "include": [
+    "*.typespec.ts",
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "noErrorTruncation": true,
+    "strict": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "target": "ES2020",
+  }
+}

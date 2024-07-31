@@ -1,7 +1,7 @@
 node_modules
 dist
-types
-temp
+/types
+/temp
 
 # Folder view configuration files
 .DS_Store

@@ -22,18 +22,18 @@ import {backcompatPostprocessor} from './backcompat.js';
 @template T
 @typedef RegexTag
 @type {{
-    (
-      template: TemplateStringsArray,
-      ...substitutions: ReadonlyArray<string | RegExp | Pattern>
-    ): T;
+  ( template: TemplateStringsArray,
+    ...substitutions: ReadonlyArray<string | RegExp | Pattern>
+  ): T;
 
-    (flags?: string): RegexTag<T>;
-    (options: RegexTagOptions): RegexTag<T>;
+  (flags?: string): RegexTag<T>;
 
-    // The easiest way to make sure that only valid constructors can be bound is to explicitly
-    // declare `.bind(…)` with more restrictive types.
-    bind<U>(this: any, thisArg: new (expression: string, flags: string) => U): RegexTag<U>;
-  }}
+  (options: RegexTagOptions): RegexTag<T>;
+
+  // The easiest way to ensure that only valid constructors can be bound is to explicitly declare
+  // `.bind(…)` with more restrictive types
+  bind<U>(this: any, thisArg: new (expression: string, flags: string) => U): RegexTag<U>;
+}}
 */
 
 /**
@@ -66,7 +66,7 @@ const regex = function(first, ...substitutions) {
 
 /**
 Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the template holes.
-@param {new (expression: string, flags?: string) => RegExp} constructor
+@param {new (expression: string, flags: string) => RegExp} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...(string | RegExp | Pattern)} substitutions

@@ -15,13 +15,12 @@
   "scripts": {
     "bundle:global": "esbuild src/regex.js --global-name=Regex --bundle --minify --outfile=dist/regex.min.js",
     "bundle:esm": "esbuild src/regex.js --format=esm --bundle --outfile=dist/regex.mjs",
-    "bundle": "npm run bundle:global && npm run bundle:esm",
     "types": "tsc src/regex.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
     "prebuild": "rimraf --glob dist/* types/*",
-    "build": "npm run bundle && npm run types",
-    "pretest": "npm run bundle",
-    "test": "jasmine && tsc --project tsconfig.test.json",
-    "prepare": "npm run build && jasmine && tsc --project tsconfig.test.json"
+    "build": "npm run bundle:global && npm run bundle:esm && npm run types",
+    "pretest": "npm run build",
+    "test": "jasmine && tsc --project spec/types/tsconfig.json",
+    "prepare": "npm test"
   },
   "files": [
     "dist",
