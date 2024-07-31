@@ -292,7 +292,7 @@ function getGroup(expression, delimMatch) {
 
 /**
 @param {string} expression
-@param {Object<includeContents?: boolean>} [options]
+@param {{includeContents: boolean}} [options]
 @returns {NamedCapturingGroupsMap}
 */
 function getNamedCapturingGroups(expression, {includeContents} = {}) {

@@ -8,7 +8,7 @@ import {subroutines} from './subroutines.js';
 import {backcompat} from './backcompat.js';
 
 /**
-@typedef {Object} RegexTagOptions
+@typedef {object} RegexTagOptions
 @prop {string} [flags]
 @prop {Array<(expression: string, flags: string) => string>} [plugins]
 @prop {boolean} [__extendSyntax]
@@ -214,7 +214,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
 /**
 @param {RegExp} re
 @param {string} outerFlags
-@returns {Object}
+@returns {{value: string; usedModifier?: boolean}}
 */
 function transformForLocalFlags(re, outerFlags) {
   const modFlagsObj = {
