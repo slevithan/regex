@@ -21,7 +21,7 @@ describe('atomic groups', () => {
   });
 
   it('should work when unnamed capturing groups present', () => {
-    const options = {__flagN: false, __extendSyntax: true};
+    const options = {disable: {n: true}};
     expect('abcc').toMatch(regex(options)`^()a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex(options)`^()a(?>bc|b)c$`);
   });
@@ -36,8 +36,7 @@ describe('atomic groups', () => {
     expect(() => regex`(?>)${/()\1/}`).toThrow();
     expect(() => regex`${/()\1/}(?>)`).toThrow();
     expect(() => regex`(?>${/()\1/})`).toThrow();
-    // These are okay
-    expect(() => regex`(?>${/()/})`).not.toThrow();
+    // This is okay
     expect(() => regex`(?>${/(?<n>)\k<n>/})`).not.toThrow();
   });
 

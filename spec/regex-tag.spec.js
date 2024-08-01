@@ -72,8 +72,8 @@ describe('regex', () => {
     expect(['(?:)', '']).toContain(regex`(?:)(?:)(?:)`.source);
   });
 
-  it('should not remove superfluous token separators in output with an experimental option', () => {
-    expect(regex({__rake: false})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
+  it('should not clean up superfluous token separators in output via an option', () => {
+    expect(regex({disable: {clean: true}})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
   });
 
   it('should allow adding plugins', () => {

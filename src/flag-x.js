@@ -132,7 +132,7 @@ export function flagXPreprocessor(value, runningContext) {
 }
 
 // Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
-export function rake(expression) {
+export function cleanPlugin(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
   expression = replaceUnescaped(expression, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
@@ -141,11 +141,12 @@ export function rake(expression) {
   // - The end.
   // - Outside of character classes:
   //   - If followed by one of `)|.[$\`, or `(` if that's not followed by `DEFINE)`.
-  //     - Technically we shouldn't rake if followed by `)` and preceded by `(?(DEFINE`, but in
-  //       this case flag x injects `(?:)` between the preceding invalid `(?` to sandbox the `?`.
+  //     - Technically we shouldn't remove `(?:)` if preceded by `(?(DEFINE` and followed by `)`,
+  //       but in this case flag x injects a sandboxing `(?:)` after the preceding invalid `(?`,
+  //       so we already get an error from that.
   //   - If preceded by one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
   //     - So long as the separator is not followed by a quantifier.
-  // Examples of things that are not safe to rake at the boundaries of:
+  // Examples of things that are not safe to remove `(?:)` at the boundaries of:
   // - Anywhere: Letters, numbers, or any of `-=_,<?*+{}`.
   // - If followed by any of `:!>`.
   // - If preceded by any of `\[cgkpPux]`.

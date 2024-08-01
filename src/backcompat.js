@@ -18,7 +18,7 @@ Assumes flag u and doesn't worry about syntax errors that are caught by it.
 @param {string} flags
 @returns {string}
 */
-export function backcompat(expression, flags) {
+export function backcompatPlugin(expression, flags) {
   const unescapedLiteralHyphenMsg = 'Invalid unescaped "-" in character class';
   let inCharClass = false;
   let inNegatedCharClass = false;

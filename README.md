@@ -36,6 +36,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
   - [Partial patterns](#interpolating-partial-patterns)
   - [Interpolation principles](#interpolation-principles)
   - [Interpolation contexts](#interpolation-contexts)
+- [Options](#️-options)
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
 - [FAQ](#-faq)
@@ -317,18 +318,6 @@ regex('gm')`^.+`
 ### Implicit flags
 
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `regex`, giving your regexes a modern baseline syntax and avoiding the need to continually opt-in to their superior modes.
-
-<details>
-  <summary>🐜 Debugging</summary>
-
-For debugging purposes, you can disable implicit flags via experimental options:
-
-```js
-regex({__flagV: false, __flagX: false, __flagN: false})`…`
-```
-
-However, disabling flag <kbd>n</kbd> also disables extended syntax. This is because flag <kbd>n</kbd>'s behavior is needed to emulate atomic groups and subroutines without side effects.
-</details>
 
 ### Flag `v`
 
@@ -648,6 +637,54 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
+## ⚙️ Options
+
+Typically, `regex` is used as follows:
+
+```js
+regex`…` // without flags
+regex('gi')`…` // with flags
+```
+
+However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for tools that use `regex` internally.
+
+Following are the options available and their default values:
+
+```js
+regex({
+  flags: '',
+  plugins: [],
+  unicodeSetsPlugin: <function>
+  disable: {
+    x: false,
+    n: false,
+    v: false,
+    atomic: false,
+    subroutines: false,
+    clean: false,
+  },
+})`…`;
+```
+
+<details>
+  <summary>👉 <b>See details for each option</b></summary>
+
+`flags` - For providing flags when using an options object.
+
+`plugins` - An array of functions. Plugins are called in order, after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` constructor (or an alternative constructor provided via `` regex.bind(RegExpSubclass)`…` ``).
+
+`unicodeSetsPlugin` - A plugin function that is used when flag <kbd>v</kbd> is not supported natively, or when implicit flag <kbd>v</kbd> is disabled. By default, a built-in function is used that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features/syntax (nested character classes, set subtraction/intersection, etc.). By replacing the default `unicodeSetsPlugin`, you can add backward compatible support for these features.
+
+`disable` - A set of options that can be individually disabled by setting their values to `true`.
+
+- `x` - Disables implicit, emulated flag <kbd>x</kbd>.
+- `n` - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (ex: in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
+- `v` - Disables implicitly adding flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
+- `atomic` - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
+- `subroutines` - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
+- `clean` - Prevents running a cleanup routine that makes generated regex source more readable by removing unneeded `(?:)` token separators.
+</details>
+
 ## ⚡ Performance
 
 `regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform equally as fast as native regular expressions. The use of `regex` can also be transpiled via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
@@ -676,12 +713,23 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 </details>
 
 <details>
-  <summary><b>Does <code>regex</code> support extensions?</b></summary>
+  <summary><b>Can <code>regex</code> be called as a function instead of using it with backticks?</b></summary>
 
-Yes. There are two approaches for this:
+Yes, although you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression.
 
-1. **Alternative constructors:** If you want `regex` to use a `RegExp` subclass or other constructor, you can do so by modifying `this`: `` regex.bind(RegExpSubclass)`…` ``. The constructor is expected to accept two arguments (the pattern and flags) and return a `RegExp` instance.
-2. **Plugins:** `regex` can be called with an options object that includes an array of plugin functions. Ex: `` regex({flags: 'g', plugins: [plugin]})`…` ``. Plugins are called in order, after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` (or alternative) constructor.
+```js
+import {regex, pattern} from 'regex';
+const str = '…';
+const re = regex('gi')`${pattern(str)}`;
+```
+
+If you prefer to call `regex` as a function (rather than using it as a template tag), that requires creating the raw template strings array yourself, as follows:
+
+```js
+import {regex} from 'regex';
+const str = '…';
+const re = regex('gi')({raw: [str]});
+```
 </details>
 
 <details>

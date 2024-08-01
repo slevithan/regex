@@ -113,7 +113,7 @@ describe('subroutines', () => {
       [String.raw`(?<a>)\g<a>()\2\g<a>()\3`, String.raw`(?<a>)()()\3()()\5`],
     ];
     cases.forEach(([input, output]) => {
-      expect(regex({__flagN: false, __extendSyntax: true})({raw: [input]}).source).toBe(output);
+      expect(regex({disable: {n: true}})({raw: [input]}).source).toBe(output);
     });
   });
 
@@ -124,7 +124,7 @@ describe('subroutines', () => {
       String.raw`(?<a>()\3)\g<a>`,
     ];
     cases.forEach(input => {
-      expect(() => regex({__flagN: false, __extendSyntax: true})({raw: [input]})).toThrow();
+      expect(() => regex({disable: {n: true}})({raw: [input]})).toThrow();
     });
   });
 
@@ -203,8 +203,8 @@ describe('definition groups', () => {
   });
 
   it('should not allow trailing whitespace or comments with flag x disabled', () => {
-    expect(() => regex({__flagX: false})`(?(DEFINE)) `).toThrow();
-    expect(() => regex({__flagX: false})`
+    expect(() => regex({disable: {x: true}})`(?(DEFINE)) `).toThrow();
+    expect(() => regex({disable: {x: true}})`
       ^\g<a>$
       (?(DEFINE)(?<a>a))
       # comment
@@ -245,11 +245,11 @@ describe('definition groups', () => {
   it('should allow referencing groups with backreferences to non-independent groups within definition groups', () => {
     expect('bba').toMatch(regex`^\g<a>$(?(DEFINE)(?<a>(?<b>\k<a>b)\k<b>a))`);
     expect('ba').toMatch(regex`^\g<b>\g<a>$(?(DEFINE)(?<a>\k<a>a)(?<b>b))`);
-    expect('ba').toMatch(regex({__flagN: false, __extendSyntax: true})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
+    expect('ba').toMatch(regex({disable: {n: true}})`^\g<b>\g<a>$(?(DEFINE)(?<a>\1a)(?<b>b))`);
   });
 
   it('should not be interpreted as a capturing group when flag n is disabled', () => {
-    expect('a').toMatch(regex({__flagN: false, __extendSyntax: true})`^a$(?(DEFINE))`);
+    expect('a').toMatch(regex({disable: {n: true}})`^a$(?(DEFINE))`);
   });
 
   describe('contents', () => {
@@ -267,21 +267,23 @@ describe('definition groups', () => {
       expect(() => regex`(?(DEFINE)\0)`).toThrow();
     });
 
-    it('should allow whitespace and comments with flag x', () => {
+    it('should allow whitespace and comments', () => {
       expect('a').toMatch(regex`^.$(?(DEFINE) )`);
       expect('a').toMatch(
         regex`^.$(?(DEFINE) # comment
         )`
       );
-      // Flag x off
-      expect(() => regex({__flagX: false})`^.$(?(DEFINE) )`).toThrow();
+    });
+
+    it('should not allow whitespace and comments with flag x disabled', () => {
+      expect(() => regex({disable: {x: true}})`^.$(?(DEFINE) )`).toThrow();
       expect(() => {
-        regex({__flagX: false})`^.$(?(DEFINE) # comment
+        regex({disable: {x: true}})`^.$(?(DEFINE) # comment
         )`
       }).toThrow();
     });
 
-    it('should allow whitespace and comments to separate groups with flag x', () => {
+    it('should allow whitespace and comments to separate groups', () => {
       expect('ab').toMatch(
         regex`
           ^ \g<a> \g<b> $

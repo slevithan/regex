@@ -1,21 +1,25 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {flagNPreprocessor} from './flag-n.js';
-import {flagXPreprocessor, rake} from './flag-x.js';
+import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
-import {atomicGroups} from './atomic-groups.js';
-import {subroutines} from './subroutines.js';
-import {backcompat} from './backcompat.js';
+import {atomicGroupsPlugin} from './atomic-groups.js';
+import {subroutinesPlugin} from './subroutines.js';
+import {backcompatPlugin} from './backcompat.js';
 
 /**
 @typedef {object} RegexTagOptions
 @prop {string} [flags]
 @prop {Array<(expression: string, flags: string) => string>} [plugins]
-@prop {boolean} [__extendSyntax]
-@prop {boolean} [__flagN]
-@prop {boolean} [__flagV]
-@prop {boolean} [__flagX]
-@prop {boolean} [__rake]
+@prop {(expression: string, flags: string) => string} [unicodeSetsPlugin]
+@prop {{
+  n?: boolean;
+  v?: boolean;
+  x?: boolean;
+  atomic?: boolean;
+  subroutines?: boolean;
+  clean?: boolean;
+}} [disable]
 */
 
 /**
@@ -75,15 +79,8 @@ Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the 
 function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
-    plugins = [],
-    // Set defaults for options used for debugging and testing
-    // Extended syntax follows flag n by default, since flag n's behavior is required to emulate
-    // atomic groups and subroutines without side effects
-    __extendSyntax = options.__flagN ?? true,
-    __flagN = true,
-    __flagV = flagVSupported,
-    __flagX = true,
-    __rake = true,
+    disable = {},
+    unicodeSetsPlugin = backcompatPlugin,
   } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added');
@@ -91,12 +88,12 @@ function fromTemplate(constructor, options, template, ...substitutions) {
 
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
-  if (__flagX) {
+  if (!disable.x) {
     ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
   }
-  // Implicit flag n is a preprocessor because capturing groups affect subsequent handling with
-  // backreference rewriting
-  if (__flagN) {
+  // Implicit flag n is a preprocessor because capturing groups affect backreference rewriting in
+  // both interpolation and plugins
+  if (!disable.n) {
     ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
   }
 
@@ -124,18 +121,16 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const p = [...plugins];
-  if (__extendSyntax) {
-    p.push(atomicGroups, subroutines);
-  }
-  if (!__flagV) {
-    p.push(backcompat);
-  }
-  if (__rake) {
-    p.push(rake);
-  }
-  p.forEach(p => expression = p(expression, flags));
-  return new constructor(expression, (__flagV ? 'v' : 'u') + flags);
+  const useFlagU = disable.v ?? !flagVSupported;
+  const plugins = [
+    ...(options.plugins ?? []),
+    ...(disable.atomic ? [] : [atomicGroupsPlugin]),
+    ...(disable.subroutines ? [] : [subroutinesPlugin]),
+    ...(disable.clean ? [] : [cleanPlugin]),
+    ...(useFlagU ? [unicodeSetsPlugin] : []),
+  ];
+  plugins.forEach(p => expression = p(expression, flags));
+  return new constructor(expression, (useFlagU ? 'u' : 'v') + flags);
 }
 
 /**

@@ -104,7 +104,7 @@ describe('flag x', () => {
       expect(() => regex`(?<n>)\k< n >`).toThrow();
     });
 
-    describe('token separator cleanup (rake)', () => {
+    describe('token separator cleanup', () => {
       it('should avoid adding token separators when it is safe to do so', () => {
         expect(regex` ^ (?! a \s b . c | d [] e ) $ `.source).toBe('^(?!a\\sb.c|d[]e)$');
       });
@@ -112,10 +112,10 @@ describe('flag x', () => {
       it('should not remove (?:) when followed by a quantifier', () => {
         expect('').toMatch(regex`(?:)?`);
         expect('').toMatch(regex`^(?:)?$`);
-        expect(':').toMatch(regex({__flagN: false})`^((?:)?:)$`);
-        expect('=').toMatch(regex({__flagN: false})`^((?:)?=)$`);
-        expect('!').toMatch(regex({__flagN: false})`^((?:)?!)$`);
-        expect('DEFINE').toMatch(regex({__flagN: false})`^((?:)?(DEFINE))$`);
+        expect(':').toMatch(regex({disable: {n: true}})`^((?:)?:)$`);
+        expect('=').toMatch(regex({disable: {n: true}})`^((?:)?=)$`);
+        expect('!').toMatch(regex({disable: {n: true}})`^((?:)?!)$`);
+        expect('DEFINE').toMatch(regex({disable: {n: true}})`^((?:)?(DEFINE))$`);
       });
 
       it('should maintain the error status of invalid syntax', () => {
@@ -276,8 +276,8 @@ describe('flag x', () => {
     });
   });
 
-  it('should set flag x status with an experimental option', () => {
-    expect('a b').not.toMatch(regex({__flagX: true})`a b`);
-    expect('a b').toMatch(regex({__flagX: false})`a b`);
+  it('should allow setting flag x status via an option', () => {
+    expect('a b').toMatch(regex({disable: {x: true}})`a b`);
+    expect('a b').not.toMatch(regex({disable: {x: false}})`a b`);
   });
 });

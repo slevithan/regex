@@ -26,13 +26,8 @@ describe('flag n', () => {
     expect('aa').toMatch(regex`${/(a)\1/}`);
   });
 
-  it('should set flag n status with an experimental option', () => {
-    expect(() => regex({__flagN: true})`()\1`).toThrow();
-    expect(() => regex({__flagN: false})`()\1`).not.toThrow();
-  });
-
-  it('should disable extended syntax by default when flag n is disabled', () => {
-    expect(() => regex({__flagN: false})`(?>)`).toThrow();
-    expect(() => regex({__flagN: false, __extendSyntax: true})`(?>)`).not.toThrow();
+  it('should allowing setting flag n status via an option', () => {
+    expect(() => regex({disable: {n: true}})`()\1`).not.toThrow();
+    expect(() => regex({disable: {n: false}})`()\1`).toThrow();
   });
 });
