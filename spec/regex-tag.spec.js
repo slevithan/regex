@@ -94,11 +94,8 @@ describe('regex', () => {
     });
 
     it('should allow removing the built-in unicodeSetsPlugin', () => {
+      expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`.`).not.toThrow();
       expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`[[]]`).toThrow();
-      if (flagVSupported) {
-        // unicodeSetsPlugin not used anyway
-        expect(() => regex({unicodeSetsPlugin: null, disable: {v: false}})`[[]]`).not.toThrow();
-      }
     });
 
     it('should not use the unicodeSetsPlugin when flag v is used', () => {

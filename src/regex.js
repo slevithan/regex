@@ -135,7 +135,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
     ...(disable.clean ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
-    ...(useFlagV ? [] : [unicodeSetsPlugin]),
+    ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
   ];
   allPlugins.forEach(p => expression = p(expression, fullFlags));
   return new constructor(expression, fullFlags);
