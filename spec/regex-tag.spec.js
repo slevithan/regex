@@ -102,6 +102,23 @@ describe('regex', () => {
       }
     });
 
+    it('should allow controlling implicit flag v via disable.v', () => {
+      expect(regex({disable: {v: true}})``.unicodeSets).not.toBeTrue();
+      if (flagVSupported) {
+        expect(regex({disable: {v: false}})``.unicodeSets).toBeTrue();
+      } else {
+        expect(regex({disable: {v: false}})``.unicodeSets).not.toBeTrue();
+      }
+    });
+
+    it('should allow controlling implicit flag v via force.v', () => {
+      if (flagVSupported) {
+        expect(regex({force: {v: true}, disable: {v: true}})``.unicodeSets).toBeTrue();
+      } else {
+        expect(() => regex({force: {v: true}})``).toThrow();
+      }
+    });
+
     it('should allow controlling the cleanup routine via disable.clean', () => {
       expect(regex({disable: {clean: true}})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
       // JS returns '(?:)' for `new RegExp('').source`, but '' would also be a fine result
