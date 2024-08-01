@@ -73,6 +73,12 @@ describe('regex', () => {
   });
 
   describe('options', () => {
+    it('should allow setting flags via an option', () => {
+      expect(regex({flags: ''})``.global).toBeFalse();
+      expect(regex({flags: 'g'})``.global).toBeTrue();
+      expect(regex({flags: 'imgs'})``.global).toBeTrue();
+    });
+
     it('should allow adding plugins', () => {
       const wiggle = str => str.replace(/~/g, 'wiggle');
       const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
