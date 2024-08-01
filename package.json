@@ -19,7 +19,7 @@
     "prebuild": "rimraf --glob dist/* types/*",
     "build": "npm run bundle:global && npm run bundle:esm && npm run types",
     "pretest": "npm run build",
-    "test": "jasmine && tsc --project spec/types/tsconfig.json",
+    "test": "jasmine && tsc --project spec/types/tsconfig.test.json",
     "prepare": "npm test"
   },
   "files": [

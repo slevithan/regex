@@ -319,6 +319,8 @@ regex('gm')`^.+`
 
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `regex`, giving your regexes a modern baseline syntax and avoiding the need to continually opt-in to their superior modes.
 
+> For special situations such as when using `regex` within other tools, it's possible to disable implicit flags. See: [*Options*](#-options).
+
 ### Flag `v`
 
 JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operations and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
@@ -637,7 +639,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
-## 📐 Options
+## 🔩 Options
 
 Typically, `regex` is used as follows:
 
@@ -646,7 +648,7 @@ regex`…` // Without flags
 regex('gi')`…` // With flags
 ```
 
-However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for tools that use `regex` internally.
+However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for use within other tools.
 
 Following are the available options and their default values:
 
