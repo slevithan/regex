@@ -90,6 +90,8 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added');
   }
+  const useFlagV = force.v || (disable.v ? false : flagVSupported);
+  const fullFlags = (useFlagV ? 'v' : 'u') + flags;
 
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
@@ -126,7 +128,6 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const useFlagV = force.v || (disable.v ? false : flagVSupported);
   const allPlugins = [
     // Run first, so provided plugins can output extended syntax
     ...plugins,
@@ -136,8 +137,8 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV ? [] : [unicodeSetsPlugin]),
   ];
-  allPlugins.forEach(p => expression = p(expression, flags));
-  return new constructor(expression, (useFlagV ? 'v' : 'u') + flags);
+  allPlugins.forEach(p => expression = p(expression, fullFlags));
+  return new constructor(expression, fullFlags);
 }
 
 /**

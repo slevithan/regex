@@ -85,11 +85,19 @@ describe('regex', () => {
       expect('wigle').toMatch(regex({plugins: [wiggle, removeRepeatedChars]})`^~$`);
     });
 
-    it('should allow swapping the unicodeSetsPlugin', () => {
+    it('should allow swapping the built-in unicodeSetsPlugin', () => {
       const plugin = str => str.replace(/v/g, 'u');
       expect('u').toMatch(regex({unicodeSetsPlugin: plugin, disable: {v: true}})`^v$`);
       if (!flagVSupported) {
         expect('u').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
+      }
+    });
+
+    it('should allow removing the built-in unicodeSetsPlugin', () => {
+      expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`[[]]`).toThrow();
+      if (flagVSupported) {
+        // unicodeSetsPlugin not used anyway
+        expect(() => regex({unicodeSetsPlugin: null, disable: {v: false}})`[[]]`).not.toThrow();
       }
     });
 

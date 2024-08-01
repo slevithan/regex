@@ -676,7 +676,12 @@ regex({
 
 **`flags`** - For providing flags when using an options object.
 
-**`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before running built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` constructor (or an alternative constructor provided via `` regex.bind(RegExpSubclass)`…` ``).
+**`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
+
+1. The pattern, as processed so far by preceding plugins, etc.
+2. The flags. Does not include emulated flags <kbd>x</kbd>/<kbd>n</kbd>, but does include the implicit <kbd>v</kbd> or <kbd>u</kbd> (whichever will be used based on provided settings and the environment's native support for <kbd>v</kbd>).
+
+The final result of all plugins is provided to the `RegExp` constructor (or an alternative constructor provided via `` regex.bind(RegExpSubclass)`…` ``).
 
 **`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value (which you can replace by setting this option) is a built-in function that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features. By replacing the default function, you can add backward compatible support for these features. This plugin is always run last, so it doesn't have to worry about parsing extended syntax.
 
