@@ -26,7 +26,7 @@ describe('flag n', () => {
     expect('aa').toMatch(regex`${/(a)\1/}`);
   });
 
-  it('should allowing setting flag n status via an option', () => {
+  it('should allow controlling implicit flag n via disable.n', () => {
     expect(() => regex({disable: {n: true}})`()\1`).not.toThrow();
     expect(() => regex({disable: {n: false}})`()\1`).toThrow();
   });

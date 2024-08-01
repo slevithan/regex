@@ -3,7 +3,6 @@ describe('backcompat', () => {
     expect(regex({disable: {v: true}})``.flags).toContain('u');
     expect(regex({disable: {v: true}})``.unicode).toBeTrue();
     expect(regex({disable: {v: true}, flags: 'g'})``.unicode).toBeTrue();
-
     if (!flagVSupported) {
       expect(regex``.flags).toContain('u');
       expect(regex``.unicode).toBeTrue();

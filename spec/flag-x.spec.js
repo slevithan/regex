@@ -276,7 +276,7 @@ describe('flag x', () => {
     });
   });
 
-  it('should allow setting flag x status via an option', () => {
+  it('should allow controlling implicit flag x via disable.x', () => {
     expect('a b').toMatch(regex({disable: {x: true}})`a b`);
     expect('a b').not.toMatch(regex({disable: {x: false}})`a b`);
   });
