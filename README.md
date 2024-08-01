@@ -319,7 +319,7 @@ regex('gm')`^.+`
 
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `regex`, giving your regexes a modern baseline syntax and avoiding the need to continually opt-in to their superior modes.
 
-> For special situations such as when using `regex` within other tools, it's possible to disable implicit flags. See: [*Options*](#-options).
+> For special situations such as when using `regex` within other tools, implicit flags can be disabled. See: [*Options*](#-options).
 
 ### Flag `v`
 
@@ -665,6 +665,9 @@ regex({
     subroutines: false,
     clean: false,
   },
+  force: {
+    v: false,
+  },
 })`…`;
 ```
 
@@ -683,10 +686,14 @@ regex({
 
 - **`x`** - Disables implicit, emulated flag <kbd>x</kbd>.
 - **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (e.g. in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
-- **`v`** - Disables implicitly adding flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
+- **`v`** - Disables implicit flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
 - **`atomic`** - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
 - **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
 - **`clean`** - Prevents running a cleanup routine that makes generated regex source more readable by removing unneeded `(?:)` token separators.
+
+**`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
+
+- **`v`** - Force the use of flag <kbd>v</kbd>, even when it's not supported natively (resulting in an error).
 </details>
 
 ## ⚡ Performance

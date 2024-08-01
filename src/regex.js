@@ -3,7 +3,7 @@ import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClas
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
-import {atomicGroupsPlugin} from './atomic-groups.js';
+import {atomicPlugin} from './atomic-groups.js';
 import {subroutinesPlugin} from './subroutines.js';
 import {backcompatPlugin} from './backcompat.js';
 
@@ -13,13 +13,16 @@ import {backcompatPlugin} from './backcompat.js';
 @prop {Array<(expression: string, flags: string) => string>} [plugins]
 @prop {(expression: string, flags: string) => string} [unicodeSetsPlugin]
 @prop {{
+  x?: boolean;
   n?: boolean;
   v?: boolean;
-  x?: boolean;
   atomic?: boolean;
   subroutines?: boolean;
   clean?: boolean;
 }} [disable]
+@prop {{
+  v?: boolean;
+}} [force]
 */
 
 /**
@@ -79,8 +82,10 @@ Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the 
 function fromTemplate(constructor, options, template, ...substitutions) {
   const {
     flags = '',
-    disable = {},
+    plugins = [],
     unicodeSetsPlugin = backcompatPlugin,
+    disable = {},
+    force = {},
   } = options;
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added');
@@ -121,16 +126,18 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const useFlagU = disable.v ?? !flagVSupported;
-  const plugins = [
-    ...(options.plugins ?? []),
-    ...(disable.atomic ? [] : [atomicGroupsPlugin]),
+  const useFlagV = force.v || (disable.v ? false : flagVSupported);
+  const allPlugins = [
+    // Run first, so provided plugins can output extended syntax
+    ...plugins,
+    ...(disable.atomic ? [] : [atomicPlugin]),
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
     ...(disable.clean ? [] : [cleanPlugin]),
-    ...(useFlagU ? [unicodeSetsPlugin] : []),
+    // Run last, so it doesn't have to worry about parsing extended syntax
+    ...(useFlagV ? [] : [unicodeSetsPlugin]),
   ];
-  plugins.forEach(p => expression = p(expression, flags));
-  return new constructor(expression, (useFlagU ? 'u' : 'v') + flags);
+  allPlugins.forEach(p => expression = p(expression, flags));
+  return new constructor(expression, (useFlagV ? 'v' : 'u') + flags);
 }
 
 /**
