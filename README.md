@@ -36,7 +36,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
   - [Partial patterns](#interpolating-partial-patterns)
   - [Interpolation principles](#interpolation-principles)
   - [Interpolation contexts](#interpolation-contexts)
-- [Options](#️-options)
+- [Options](#-options)
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
 - [FAQ](#-faq)
@@ -637,7 +637,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
-## ⚙️ Options
+## 🔓 Options
 
 Typically, `regex` is used as follows:
 
