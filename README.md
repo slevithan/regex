@@ -53,7 +53,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 - **Extended regex syntax**.
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
   - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Definition groups `(?(DEFINE)…)` allow creating subpatterns within them for use by reference only.
+  - Subroutine definition groups via `(?(DEFINE)…)` allow groups within them to be used by reference only.
   - Recursive matching is enabled by an extension.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -64,7 +64,7 @@ With the `regex` package, JavaScript steps up as one of the best regex flavors a
 ```js
 import {regex, pattern} from 'regex';
 
-// Definition group and subroutines
+// Subroutines and a subroutine definition group
 const record = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
@@ -200,7 +200,7 @@ To illustrate points 2 and 3, consider:
 
 ```js
 regex`
-  (?<double> (?<char>.) \k<char> )
+  (?<double> (?<char>.)\k<char>)
   \g<double>
   \k<double>
 `
@@ -252,7 +252,7 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined`, which is the value for any capturing group that didn't participate in a match. See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to avoid having such groups appear on the `groups` object.
+When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object, with the value `undefined` (which is the value for any capturing group that didn't participate in a match). See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to prevent such groups from appearing on the `groups` object.
 </details>
 
 > [!NOTE]
@@ -260,7 +260,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 
 ### Subroutine definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with [subroutines](#subroutines), this enables writing regexes in a grammatical way that improves readability and maintainability.
+The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with [subroutines](#subroutines), this enables writing regexes in a grammatical way that can significantly improve readability and maintainability.
 
 > Named groups defined within subroutine definition groups don't appear on the `groups` object of matches.
 
@@ -294,11 +294,11 @@ console.log(match.groups);
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Only one definition group is allowed per regex, but it can contain any number of named groups.
-- Apart from trailing whitespace and comments (allowed by implicit flag <kbd>x</kbd>), definition groups must appear at the end of their pattern.
-- At the top level of definition groups, only named groups, whitespace, and comments are allowed.
-- Within definition groups, all named groups must use unique names, and all are excluded from the `groups` object of resulting matches.
-- The word `DEFINE` must appear in uppercase.
+- **Quantity:** Only one definition group is allowed per regex, but it can contain any number of named groups (and those groups can appear in any order).
+- **Placement:** Apart from trailing whitespace and comments (allowed by implicit flag <kbd>x</kbd>), definition groups must appear at the end of their pattern.
+- **Contents:** At the top level of definition groups, only named groups, whitespace, and comments are allowed.
+- **Duplicate names:** All named groups within definition groups must use unique names.
+- **Casing:** The word `DEFINE` must appear in uppercase.
 </details>
 
 ### Recursion
@@ -413,7 +413,7 @@ This is also true for other flags that can change how an inner regex is matched:
   <summary>👉 <b>Show more details</b></summary>
 
 - Regexes can't be interpolated inside character classes (so `` regex`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
-- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. Ex: `new RegExp(/./, 's')`.
+- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. E.g. `new RegExp(/./, 's')`.
 </details>
 
 ### Interpolating escaped strings
@@ -633,22 +633,22 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 - *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. Example: In default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
-- Character classes have a sub-context on the borders of ranges. Only one character node (ex: `a` or `\u0061`) can be interpolated at these positions.
+- Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at these positions.
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 
-## 🔓 Options
+## 📐 Options
 
 Typically, `regex` is used as follows:
 
 ```js
-regex`…` // without flags
-regex('gi')`…` // with flags
+regex`…` // Without flags
+regex('gi')`…` // With flags
 ```
 
 However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for tools that use `regex` internally.
 
-Following are the options available and their default values:
+Following are the available options and their default values:
 
 ```js
 regex({
@@ -669,20 +669,22 @@ regex({
 <details>
   <summary>👉 <b>See details for each option</b></summary>
 
-`flags` - For providing flags when using an options object.
+**`flags`** - For providing flags when using an options object.
 
-`plugins` - An array of functions. Plugins are called in order, after applying emulated flags and interpolation. They're called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` constructor (or an alternative constructor provided via `` regex.bind(RegExpSubclass)`…` ``).
+**`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before running built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are called with two arguments (the pattern and flags) and are expected to return an updated pattern string. The final result is provided to the `RegExp` constructor (or an alternative constructor provided via `` regex.bind(RegExpSubclass)`…` ``).
 
-`unicodeSetsPlugin` - A plugin function that is used when flag <kbd>v</kbd> is not supported natively, or when implicit flag <kbd>v</kbd> is disabled. By default, a built-in function is used that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features/syntax (nested character classes, set subtraction/intersection, etc.). By replacing the default `unicodeSetsPlugin`, you can add backward compatible support for these features.
+**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value (which you can replace by setting this option) is a built-in function that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features/syntax (nested character classes, set subtraction/intersection, etc.). By replacing the default function, you can add backward compatible support for these features. This plugin is always run last, so it doesn't have to worry about parsing extended syntax.
 
-`disable` - A set of options that can be individually disabled by setting their values to `true`.
+> `regex` doesn't provide full transpilation for flag <kbd>v</kbd>'s features out of the box. This is to remain lightweight and because it's not primarily a backward compatibility library. See the [*Compatibility*](#-compatibility) section for more details.
 
-- `x` - Disables implicit, emulated flag <kbd>x</kbd>.
-- `n` - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (ex: in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
-- `v` - Disables implicitly adding flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- `atomic` - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
-- `subroutines` - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
-- `clean` - Prevents running a cleanup routine that makes generated regex source more readable by removing unneeded `(?:)` token separators.
+**`disable`** - A set of options that can be individually disabled by setting their values to `true`.
+
+- **`x`** - Disables implicit, emulated flag <kbd>x</kbd>.
+- **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (e.g. in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
+- **`v`** - Disables implicitly adding flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
+- **`atomic`** - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
+- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
+- **`clean`** - Prevents running a cleanup routine that makes generated regex source more readable by removing unneeded `(?:)` token separators.
 </details>
 
 ## ⚡ Performance
@@ -693,11 +695,11 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and Node.js 20. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s rules), which extends support to Node.js 14 and 2020-era browsers (2017-era with a build step that transpiles private class fields, string `matchAll`, array `flatMap`, and the `??` and `?.` operators).
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)) and Node.js 20. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead (while still enforcing <kbd>v</kbd>'s escaping rules), which extends support to Node.js 14 and 2020-era browsers (2017-era with a build step that transpiles private class fields, string `matchAll`, array `flatMap`, and the `??` and `?.` operators).
 
 The following edge cases rely on modern JavaScript features:
 
-- To ensure atomization, `regex` uses nested character classes (which require native flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes.
+- To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome/Edge 125 and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
@@ -715,7 +717,7 @@ The claim that JavaScript with the `regex` package is among the best regex flavo
 <details>
   <summary><b>Can <code>regex</code> be called as a function instead of using it with backticks?</b></summary>
 
-Yes, although you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression.
+Yes, although you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression. For example:
 
 ```js
 import {regex, pattern} from 'regex';
@@ -723,7 +725,7 @@ const str = '…';
 const re = regex('gi')`${pattern(str)}`;
 ```
 
-If you prefer to call `regex` as a function (rather than using it as a template tag), that requires creating the raw template strings array yourself, as follows:
+If you prefer to call `regex` as a function (rather than using it as a template tag), that requires explicitly providing the raw template strings array, as follows:
 
 ```js
 import {regex} from 'regex';
