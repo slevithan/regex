@@ -693,7 +693,7 @@ regex({
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 
-- **`v`** - Force the use of flag <kbd>v</kbd>, even when it's not supported natively (resulting in an error).
+- **`v`** - Force the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
 ## ⚡ Performance

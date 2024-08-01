@@ -67,23 +67,41 @@ describe('regex', () => {
     expect('a').toMatch(regex.bind(fn)`a`);
   });
 
-  it('should clean up superfluous token separators in output', () => {
-    // JS returns '(?:)' for `new RegExp('').source`, but '' would also be a fine result
-    expect(['(?:)', '']).toContain(regex`(?:)(?:)(?:)`.source);
-  });
-
-  it('should not clean up superfluous token separators in output via an option', () => {
-    expect(regex({disable: {clean: true}})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
-  });
-
-  it('should allow adding plugins', () => {
-    const wiggle = str => str.replace(/~/g, 'wiggle');
-    const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
-    expect('wigle').toMatch(regex({plugins: [wiggle, removeRepeatedChars]})`^~$`);
-  });
-
   it('should not allow unexpected arguments', () => {
     expect(() => regex([''])).toThrow();
     expect(() => regex({}, {raw: ['']})).toThrow();
+  });
+
+  describe('options', () => {
+    it('should allow adding plugins', () => {
+      const wiggle = str => str.replace(/~/g, 'wiggle');
+      const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
+      expect('wigle').toMatch(regex({plugins: [wiggle, removeRepeatedChars]})`^~$`);
+    });
+
+    it('should allow swapping the unicodeSetsPlugin', () => {
+      const plugin = str => str.replace(/v/g, 'u');
+      expect('u').toMatch(regex({unicodeSetsPlugin: plugin, disable: {v: true}})`^v$`);
+      if (!flagVSupported) {
+        expect('u').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
+      }
+    });
+
+    it('should not use the unicodeSetsPlugin when flag v is used', () => {
+      const plugin = str => str.replace(/v/g, 'u');
+      if (flagVSupported) {
+        expect('v').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
+      } else {
+        expect(() => regex({unicodeSetsPlugin: plugin, force: {v: true}})`^v$`).toThrow();
+      }
+    });
+
+    it('should allow controlling the cleanup routine via disable.clean', () => {
+      expect(regex({disable: {clean: true}})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
+      // JS returns '(?:)' for `new RegExp('').source`, but '' would also be a fine result
+      const validResults = ['(?:)', ''];
+      expect(validResults).toContain(regex({disable: {clean: false}})`(?:)(?:)(?:)`.source);
+      expect(validResults).toContain(regex`(?:)(?:)(?:)`.source);
+    });
   });
 });
