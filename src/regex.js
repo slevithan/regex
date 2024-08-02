@@ -11,7 +11,7 @@ import {backcompatPlugin} from './backcompat.js';
 @typedef {object} RegexTagOptions
 @prop {string} [flags]
 @prop {Array<(expression: string, flags: string) => string>} [plugins]
-@prop {(expression: string, flags: string) => string} [unicodeSetsPlugin]
+@prop {((expression: string, flags: string) => string) | null} [unicodeSetsPlugin]
 @prop {{
   x?: boolean;
   n?: boolean;
