@@ -33,6 +33,12 @@ describe('backcompat', () => {
     expect(() => regex({disable: {v: true}})`[\d-a]`).toThrow();
   });
 
+  it('should allow unescaped { and } in character classes when part of a valid token', () => {
+    expect('a').toMatch(regex({disable: {v: true}})`^[\u{61}]$`);
+    expect('a').toMatch(regex({disable: {v: true}})`^[\p{L}]$`);
+    expect('a').toMatch(regex({disable: {v: true}})`^[^\P{L}]$`);
+  });
+
   it('should allow escaping characters in character classes when escapes are permitted by flag v but invalid without it', () => {
     expect('&').toMatch(regex({disable: {v: true}})`^[\&]$`);
     expect('!').toMatch(regex({disable: {v: true}})`^[\!]$`);
@@ -68,9 +74,5 @@ describe('backcompat', () => {
     expect(() => regex({disable: {v: true}})`[[]]`).toThrow();
     expect(() => regex({disable: {v: true}})`[^[]]`).toThrow();
     expect(() => regex({disable: {v: true}})`[]]`).toThrow();
-  });
-
-  it('should throw for doubly negated sets with flag i when flag v unavailable', () => {
-    expect(() => regex({disable: {v: true}, flags: 'i'})`[^\P{Ll}]`).toThrow();
   });
 });

@@ -18,10 +18,9 @@ Assumes flag u and doesn't worry about syntax errors that are caught by it.
 @param {string} flags
 @returns {string}
 */
-export function backcompatPlugin(expression, flags) {
+export function backcompatPlugin(expression) {
   const unescapedLiteralHyphenMsg = 'Invalid unescaped "-" in character class';
   let inCharClass = false;
-  let inNegatedCharClass = false;
   let result = '';
   for (const {0: m, groups: {dp, vOnlyEscape}} of expression.matchAll(token)) {
     if (m[0] === '[') {
@@ -32,12 +31,11 @@ export function backcompatPlugin(expression, flags) {
         throw new Error(unescapedLiteralHyphenMsg);
       }
       inCharClass = true;
-      inNegatedCharClass = m[1] === '^';
     } else if (m.endsWith(']')) {
       if (m[0] === '-') {
         throw new Error(unescapedLiteralHyphenMsg);
       }
-      inCharClass = inNegatedCharClass = false;
+      inCharClass = false;
     } else if (inCharClass) {
       if (m === '&&' || m === '--') {
         throw new Error(`Invalid set operator "${m}" when flag v not supported`);
@@ -45,8 +43,6 @@ export function backcompatPlugin(expression, flags) {
         throw new Error(`Invalid double punctuator "${m}", reserved by flag v`);
       } else if ('(){}/|'.includes(m)) {
         throw new Error(`Invalid unescaped "${m}" in character class`);
-      } else if (inNegatedCharClass && m.startsWith('\\P') && flags.includes('i')) {
-        throw new Error('Negated \\P in negated character class with flag i works differently with flag v');
       } else if (vOnlyEscape) {
         // Remove the escaping backslash to emulate flag v rules, since this character is allowed
         // to be escaped within character classes with flag v but not with flag u
