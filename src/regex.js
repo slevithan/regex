@@ -73,11 +73,12 @@ const regex = function(first, ...substitutions) {
 
 /**
 Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the template holes.
-@param {new (expression: string, flags: string) => RegExp} constructor
+@template T
+@param {new (expression: string, flags: string) => T} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...(string | RegExp | Pattern)} substitutions
-@returns {RegExp}
+@returns {T}
 */
 function fromTemplate(constructor, options, template, ...substitutions) {
   const {
@@ -160,7 +161,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
   const isPattern = value instanceof Pattern;
-  let escapedValue;
+  let escapedValue = '';
   if (!(value instanceof RegExp)) {
     value = String(value);
     if (!isPattern) {
@@ -220,6 +221,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
 @returns {{value: string; usedModifier?: boolean}}
 */
 function transformForLocalFlags(re, outerFlags) {
+  /** @type {{i: boolean | null; m: boolean | null; s: boolean | null;}} */
   const modFlagsObj = {
     i: null,
     m: null,
