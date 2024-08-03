@@ -303,7 +303,7 @@ console.log(match.groups);
 
 ### Recursion
 
-You can use the `regex` extension package [`regex-recursion`](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
+You can use the `regex` extension package [regex-recursion](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ## 🚩 Flags
 

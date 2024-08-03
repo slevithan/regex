@@ -1,14 +1,10 @@
 export class Pattern {
   #value;
-  /**
-  @param {string} value
-  */
+  /** @param {string} value */
   constructor(value) {
     this.#value = value;
   }
-  /**
-  @returns {string}
-  */
+  /** @returns {string} */
   toString() {
     return String(this.#value);
   }

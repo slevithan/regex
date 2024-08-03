@@ -72,7 +72,7 @@ const regex = function(first, ...substitutions) {
 }
 
 /**
-Returns a UnicodeSets-mode RegExp from a template and substitutions to fill the template holes.
+Returns a RegExp from a template and substitutions to fill the template holes.
 @template T
 @param {new (expression: string, flags: string) => T} constructor
 @param {RegexTagOptions} options
@@ -218,7 +218,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
 /**
 @param {RegExp} re
 @param {string} outerFlags
-@returns {{value: string; usedModifier?: boolean}}
+@returns {{value: string; usedModifier?: boolean;}}
 */
 function transformForLocalFlags(re, outerFlags) {
   /** @type {{i: boolean | null; m: boolean | null; s: boolean | null;}} */
@@ -229,7 +229,6 @@ function transformForLocalFlags(re, outerFlags) {
   };
   const newlines = '\\n\\r\\u2028\\u2029';
   let value = re.source;
-
   if (re.ignoreCase !== outerFlags.includes('i')) {
     if (patternModsSupported) {
       modFlagsObj.i = re.ignoreCase;
@@ -252,7 +251,6 @@ function transformForLocalFlags(re, outerFlags) {
       value = replaceUnescaped(value, '\\$', (re.multiline ? `(?=$|[${newlines}])` : '(?![^])'), Context.DEFAULT);
     }
   }
-
   if (patternModsSupported) {
     const keys = Object.keys(modFlagsObj);
     let modifier = keys.filter(k => modFlagsObj[k] === true).join('');
