@@ -1,8 +1,8 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, containsCharClassUnion, countCaptures, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, containsCharClassUnion, countCaptures, emulationGroupMarker, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {Pattern, pattern} from './pattern.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
-import {Pattern, pattern} from './pattern.js';
 import {atomicPlugin} from './atomic-groups.js';
 import {subroutinesPlugin} from './subroutines.js';
 import {backcompatPlugin} from './backcompat.js';
@@ -18,13 +18,19 @@ import {backcompatPlugin} from './backcompat.js';
   v?: boolean;
   atomic?: boolean;
   subroutines?: boolean;
-  clean?: boolean;
 }} [disable]
 @prop {{
   v?: boolean;
 }} [force]
 */
 
+/**
+@typedef {Array<number | null>} CaptureMap
+*/
+/**
+@typedef {object} RegexConstructorData
+@prop {CaptureMap} captureMap
+*/
 /**
 @template T
 @typedef RegexTag
@@ -39,7 +45,7 @@ import {backcompatPlugin} from './backcompat.js';
 
   // The easiest way to ensure that only valid constructors can be bound is to explicitly declare
   // `.bind(…)` with more restrictive types
-  bind<U>(this: any, thisArg: new (expression: string, flags: string) => U): RegexTag<U>;
+  bind<U>(this: any, thisArg: new (expression: string, flags: string, data: RegexConstructorData) => U): RegexTag<U>;
 }}
 */
 
@@ -52,7 +58,6 @@ Can be called in multiple ways:
 2. `` regex('gi')`…` `` - To specify flags.
 3. `` regex({flags: 'gi'})`…` `` - With options.
 4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
-
 @type {RegexTag<RegExp>}
 */
 const regex = function(first, ...substitutions) {
@@ -74,7 +79,7 @@ const regex = function(first, ...substitutions) {
 /**
 Returns a RegExp from a template and substitutions to fill the template holes.
 @template T
-@param {new (expression: string, flags: string) => T} constructor
+@param {new (expression: string, flags: string, data: RegexConstructorData) => T} constructor
 @param {RegexTagOptions} options
 @param {TemplateStringsArray} template
 @param {...(string | RegExp | Pattern)} substitutions
@@ -129,17 +134,15 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     }
   });
 
-  const allPlugins = [
-    // Run first, so provided plugins can output extended syntax
-    ...plugins,
+  [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.atomic ? [] : [atomicPlugin]),
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
-    ...(disable.clean ? [] : [cleanPlugin]),
+    ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
-  ];
-  allPlugins.forEach(p => expression = p(expression, fullFlags));
-  return new constructor(expression, fullFlags);
+  ].forEach(p => expression = p(expression, fullFlags));
+  const final = unmarkEmulationGroups(expression);
+  return new constructor(final.expression, fullFlags, {captureMap: final.captureMap});
 }
 
 /**
@@ -184,10 +187,10 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     charClassContext === CharClassContext.ENCLOSED_TOKEN ||
     charClassContext === CharClassContext.Q_TOKEN
   ) {
-    return isPattern ? value : escapedValue;
+    return isPattern ? String(value) : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPattern) {
-      if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
+      if (hasUnescaped(String(value), '^-|^&&|-$|&&$')) {
         // Sandboxing so we don't change the chars outside the pattern into being part of an
         // operation they didn't initiate. Same problem as starting a pattern with a quantifier
         throw new Error('Cannot use range or set operator at boundary of interpolated pattern; move the operation into the pattern or the operator outside of it');
@@ -266,6 +269,31 @@ function transformForLocalFlags(re, outerFlags) {
     }
   }
   return {value};
+}
+
+/**
+Build the capture map and remove markers for anonymous captures (added to emulate extended syntax)
+@param {string} expression
+@returns {{expression: string; captureMap: CaptureMap;}}
+*/
+function unmarkEmulationGroups(expression) {
+  const marker = emulationGroupMarker.replace(/\$/g, '\\$');
+  /** @type {CaptureMap} */
+  const captureMap = [0];
+  let captureNum = 0;
+  expression = replaceUnescaped(expression, `(?:${capturingDelim})${marker}`, ({0: m}) => {
+    captureNum++;
+    if (m.endsWith(emulationGroupMarker)) {
+      captureMap.push(null);
+      return m.slice(0, -emulationGroupMarker.length);
+    }
+    captureMap.push(captureNum);
+    return m;
+  }, Context.DEFAULT);
+  return {
+    captureMap,
+    expression,
+  };
 }
 
 export {regex, pattern};

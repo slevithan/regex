@@ -138,13 +138,5 @@ describe('regex', () => {
       expect(() => regex({disable: {subroutines: true}})`(?(DEFINE))`).toThrow();
       expect(() => regex({disable: {subroutines: false}})`(?(DEFINE))`).not.toThrow();
     });
-
-    it('should allow controlling the cleanup routine via disable.clean', () => {
-      expect(regex({disable: {clean: true}})`(?:)(?:)(?:)`.source).toBe('(?:)(?:)(?:)');
-      // JS returns '(?:)' for `new RegExp('').source`, but '' would also be a fine result
-      const validResults = ['(?:)', ''];
-      expect(validResults).toContain(regex({disable: {clean: false}})`(?:)(?:)(?:)`.source);
-      expect(validResults).toContain(regex`(?:)(?:)(?:)`.source);
-    });
   });
 });

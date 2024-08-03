@@ -37,6 +37,10 @@ export const flagVSupported = (() => {
 })();
 
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
+// This marker was chosen because it's impossible to match (so its unlikely to be used in a real
+// expression), it's not at risk of being optimized away, transformed, or flagged as an error by a
+// plugin, and it ends with an unquantifiable token
+export const emulationGroupMarker = '$E$';
 
 export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
 export const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;

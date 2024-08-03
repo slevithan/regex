@@ -1,5 +1,5 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
+import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim} from './utils.js';
 
 /**
 @param {string} expression
@@ -47,7 +47,7 @@ function processSubroutines(expression, namedGroups) {
   }
   // Can skip a lot of processing and avoid adding captures if there are no backrefs
   const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
-  const subroutineWrapper = hasBackrefs ? '(' : '(?:';
+  const subroutineWrapper = hasBackrefs ? `(${emulationGroupMarker}` : '(?:';
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
   const remappedGroupNums = [0];

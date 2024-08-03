@@ -1,5 +1,5 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, doublePunctuatorChars, getEndContextForIncompleteExpression, noncapturingDelim, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, doublePunctuatorChars, emulationGroupMarker, getEndContextForIncompleteExpression, noncapturingDelim, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -131,7 +131,7 @@ export function flagXPreprocessor(value, runningContext) {
   };
 }
 
-// Remove `(?:)` separators (most likely added by flag x) in cases where it's safe to do so
+// Remove `(?:)` token separators (most likely added by flag x) in cases where it's safe to do so
 export function cleanPlugin(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
@@ -146,14 +146,16 @@ export function cleanPlugin(expression) {
   //       so we already get an error from that.
   //   - If preceded by one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
   //     - So long as the separator is not followed by a quantifier.
+  //   - And, not followed by an emulation group marker.
   // Examples of things that are not safe to remove `(?:)` at the boundaries of:
   // - Anywhere: Letters, numbers, or any of `-=_,<?*+{}`.
   // - If followed by any of `:!>`.
   // - If preceded by any of `\[cgkpPux]`.
   // - Anything inside character classes.
+  const marker = emulationGroupMarker.replace(/\$/g, '\\$');
   expression = replaceUnescaped(
     expression,
-    String.raw`${sep}(?=[)|.[$\\]|\((?!DEFINE)|$)|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!])|^)${sep}(?![?*+{])`,
+    String.raw`(?:${sep}(?=[)|.[$\\]|\((?!DEFINE)|$)|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!])|^)${sep}(?![?*+{]))(?!${marker})`,
     '',
     Context.DEFAULT
   );

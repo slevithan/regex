@@ -663,7 +663,6 @@ regex({
     v: false,
     atomic: false,
     subroutines: false,
-    clean: false,
   },
   force: {
     v: false,
@@ -683,9 +682,11 @@ regex({
 
 The final result of all plugins is provided to the `RegExp` constructor (or an alternate constructor such as a `RegExp` subclass, which can be provided via `` regex.bind(RegExpSubclass)`…` ``).
 
-**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value (which you can replace by setting this option) is a built-in function that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features. By replacing the default function, you can add backward compatible support for these features. This plugin is always run last, so it doesn't have to worry about parsing extended syntax.
+**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value (which you can replace by setting this option) is a built-in function that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features (nested character classes, set subtraction/intersection, etc.). By replacing the default function, you can add backward compatible support for these features.
 
-> `regex` doesn't transpile flag <kbd>v</kbd>'s new features (nested character classes, set subtraction/intersection, etc.) out of the box. This is to remain lightweight and because it's not primarily a backward compatibility library. See the [*Compatibility*](#-compatibility) section for more details.
+> `regex` doesn't transpile flag <kbd>v</kbd>'s new features out of the box in order to remain lightweight and because it's not primarily a backward compatibility library. See also: [*Compatibility*](#-compatibility).
+
+> This plugin runs last, which means you can wrap an existing library designed for transpiling <kbd>v</kbd>-mode regexes (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core)) without the library needing to understand `regex`'s extended syntax.
 
 **`disable`** - A set of options that can be individually disabled by setting their values to `true`.
 
@@ -694,7 +695,6 @@ The final result of all plugins is provided to the `RegExp` constructor (or an a
 - **`v`** - Disables implicit flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
 - **`atomic`** - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
 - **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
-- **`clean`** - Prevents running a cleanup routine that makes generated regex source more readable by removing unneeded `(?:)` token separators.
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 
