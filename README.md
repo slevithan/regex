@@ -693,8 +693,8 @@ The final result of all plugins is provided to the `RegExp` constructor (or an a
 - **`x`** - Disables implicit, emulated flag <kbd>x</kbd>.
 - **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (e.g. in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
 - **`v`** - Disables implicit flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** - Prevents transpiling atomic groups, leading to a syntax error if their syntax is used.
-- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, leading to a syntax error if their syntax is used.
+- **`atomic`** - Prevents transpiling atomic groups, resulting in a syntax error if their syntax is used.
+- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, resulting in a syntax error if their syntax is used.
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 

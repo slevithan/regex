@@ -49,4 +49,9 @@ describe('atomic groups', () => {
     const plugin = str => str.replace(/\$$/, '(?>b+)$');
     expect('aabb').toMatch(regex({plugins: [plugin]})`^(?>a+)$`);
   });
+
+  it('should allow controlling support for atomic groups via disable.atomic', () => {
+    expect(() => regex({disable: {atomic: true}})`(?>)`).toThrow();
+    expect(() => regex({disable: {atomic: false}})`(?>)`).not.toThrow();
+  });
 });

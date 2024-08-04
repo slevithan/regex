@@ -126,17 +126,7 @@ describe('regex', () => {
 
     // Option disable.x: See `flag-x.spec.js`
     // Option disable.n: See `flag-n.spec.js`
-
-    it('should allow controlling support for atomic groups via disable.atomic', () => {
-      expect(() => regex({disable: {atomic: true}})`(?>)`).toThrow();
-      expect(() => regex({disable: {atomic: false}})`(?>)`).not.toThrow();
-    });
-
-    it('should allow controlling support for subroutines via disable.subroutines', () => {
-      expect(() => regex({disable: {subroutines: true}})`(?<a>)\g<a>`).toThrow();
-      expect(() => regex({disable: {subroutines: false}})`(?<a>)\g<a>`).not.toThrow();
-      expect(() => regex({disable: {subroutines: true}})`(?(DEFINE))`).toThrow();
-      expect(() => regex({disable: {subroutines: false}})`(?(DEFINE))`).not.toThrow();
-    });
+    // Option disable.atomic: See `atomic-groups.spec.js`
+    // Option disable.subroutines: See `subroutines.spec.js`
   });
 });

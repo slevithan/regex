@@ -168,6 +168,13 @@ describe('subroutines', () => {
     const plugin = str => str.replace(/\$$/, '\\g<n>$');
     expect('aa').toMatch(regex({plugins: [plugin]})`^(?<n>a)$`);
   });
+
+  it('should allow controlling support for subroutines via disable.subroutines', () => {
+    expect(() => regex({disable: {subroutines: true}})`(?<a>)\g<a>`).toThrow();
+    expect(() => regex({disable: {subroutines: false}})`(?<a>)\g<a>`).not.toThrow();
+    expect(() => regex({disable: {subroutines: true}})`(?(DEFINE))`).toThrow();
+    expect(() => regex({disable: {subroutines: false}})`(?(DEFINE))`).not.toThrow();
+  });
 });
 
 describe('definition groups', () => {
