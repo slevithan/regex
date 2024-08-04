@@ -682,11 +682,11 @@ regex({
 
 The final result of all plugins is provided to the `RegExp` constructor (or an alternate constructor such as a `RegExp` subclass, which can be provided via `` regex.bind(RegExpSubclass)`…` ``).
 
-**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value (which you can replace by setting this option) is a built-in function that applies flag <kbd>v</kbd>'s escaping rules but doesn't transpile <kbd>v</kbd>'s new features (nested character classes, set subtraction/intersection, etc.). By replacing the default function, you can add backward compatible support for these features.
+**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
-> `regex` doesn't transpile flag <kbd>v</kbd>'s new features out of the box in order to remain lightweight and because it's not primarily a backward compatibility library. See also: [*Compatibility*](#-compatibility).
+> `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
 
-> This plugin runs last, which means you can wrap an existing library designed for transpiling <kbd>v</kbd>-mode regexes (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core)) without the library needing to understand `regex`'s extended syntax.
+> This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
 
 **`disable`** - A set of options that can be individually disabled by setting their values to `true`.
 
