@@ -13,10 +13,10 @@ export function atomicPlugin(expression, data) {
   if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
     return expression;
   }
-  const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
+  const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\(?<backrefNum>[1-9]\d*)|\\?.`, 'gsu');
   const aGDelim = '(?>';
   const emulatedAGDelim = `(?:(?=(${data.useEmulationGroups ? emulationGroupMarker : ''}`;
-  let capturingGroupCount = 0;
+  let capturingGroupCountBeforeAG = 0;
   let aGCount = 0;
   let aGPos = NaN;
   let hasProcessedAG;
@@ -28,29 +28,30 @@ export function atomicPlugin(expression, data) {
     let match;
     token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
     while (match = token.exec(expression)) {
-      const {0: m, index: pos, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
+      const {0: m, index, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
 
         if (m === aGDelim && !inAG) {
-          aGPos = pos;
+          aGPos = index;
           inAG = true;
         } else if (inAG && noncapturingStart) {
           numGroupsOpenInAG++;
         } else if (capturingStart) {
           if (inAG) {
             numGroupsOpenInAG++;
+          } else {
+            capturingGroupCountBeforeAG++;
           }
-          capturingGroupCount++;
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             aGCount++;
             // Replace `expression` and use `\k<$$N>` as a temporary shield for the backref
             // since numbered backrefs are prevented separately
             expression = `${expression.slice(0, aGPos)}${emulatedAGDelim}${
-                expression.slice(aGPos + aGDelim.length, pos)
-              }))\\k<$$${aGCount + capturingGroupCount}>)${expression.slice(pos + 1)}`;
+                expression.slice(aGPos + aGDelim.length, index)
+              }))\\k<$$${aGCount + capturingGroupCountBeforeAG}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
             break;
           }

@@ -18,17 +18,22 @@ describe('atomic groups', () => {
   it('should work when named capturing groups present', () => {
     expect('abcc').toMatch(regex`^(?<n>)a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex`^(?<n>)a(?>bc|b)c$`);
+    expect('abcc').toMatch(regex`^a(?>(?<n>)bc|b)c$`);
+    expect('abc').not.toMatch(regex`^a(?>(?<n>)bc|b)c$`);
   });
 
   it('should work when unnamed capturing groups present', () => {
-    const options = {disable: {n: true}};
-    expect('abcc').toMatch(regex(options)`^()a(?>bc|b)c$`);
-    expect('abc').not.toMatch(regex(options)`^()a(?>bc|b)c$`);
+    expect('abcc').toMatch(regex({disable: {n: true}})`^()a(?>bc|b)c$`);
+    expect('abc').not.toMatch(regex({disable: {n: true}})`^()a(?>bc|b)c$`);
+    expect('abcc').toMatch(regex({disable: {n: true}})`^a(?>()bc|b)c$`);
+    expect('abc').not.toMatch(regex({disable: {n: true}})`^a(?>()bc|b)c$`);
   });
 
   it('should work when capturing groups present via interpolation', () => {
     expect('abcc').toMatch(regex`^${/()/}a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex`^${/()/}a(?>bc|b)c$`);
+    expect('abcc').toMatch(regex`^a(?>${/()/}bc|b)c$`);
+    expect('abc').not.toMatch(regex`^a(?>${/()/}bc|b)c$`);
   });
 
   // Just documenting current behavior; this could be supported in the future

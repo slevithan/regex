@@ -38,7 +38,6 @@ ${subroutinePattern}
     numCaptures?: number;
   }>} NamedCapturingGroupsMap
 */
-
 /**
 Transform `\g<name>`
 @param {string} expression
