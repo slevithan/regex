@@ -53,20 +53,6 @@ describe('regex', () => {
     expect('1aNaN').toMatch(regex({raw: ['^', 1, NaN, '$']}, '', 'a', ''));
   });
 
-  it('should allow binding to a RegExp subclass', () => {
-    class SubRegExp extends RegExp {}
-    expect(regex.bind(SubRegExp)`a`).toBeInstanceOf(SubRegExp);
-    expect('a').toMatch(regex.bind(SubRegExp)`a`);
-  });
-
-  it('should allow binding to any constructor', () => {
-    function fn(expression, flags) {
-      return new RegExp(expression, flags);
-    }
-    expect(regex.bind(fn)`a`).toBeInstanceOf(RegExp);
-    expect('a').toMatch(regex.bind(fn)`a`);
-  });
-
   it('should not allow unexpected arguments', () => {
     expect(() => regex([''])).toThrow();
     expect(() => regex({}, {raw: ['']})).toThrow();
@@ -77,6 +63,16 @@ describe('regex', () => {
       expect(regex({flags: ''})``.global).toBeFalse();
       expect(regex({flags: 'g'})``.global).toBeTrue();
       expect(regex({flags: 'imgs'})``.global).toBeTrue();
+    });
+
+    it('should allow using a subclass to adjust for emulation groups when referencing groups by number from outside the regex', () => {
+      expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
+      expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
+      expect(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
+      // Documenting behavior when the option is not used
+      expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
+      expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
+      expect(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
     });
 
     it('should allow adding plugins', () => {

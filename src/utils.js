@@ -165,12 +165,11 @@ const contextToken = new RegExp(String.raw`
   lastPos: number;
 }} RunningContext
 */
-
 /**
 Accepts and returns its full state so it doesn't have to reprocess parts that have already been
 seen. Assumes flag v and doesn't worry about syntax errors that are caught by it.
 @param {string} incompleteExpression
-@param {RunningContext} [runningContext]
+@param {Partial<RunningContext>} [runningContext]
 @returns {RunningContext}
 */
 export function getEndContextForIncompleteExpression(incompleteExpression, {

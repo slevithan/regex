@@ -655,6 +655,7 @@ Following are the available options and their default values:
 ```js
 regex({
   flags: '',
+  useSubclass: false,
   plugins: [],
   unicodeSetsPlugin: <function>
   disable: {
@@ -675,12 +676,18 @@ regex({
 
 **`flags`** - For providing flags when using an options object.
 
+**`useSubclass`** - When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
+
+Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `useSubclass` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
+
+> This option isn't enabled by default because it would prevent `regex`'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
+
 **`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
 
 1. The pattern, as processed so far by preceding plugins, etc.
 2. The flags. Does not include emulated flags <kbd>x</kbd>/<kbd>n</kbd>, but does include the implicit <kbd>v</kbd> or <kbd>u</kbd> (whichever will be used based on provided settings and the environment's native support for <kbd>v</kbd>).
 
-The final result of all plugins is provided to the `RegExp` constructor (or an alternate constructor such as a `RegExp` subclass, which can be provided via `` regex.bind(RegExpSubclass)`…` ``).
+The final result after running all plugins is provided to the `RegExp` constructor.
 
 **`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
@@ -691,10 +698,10 @@ The final result of all plugins is provided to the `RegExp` constructor (or an a
 **`disable`** - A set of options that can be individually disabled by setting their values to `true`.
 
 - **`x`** - Disables implicit, emulated flag <kbd>x</kbd>.
-- **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. It's not recommended to disable this, because `regex`'s extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source. Although backreferences are always safely rewritten within the regex to account for these added captures, the new captures can result in referencing the wrong groups when numbered backreferences are used outside of the regex (e.g. in replacement strings). When flag <kbd>n</kbd> is enabled, all captures must have names (possibly excluding anonymous captures from interpolated `RegExp` instances), so named backreferences can safely be used instead from outside of the regex.
+- **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. Note that, although it's safe to use anonymous captures and numbered backreferences within a regex while `n` is disabled, referencing submatches by number from outside a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable `useSubclass` when disabling `n`.
 - **`v`** - Disables implicit flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** - Prevents transpiling atomic groups, resulting in a syntax error if their syntax is used.
-- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, resulting in a syntax error if their syntax is used.
+- **`atomic`** - Prevents transpiling atomic groups, resulting in a syntax error if they're used.
+- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, resulting in a syntax error if they're used.
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 

@@ -10,8 +10,10 @@ import {backcompatPlugin} from './backcompat.js';
 /**
 @typedef {string | RegExp | Pattern} InterpolatedValue
 @typedef {{flags: string; useEmulationGroups: boolean;}} PluginData
+@typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
   flags?: string;
+  useSubclass?: boolean;
   plugins?: Array<(expression: string, data: PluginData) => string>;
   unicodeSetsPlugin?: ((expression: string, data: PluginData) => string) | null;
   disable?: {
@@ -25,75 +27,56 @@ import {backcompatPlugin} from './backcompat.js';
     v?: boolean;
   };
 }} RegexTagOptions
-@typedef {Array<number | null>} EmulationGroupSlots
-@typedef {{emulationGroupSlots: EmulationGroupSlots;}} ExtendedConstuctorData
 */
 /**
 @template T
 @typedef RegexTag
 @type {{
-  ( template: TemplateStringsArray,
-    ...substitutions: ReadonlyArray<InterpolatedValue>
-  ): T;
-
+  (template: RawTemplate, ...substitutions: ReadonlyArray<InterpolatedValue>): T;
   (flags?: string): RegexTag<T>;
-
-  (options: RegexTagOptions): RegexTag<T>;
-
-  // The easiest way to ensure that only valid constructors can be bound is to explicitly declare
-  // `.bind(…)` with more restrictive types
-  bind<U>(this: any, thisArg: new (expression: string, flags: string, data?: ExtendedConstuctorData) => U): RegexTag<U>;
+  (options: RegexTagOptions & {useSubclass?: false}): RegexTag<T>;
+  (options: RegexTagOptions & {useSubclass: true}): RegexTag<WrappedRegex>;
 }}
 */
-
 /**
-Template tag for constructing a regex with advanced features and context-aware interpolation of
+Template tag for constructing a regex with extended syntax and context-aware interpolation of
 regexes, strings, and patterns.
 
-Can be called in multiple ways:
+Can be called in several ways:
 1. `` regex`…` `` - Regex pattern as a raw string.
 2. `` regex('gi')`…` `` - To specify flags.
 3. `` regex({flags: 'gi'})`…` `` - With options.
-4. `` regex.bind(RegExpSubclass)`…` `` - With a `this` that specifies a different constructor.
 @type {RegexTag<RegExp>}
 */
-const regex = function(first, ...substitutions) {
-  // Allow binding to other constructors
-  const constructor = this instanceof Function ? this : RegExp;
+const regex = (first, ...substitutions) => {
   // Given a template
   if (Array.isArray(first?.raw)) {
-    return fromTemplate(constructor, {flags: ''}, first, ...substitutions);
+    return regexFromTemplate({}, first, ...substitutions);
   // Given flags
   } else if ((typeof first === 'string' || first === undefined) && !substitutions.length) {
-    return fromTemplate.bind(null, constructor, {flags: first});
+    return regexFromTemplate.bind(null, {flags: first});
   // Given an options object
   } else if ({}.toString.call(first) === '[object Object]' && !substitutions.length) {
-    return fromTemplate.bind(null, constructor, first);
+    return regexFromTemplate.bind(null, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...substitutions])}`);
 }
 
 /**
-@typedef {{raw: Array<string>}} RawTemplate
-*/
-/**
 @template T
 @typedef RegexFromTemplate
 @type {{
-  ( constructor: new (expression: string, flags: string, data?: ExtendedConstuctorData) => T,
-    options: RegexTagOptions,
-    template: RawTemplate,
-    ...substitutions: ReadonlyArray<InterpolatedValue>
-  ) : T;
+  (options: RegexTagOptions, template: RawTemplate, ...substitutions: ReadonlyArray<InterpolatedValue>) : T;
 }}
 */
 /**
 Returns a RegExp from a template and substitutions to fill the template holes.
 @type {RegexFromTemplate<RegExp>}
 */
-const fromTemplate = (constructor, options, template, ...substitutions) => {
+const regexFromTemplate = (options, template, ...substitutions) => {
   const {
     flags = '',
+    useSubclass = false,
     plugins = [],
     unicodeSetsPlugin = backcompatPlugin,
     disable = {},
@@ -102,7 +85,6 @@ const fromTemplate = (constructor, options, template, ...substitutions) => {
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added');
   }
-  const useEmulationGroups = constructor !== RegExp;
   const useFlagV = force.v || (disable.v ? false : flagVSupported);
   const fullFlags = (useFlagV ? 'v' : 'u') + flags;
 
@@ -147,12 +129,57 @@ const fromTemplate = (constructor, options, template, ...substitutions) => {
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups}));
-  if (useEmulationGroups) {
+  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: useSubclass}));
+  if (useSubclass) {
     const unmarked = unmarkEmulationGroups(expression);
-    return new constructor(unmarked.expression, fullFlags, {emulationGroupSlots: unmarked.emulationGroupSlots});
+    return new WrappedRegex(unmarked.expression, fullFlags, {emulationGroupSlots: unmarked.emulationGroupSlots});
   }
-  return new constructor(expression, fullFlags);
+  return new RegExp(expression, fullFlags);
+}
+
+/**
+@typedef {Array<number | null>} EmulationGroupSlots
+*/
+class WrappedRegex extends RegExp {
+  /**
+  @param {string | WrappedRegex} expression
+  @param {string} [flags]
+  @param {{emulationGroupSlots: EmulationGroupSlots;}} [data]
+  */
+  constructor(expression, flags, data) {
+    super(expression, flags);
+    if (data) {
+      // TODO: Use a WeakMap instead of public property `emulationGroupSlots`
+      /** @protected @readonly */
+      this.emulationGroupSlots = data.emulationGroupSlots;
+    // Don't have the `data` argument when regexes are copied as part of the internal operations of
+    // `matchAll` and `split`
+    } else if (expression instanceof WrappedRegex && expression.emulationGroupSlots) {
+      this.emulationGroupSlots = expression.emulationGroupSlots;
+    }
+  }
+  /**
+  @override
+  @param {string} str
+  @returns {RegExpExecArray | null}
+  */
+  exec(str) {
+    const match = RegExp.prototype.exec.call(this, str);
+    if (!match) {
+      return match;
+    }
+    if (this.emulationGroupSlots) {
+      const copy = [...match];
+      // Empty all but the first value of the array while preserving its other properties
+      match.length = 1;
+      for (let i = 1; i < copy.length; i++) {
+        if (this.emulationGroupSlots[i] !== null) {
+          match.push(copy[i]);
+        }
+      }
+    }
+    return match;
+  }
 }
 
 /**
