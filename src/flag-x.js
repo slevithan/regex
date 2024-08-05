@@ -22,6 +22,10 @@ const token = new RegExp(String.raw`
 `.replace(/\s+/g, ''), 'gsu');
 
 // Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
+/**
+@typedef {import('./utils.js').Preprocessor} Preprocessor
+@type {Preprocessor}
+*/
 export function flagXPreprocessor(value, runningContext) {
   value = String(value);
   let ignoringWs = false;
@@ -131,7 +135,11 @@ export function flagXPreprocessor(value, runningContext) {
   };
 }
 
-// Remove `(?:)` token separators (most likely added by flag x) in cases where it's safe to do so
+/**
+Remove `(?:)` token separators (most likely added by flag x) in cases where it's safe to do so.
+@param {string} expression
+@returns {string}
+*/
 export function cleanPlugin(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators

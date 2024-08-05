@@ -2,16 +2,18 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {emulationGroupMarker, noncapturingDelim} from './utils.js';
 
 /**
+@typedef {import('./regex.js').PluginData} PluginData
 @param {string} expression
+@param {PluginData} data
 @returns {string}
 */
-export function atomicPlugin(expression) {
+export function atomicPlugin(expression, data) {
   if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
     return expression;
   }
   const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|(?<backrefNum>\\[1-9]\d*)|\\?.`, 'gsu');
   const aGDelim = '(?>';
-  const emulatedAGDelim = `(?:(?=(${emulationGroupMarker}`;
+  const emulatedAGDelim = `(?:(?=(${data.useEmulationGroups ? emulationGroupMarker : ''}`;
   let capturingGroupCount = 0;
   let aGCount = 0;
   let aGPos = NaN;

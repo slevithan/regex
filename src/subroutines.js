@@ -2,15 +2,17 @@ import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped
 import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim} from './utils.js';
 
 /**
+@typedef {import('./regex.js').PluginData} PluginData
 @param {string} expression
+@param {PluginData} data
 @returns {string}
 */
-export function subroutinesPlugin(expression) {
+export function subroutinesPlugin(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups);
+  const transformed = processSubroutines(expression, namedGroups, data.useEmulationGroups);
   return processDefinitionGroup(transformed, namedGroups);
 }
 
@@ -39,15 +41,16 @@ ${subroutinePattern}
 Transform `\g<name>`
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
+@param {boolean} useEmulationGroups
 @returns {string}
 */
-function processSubroutines(expression, namedGroups) {
+function processSubroutines(expression, namedGroups, useEmulationGroups) {
   if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
     return expression;
   }
   // Can skip a lot of processing and avoid adding captures if there are no backrefs
   const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
-  const subroutineWrapper = hasBackrefs ? `(${emulationGroupMarker}` : '(?:';
+  const subroutineWrapper = hasBackrefs ? `(${useEmulationGroups ? emulationGroupMarker : ''}` : '(?:';
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
   const remappedGroupNums = [0];

@@ -8,35 +8,32 @@ import {subroutinesPlugin} from './subroutines.js';
 import {backcompatPlugin} from './backcompat.js';
 
 /**
-@typedef {object} RegexTagOptions
-@prop {string} [flags]
-@prop {Array<(expression: string, flags: string) => string>} [plugins]
-@prop {((expression: string, flags: string) => string) | null} [unicodeSetsPlugin]
-@prop {{
-  x?: boolean;
-  n?: boolean;
-  v?: boolean;
-  atomic?: boolean;
-  subroutines?: boolean;
-}} [disable]
-@prop {{
-  v?: boolean;
-}} [force]
-*/
-
-/**
-@typedef {Array<number | null>} CaptureMap
-*/
-/**
-@typedef {object} RegexConstructorData
-@prop {CaptureMap} captureMap
+@typedef {string | RegExp | Pattern} InterpolatedValue
+@typedef {{flags: string; useEmulationGroups: boolean;}} PluginData
+@typedef {{
+  flags?: string;
+  plugins?: Array<(expression: string, data: PluginData) => string>;
+  unicodeSetsPlugin?: ((expression: string, data: PluginData) => string) | null;
+  disable?: {
+    x?: boolean;
+    n?: boolean;
+    v?: boolean;
+    atomic?: boolean;
+    subroutines?: boolean;
+  };
+  force?: {
+    v?: boolean;
+  };
+}} RegexTagOptions
+@typedef {Array<number | null>} EmulationGroupSlots
+@typedef {{emulationGroupSlots: EmulationGroupSlots;}} ExtendedConstuctorData
 */
 /**
 @template T
 @typedef RegexTag
 @type {{
   ( template: TemplateStringsArray,
-    ...substitutions: ReadonlyArray<string | RegExp | Pattern>
+    ...substitutions: ReadonlyArray<InterpolatedValue>
   ): T;
 
   (flags?: string): RegexTag<T>;
@@ -45,7 +42,7 @@ import {backcompatPlugin} from './backcompat.js';
 
   // The easiest way to ensure that only valid constructors can be bound is to explicitly declare
   // `.bind(…)` with more restrictive types
-  bind<U>(this: any, thisArg: new (expression: string, flags: string, data: RegexConstructorData) => U): RegexTag<U>;
+  bind<U>(this: any, thisArg: new (expression: string, flags: string, data?: ExtendedConstuctorData) => U): RegexTag<U>;
 }}
 */
 
@@ -77,15 +74,24 @@ const regex = function(first, ...substitutions) {
 }
 
 /**
-Returns a RegExp from a template and substitutions to fill the template holes.
-@template T
-@param {new (expression: string, flags: string, data: RegexConstructorData) => T} constructor
-@param {RegexTagOptions} options
-@param {TemplateStringsArray} template
-@param {...(string | RegExp | Pattern)} substitutions
-@returns {T}
+@typedef {{raw: Array<string>}} RawTemplate
 */
-function fromTemplate(constructor, options, template, ...substitutions) {
+/**
+@template T
+@typedef RegexFromTemplate
+@type {{
+  ( constructor: new (expression: string, flags: string, data?: ExtendedConstuctorData) => T,
+    options: RegexTagOptions,
+    template: RawTemplate,
+    ...substitutions: ReadonlyArray<InterpolatedValue>
+  ) : T;
+}}
+*/
+/**
+Returns a RegExp from a template and substitutions to fill the template holes.
+@type {RegexFromTemplate<RegExp>}
+*/
+const fromTemplate = (constructor, options, template, ...substitutions) => {
   const {
     flags = '',
     plugins = [],
@@ -96,6 +102,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
   if (/[vu]/.test(flags)) {
     throw new Error('Flags v/u cannot be explicitly added');
   }
+  const useEmulationGroups = constructor !== RegExp;
   const useFlagV = force.v || (disable.v ? false : flagVSupported);
   const fullFlags = (useFlagV ? 'v' : 'u') + flags;
 
@@ -112,7 +119,7 @@ function fromTemplate(constructor, options, template, ...substitutions) {
 
   let precedingCaptures = 0;
   let expression = '';
-  let runningContext = {};
+  let runningContext;
   // Intersperse raw template strings and substitutions
   template.raw.forEach((raw, i) => {
     const wrapEscapedStr = !!(template.raw[i] || template.raw[i + 1]);
@@ -140,13 +147,16 @@ function fromTemplate(constructor, options, template, ...substitutions) {
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, fullFlags));
-  const final = unmarkEmulationGroups(expression);
-  return new constructor(final.expression, fullFlags, {captureMap: final.captureMap});
+  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups}));
+  if (useEmulationGroups) {
+    const unmarked = unmarkEmulationGroups(expression);
+    return new constructor(unmarked.expression, fullFlags, {emulationGroupSlots: unmarked.emulationGroupSlots});
+  }
+  return new constructor(expression, fullFlags);
 }
 
 /**
-@param {string | RegExp | Pattern} value
+@param {InterpolatedValue} value
 @param {string} flags
 @param {string} regexContext
 @param {string} charClassContext
@@ -274,24 +284,24 @@ function transformForLocalFlags(re, outerFlags) {
 /**
 Build the capture map and remove markers for anonymous captures (added to emulate extended syntax)
 @param {string} expression
-@returns {{expression: string; captureMap: CaptureMap;}}
+@returns {{expression: string; emulationGroupSlots: EmulationGroupSlots;}}
 */
 function unmarkEmulationGroups(expression) {
   const marker = emulationGroupMarker.replace(/\$/g, '\\$');
-  /** @type {CaptureMap} */
-  const captureMap = [0];
+  /** @type {EmulationGroupSlots} */
+  const emulationGroupSlots = [0];
   let captureNum = 0;
   expression = replaceUnescaped(expression, `(?:${capturingDelim})${marker}`, ({0: m}) => {
     captureNum++;
     if (m.endsWith(emulationGroupMarker)) {
-      captureMap.push(null);
+      emulationGroupSlots.push(null);
       return m.slice(0, -emulationGroupMarker.length);
     }
-    captureMap.push(captureNum);
+    emulationGroupSlots.push(captureNum);
     return m;
   }, Context.DEFAULT);
   return {
-    captureMap,
+    emulationGroupSlots,
     expression,
   };
 }

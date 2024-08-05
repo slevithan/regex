@@ -8,6 +8,10 @@ ${noncapturingDelim}
 `.replace(/\s+/g, ''), 'gsu');
 
 // Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
+/**
+@typedef {import('./utils.js').Preprocessor} Preprocessor
+@type {Preprocessor}
+*/
 export function flagNPreprocessor(value, runningContext) {
   value = String(value);
   let expression = '';

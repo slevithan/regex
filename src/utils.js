@@ -157,14 +157,28 @@ const contextToken = new RegExp(String.raw`
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Accepts and returns its full state so it doesn't have to reprocess parts that have already been
-// seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
+/**
+@typedef {{
+  regexContext: string;
+  charClassContext: string;
+  charClassDepth: number;
+  lastPos: number;
+}} RunningContext
+*/
+
+/**
+Accepts and returns its full state so it doesn't have to reprocess parts that have already been
+seen. Assumes flag v and doesn't worry about syntax errors that are caught by it.
+@param {string} incompleteExpression
+@param {RunningContext} [runningContext]
+@returns {RunningContext}
+*/
 export function getEndContextForIncompleteExpression(incompleteExpression, {
   regexContext = RegexContext.DEFAULT,
   charClassContext = CharClassContext.DEFAULT,
   charClassDepth = 0,
   lastPos = 0,
-}) {
+} = {}) {
   contextToken.lastIndex = lastPos;
   let match;
   while (match = contextToken.exec(incompleteExpression)) {
@@ -309,17 +323,25 @@ export function containsCharClassUnion(charClassPattern) {
 }
 
 /**
+@typedef {import('./regex.js').InterpolatedValue} InterpolatedValue
+@typedef {import('./regex.js').RawTemplate} RawTemplate
+@typedef {(value: InterpolatedValue, runningContext: RunningContext) => {
+  transformed: string;
+  runningContext: RunningContext;
+}} Preprocessor
+*/
+/**
 Returns transformed versions of a template and substitutions, using the given preprocessor. Only
 processes substitutions that are instanceof `Pattern`.
-@param {TemplateStringsArray} template
-@param {Array<string | RegExp | Pattern>} substitutions
-@param {(value, runningContext) => {transformed: string; runningContext: Object}} preprocessor
-@returns {{template: TemplateStringsArray; substitutions: Array<string | RegExp | Pattern>}}
+@param {RawTemplate} template
+@param {ReadonlyArray<InterpolatedValue>} substitutions
+@param {Preprocessor} preprocessor
+@returns {{template: RawTemplate; substitutions: ReadonlyArray<InterpolatedValue>;}}
 */
 export function preprocess(template, substitutions, preprocessor) {
-  let newTemplate = {raw: []};
+  let /** @type {RawTemplate} */ newTemplate = {raw: []};
   let newSubstitutions = [];
-  let runningContext = {};
+  let runningContext;
   template.raw.forEach((raw, i) => {
     const result = preprocessor(raw, {...runningContext, lastPos: 0});
     newTemplate.raw.push(result.transformed);
