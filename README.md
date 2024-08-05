@@ -725,7 +725,7 @@ The following edge cases rely on modern JavaScript features:
 
 ## 🙋 FAQ
 
-<details>
+<details name="faq">
   <summary><b>How are you comparing regex flavors?</b></summary>
 
 The claim that JavaScript with the `regex` library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
@@ -735,7 +735,7 @@ The claim that JavaScript with the `regex` library is among the best regex flavo
 3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the `x` (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds `x` and turns it on by default, but it additionally adds regex subroutines (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
-<details>
+<details name="faq">
   <summary><b>Can <code>regex</code> be called as a function instead of using it with backticks?</b></summary>
 
 Yes, although you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression. For example:
@@ -755,7 +755,7 @@ const re = regex('gi')({raw: [str]});
 ```
 </details>
 
-<details>
+<details name="faq">
   <summary><b>Why are flags added via <code>regex('g')`…`</code> rather than <code>regex`/…/g`</code>?</b></summary>
 
 The alternative syntax isn't used because it has several disadvantages:
