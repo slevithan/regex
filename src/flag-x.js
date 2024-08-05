@@ -21,9 +21,14 @@ const token = new RegExp(String.raw`
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
 /**
 @typedef {import('./utils.js').Preprocessor} Preprocessor
+*/
+/**
+Apply transformations for insignificant whitespace and line comments.
+
+Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
+regexes or strings.
 @type {Preprocessor}
 */
 export function flagXPreprocessor(value, runningContext) {

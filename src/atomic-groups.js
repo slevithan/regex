@@ -3,6 +3,8 @@ import {emulationGroupMarker, noncapturingDelim} from './utils.js';
 
 /**
 @typedef {import('./regex.js').PluginData} PluginData
+*/
+/**
 @param {string} expression
 @param {PluginData} data
 @returns {string}

@@ -3,6 +3,8 @@ import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim
 
 /**
 @typedef {import('./regex.js').PluginData} PluginData
+*/
+/**
 @param {string} expression
 @param {PluginData} data
 @returns {string}

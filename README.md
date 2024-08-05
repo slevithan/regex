@@ -697,11 +697,11 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 **`disable`** - A set of options that can be individually disabled by setting their values to `true`.
 
-- **`x`** - Disables implicit, emulated flag <kbd>x</kbd>.
-- **`n`** - Disables implicit, emulated flag <kbd>n</kbd>. Note that, although it's safe to use anonymous captures and numbered backreferences within a regex while `n` is disabled, referencing submatches by number from outside a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable `useSubclass` when disabling `n`.
-- **`v`** - Disables implicit flag <kbd>v</kbd> even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** - Prevents transpiling atomic groups, resulting in a syntax error if they're used.
-- **`subroutines`** - Prevents transpiling subroutines and subroutine definition groups, resulting in a syntax error if they're used.
+- **`x`** - Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
+- **`n`** - Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable `useSubclass` when disabling `n`.
+- **`v`** - Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
+- **`atomic`** - Prevents transpiling [atomic groups](#atomic-groups), resulting in a syntax error if they're used.
+- **`subroutines`** - Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 

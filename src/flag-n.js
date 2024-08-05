@@ -7,9 +7,14 @@ ${noncapturingDelim}
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
-// Applied to the outer regex and interpolated patterns, but not interpolated regexes or strings
 /**
 @typedef {import('./utils.js').Preprocessor} Preprocessor
+*/
+/**
+Apply transformations for *named capture only* mode.
+
+Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
+regexes or strings.
 @type {Preprocessor}
 */
 export function flagNPreprocessor(value, runningContext) {
