@@ -689,6 +689,8 @@ Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means 
 
 The final result after running all plugins is provided to the `RegExp` constructor.
 
+> The tiny [regex-utilities](https://github.com/slevithan/regex-utilities) library is intended for use in plugins, and can make it easier to work with regex syntax.
+
 **`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
 > `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
