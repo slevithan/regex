@@ -64,7 +64,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
 ```js
 import {regex, pattern} from 'regex';
 
-// Subroutines and a subroutine definition group
+// Subroutines and subroutine definition group
 const record = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
@@ -77,7 +77,7 @@ const record = regex`
   )
 `;
 
-// Atomic group. Avoids ReDoS from the nested, overlapping quantifier
+// Atomic group: avoids ReDoS from the nested, overlapping quantifier
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware and safe interpolation
@@ -95,8 +95,8 @@ const re = regex('m')`
 
 // Numbered backreferences in interpolated regexes are adjusted
 const double = /(.)\1/;
-const re2 = regex`^ (?first>.) ${double} ${double} $`;
-// re2 → /^(?<first>.)(.)\2(.)\3$/v
+regex`^ (?<first>.) ${double} ${double} $`;
+// → /^(?<first>.)(.)\2(.)\3$/v
 ```
 
 ## 🕹️ Install and use
