@@ -54,7 +54,7 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
   const subroutineWrapper = hasBackrefs ? `(${useEmulationGroups ? emulationGroupMarker : ''}` : '(?:';
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
-  const remappedGroupNums = [0];
+  const captureNumMap = [0];
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let numCapturesPassedInsideThisSubroutine = 0;
@@ -113,8 +113,8 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
             token.lastIndex -= m.length - subroutineWrapper.length;
           }
         } else if (hasBackrefs) {
-          remappedGroupNums.push(
-            lastOf(remappedGroupNums) + 1 +
+          captureNumMap.push(
+            lastOf(captureNumMap) + 1 +
             numCapturesPassedInsideSubroutines -
             numSubroutineCapturesTrackedInRemap
           );
@@ -171,17 +171,17 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
       ({0: m, groups: {bNum, bNumSub, subNum, refNum, refCaps}}) => {
         if (bNum) {
           const backrefNum = +bNum;
-          if (backrefNum > remappedGroupNums.length - 1) {
+          if (backrefNum > captureNumMap.length - 1) {
             throw new Error(`Backref "${m}" greater than number of captures`);
           }
-          return `\\${remappedGroupNums[backrefNum]}`;
+          return `\\${captureNumMap[backrefNum]}`;
         }
         const backrefNumInSubroutine = +bNumSub;
         const subroutineGroupNum = +subNum;
         const refGroupNum = +refNum;
         const numCapturesInRef = +refCaps;
         if (backrefNumInSubroutine < refGroupNum || backrefNumInSubroutine > (refGroupNum + numCapturesInRef)) {
-          return `\\${remappedGroupNums[backrefNumInSubroutine]}`;
+          return `\\${captureNumMap[backrefNumInSubroutine]}`;
         }
         return `\\${subroutineGroupNum - refGroupNum + backrefNumInSubroutine}`;
       },

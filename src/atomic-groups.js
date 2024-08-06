@@ -73,9 +73,13 @@ export function atomicPlugin(expression, data) {
   expression = replaceUnescaped(
     expression,
     String.raw`\\(?<backrefNum>[1-9]\d*)|<\$\$(?<wrappedBackrefNum>\d+)>`,
-    ({groups: {backrefNum, wrappedBackrefNum}}) => {
+    ({0: m, groups: {backrefNum, wrappedBackrefNum}}) => {
       if (backrefNum) {
-        return `\\${captureNumMap[+backrefNum]}`;
+        const bNum = +backrefNum;
+        if (bNum > captureNumMap.length - 1) {
+          throw new Error(`Backref "${m}" greater than number of captures`);
+        }
+        return `\\${captureNumMap[bNum]}`;
       }
       return `\\${wrappedBackrefNum}`;
     },
