@@ -685,7 +685,7 @@ Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means 
 **`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
 
 1. The pattern, as processed so far by preceding plugins, etc.
-2. The flags. Does not include emulated flags <kbd>x</kbd>/<kbd>n</kbd>, but does include the implicit <kbd>v</kbd> or <kbd>u</kbd> (whichever will be used based on provided settings and the environment's native support for <kbd>v</kbd>).
+2. An object with a `flags` property that includes the native (non-emulated) flags that will be used by the regex.
 
 The final result after running all plugins is provided to the `RegExp` constructor.
 

@@ -8,7 +8,7 @@ import {subroutinesPlugin} from './subroutines.js';
 import {backcompatPlugin} from './backcompat.js';
 
 /**
-@typedef {string | RegExp | Pattern} InterpolatedValue
+@typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{flags: string; useEmulationGroups: boolean;}} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
