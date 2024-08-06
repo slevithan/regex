@@ -113,7 +113,7 @@ In browsers:
 
 ```html
 <script type="module">
-  import {regex, pattern} from 'https://cdn.jsdelivr.net/npm/regex@3.1.0/+esm';
+  import {regex, pattern} from 'https://cdn.jsdelivr.net/npm/regex@4.0.0/+esm';
   // …
 </script>
 ```
@@ -122,7 +122,7 @@ In browsers:
   <summary>Using a global name (no import)</summary>
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/regex@3.1.0/dist/regex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/regex@4.0.0/dist/regex.min.js"></script>
 <script>
   const {regex, pattern} = Regex;
   // …
