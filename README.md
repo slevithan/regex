@@ -3,7 +3,7 @@
 <a href="https://github.com/slevithan/regex#readme">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./regex-logo-dark.svg">
-    <img alt="regex logo" height="180" src="./regex-logo.svg">
+    <img alt="regex logo" height="180" src="https://github.com/slevithan/regex/raw/main/regex-logo.svg">
   </picture>
 </a>
 
