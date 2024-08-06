@@ -118,27 +118,27 @@ describe('regex', () => {
     describe('subclass', () => {
       it('should adjust for emulation groups when referencing groups by number from outside the regex', () => {
         // RegExp#exec
-        expect(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
+        expect(regex({subclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
         // String#replace: replacement string
-        expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
+        expect('ab'.replace(regex({subclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
         // String#replace: replacement function
-        expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
+        expect('ab'.replace(regex({subclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
 
         // Documenting behavior when the option is not used
-        expect(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
-        expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
-        expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
+        expect(regex({subclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
+        expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
+        expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
       });
 
       it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {
         // String#matchAll
-        expect(Array.from('ab'.matchAll(regex({flags: 'g', useSubclass: true})`(?>(?<a>.))(?<b>.)`))[0][2]).toBe('b');
+        expect(Array.from('ab'.matchAll(regex({flags: 'g', subclass: true})`(?>(?<a>.))(?<b>.)`))[0][2]).toBe('b');
         // String#split
-        expect('ab'.split(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`)).toEqual(['', 'a', 'b', '']);
+        expect('ab'.split(regex({subclass: true})`(?>(?<a>.))(?<b>.)`)).toEqual(['', 'a', 'b', '']);
 
         // Documenting behavior when the option is not used
-        expect(Array.from('ab'.matchAll(regex({flags: 'g', useSubclass: false})`(?>(?<a>.))(?<b>.)`))[0][2]).not.toBe('b');
-        expect('ab'.split(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
+        expect(Array.from('ab'.matchAll(regex({flags: 'g', subclass: false})`(?>(?<a>.))(?<b>.)`))[0][2]).not.toBe('b');
+        expect('ab'.split(regex({subclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
       });
     });
   });

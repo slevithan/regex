@@ -9,7 +9,7 @@
 
 `regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the `regex` library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
@@ -655,7 +655,7 @@ Following are the available options and their default values:
 ```js
 regex({
   flags: '',
-  useSubclass: false,
+  subclass: false,
   plugins: [],
   unicodeSetsPlugin: <function>
   disable: {
@@ -676,9 +676,9 @@ regex({
 
 **`flags`** - For providing flags when using an options object.
 
-**`useSubclass`** - When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
+**`subclass`** - When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
 
-Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `useSubclass` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
+Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass: true` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
 
 > This option isn't enabled by default because it would prevent `regex`'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
 
@@ -698,7 +698,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 **`disable`** - A set of options that can be individually disabled by setting their values to `true`.
 
 - **`x`** - Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
-- **`n`** - Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `useSubclass` when disabling `n`.
+- **`n`** - Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
 - **`v`** - Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
 - **`atomic`** - Prevents transpiling [atomic groups](#atomic-groups), resulting in a syntax error if they're used.
 - **`subroutines`** - Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.

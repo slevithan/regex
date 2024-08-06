@@ -16,6 +16,6 @@ expectTypeOf(regex('')).toEqualTypeOf<RegexTag<RegExp>>();
 // Ensure that adding options doesn't change the type
 expectTypeOf(regex({flags: ''})).toEqualTypeOf<RegexTag<RegExp>>();
 
-// Ensure that `useSubclass` changes the type to a `RegExp` subclass
-expectTypeOf(regex({useSubclass: true})).not.toEqualTypeOf<RegexTag<RegExp>>();
-expectTypeOf(regex({useSubclass: true})).toMatchTypeOf<RegexTag<RegExp>>();
+// Ensure that the `subclass` option changes the type to a `RegExp` subclass
+expectTypeOf(regex({subclass: true})).not.toEqualTypeOf<RegexTag<RegExp>>();
+expectTypeOf(regex({subclass: true})).toMatchTypeOf<RegexTag<RegExp>>();

@@ -13,7 +13,7 @@ import {backcompatPlugin} from './backcompat.js';
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
   flags?: string;
-  useSubclass?: boolean;
+  subclass?: boolean;
   plugins?: Array<(expression: string, data: PluginData) => string>;
   unicodeSetsPlugin?: ((expression: string, data: PluginData) => string) | null;
   disable?: {
@@ -34,8 +34,8 @@ import {backcompatPlugin} from './backcompat.js';
 @type {{
   (template: RawTemplate, ...substitutions: ReadonlyArray<InterpolatedValue>): T;
   (flags?: string): RegexTag<T>;
-  (options: RegexTagOptions & {useSubclass?: false}): RegexTag<T>;
-  (options: RegexTagOptions & {useSubclass: true}): RegexTag<WrappedRegex>;
+  (options: RegexTagOptions & {subclass?: false}): RegexTag<T>;
+  (options: RegexTagOptions & {subclass: true}): RegexTag<WrappedRegex>;
 }}
 */
 /**
@@ -76,7 +76,7 @@ Returns a RegExp from a template and substitutions to fill the template holes.
 const regexFromTemplate = (options, template, ...substitutions) => {
   const {
     flags = '',
-    useSubclass = false,
+    subclass = false,
     plugins = [],
     unicodeSetsPlugin = backcompatPlugin,
     disable = {},
@@ -129,8 +129,8 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: useSubclass}));
-  if (useSubclass) {
+  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: subclass}));
+  if (subclass) {
     const unmarked = unmarkEmulationGroups(expression);
     return new WrappedRegex(unmarked.expression, fullFlags, {captureNums: unmarked.captureNums});
   }
