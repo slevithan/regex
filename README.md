@@ -1,6 +1,11 @@
 <div align="center">
 
-<a href="https://github.com/slevithan/regex#readme"><img src="https://github.com/slevithan/regex/raw/main/regex-logo.svg" height="180" alt="regex logo"></a>
+<a href="https://github.com/slevithan/regex#readme">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./regex-logo-dark.svg">
+    <img alt="regex logo" height="180" src="./regex-logo.svg">
+  </picture>
+</a>
 
 [![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
 [![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
