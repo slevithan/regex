@@ -65,16 +65,6 @@ describe('regex', () => {
       expect(regex({flags: 'imgs'})``.global).toBeTrue();
     });
 
-    it('should allow using a subclass to adjust for emulation groups when referencing groups by number from outside the regex', () => {
-      expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
-      expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
-      expect(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
-      // Documenting behavior when the option is not used
-      expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
-      expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
-      expect(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
-    });
-
     it('should allow adding plugins', () => {
       const wiggle = str => str.replace(/~/g, 'wiggle');
       const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
@@ -124,5 +114,32 @@ describe('regex', () => {
     // Option disable.n: See `flag-n.spec.js`
     // Option disable.atomic: See `atomic-groups.spec.js`
     // Option disable.subroutines: See `subroutines.spec.js`
+
+    describe('subclass', () => {
+      it('should adjust for emulation groups when referencing groups by number from outside the regex', () => {
+        // RegExp#exec
+        expect(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
+        // String#replace: replacement string
+        expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
+        // String#replace: replacement function
+        expect('ab'.replace(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
+
+        // Documenting behavior when the option is not used
+        expect(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
+        expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
+        expect('ab'.replace(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
+      });
+
+      it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {
+        // String#matchAll
+        expect(Array.from('ab'.matchAll(regex({flags: 'g', useSubclass: true})`(?>(?<a>.))(?<b>.)`))[0][2]).toBe('b');
+        // String#split
+        expect('ab'.split(regex({useSubclass: true})`(?>(?<a>.))(?<b>.)`)).toEqual(['', 'a', 'b', '']);
+
+        // Documenting behavior when the option is not used
+        expect(Array.from('ab'.matchAll(regex({flags: 'g', useSubclass: false})`(?>(?<a>.))(?<b>.)`))[0][2]).not.toBe('b');
+        expect('ab'.split(regex({useSubclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
+      });
+    });
   });
 });

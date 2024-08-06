@@ -132,7 +132,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: useSubclass}));
   if (useSubclass) {
     const unmarked = unmarkEmulationGroups(expression);
-    return new WrappedRegex(unmarked.expression, fullFlags, {emulationGroupSlots: unmarked.emulationGroupSlots});
+    return new WrappedRegex(unmarked.expression, fullFlags, {captureNums: unmarked.captureNums});
   }
   return new RegExp(expression, fullFlags);
 }
@@ -141,41 +141,40 @@ const regexFromTemplate = (options, template, ...substitutions) => {
 @typedef {Array<number | null>} EmulationGroupSlots
 */
 class WrappedRegex extends RegExp {
+  #captureNums;
   /**
   @param {string | WrappedRegex} expression
   @param {string} [flags]
-  @param {{emulationGroupSlots: EmulationGroupSlots;}} [data]
+  @param {{captureNums: EmulationGroupSlots;}} [data]
   */
   constructor(expression, flags, data) {
     super(expression, flags);
     if (data) {
-      // TODO: Use a WeakMap instead of public property `emulationGroupSlots`
-      /** @protected @readonly */
-      this.emulationGroupSlots = data.emulationGroupSlots;
-    // Don't have the `data` argument when regexes are copied as part of the internal operations of
-    // `matchAll` and `split`
-    } else if (expression instanceof WrappedRegex && expression.emulationGroupSlots) {
-      this.emulationGroupSlots = expression.emulationGroupSlots;
+      this.#captureNums = data.captureNums;
+    // The third argument `data` isn't provided when regexes are copied as part of the internal
+    // handling of string methods `matchAll` and `split`
+    } else if (expression instanceof WrappedRegex) {
+      // Can read private properties of the existing object since it was created by this class
+      this.#captureNums = expression.#captureNums;
     }
   }
   /**
+  Called internally by all String/RegExp methods that use regexes.
   @override
   @param {string} str
   @returns {RegExpExecArray | null}
   */
   exec(str) {
     const match = RegExp.prototype.exec.call(this, str);
-    if (!match) {
+    if (!match || !this.#captureNums) {
       return match;
     }
-    if (this.emulationGroupSlots) {
-      const copy = [...match];
-      // Empty all but the first value of the array while preserving its other properties
-      match.length = 1;
-      for (let i = 1; i < copy.length; i++) {
-        if (this.emulationGroupSlots[i] !== null) {
-          match.push(copy[i]);
-        }
+    const copy = [...match];
+    // Empty all but the first value of the array while preserving its other properties
+    match.length = 1;
+    for (let i = 1; i < copy.length; i++) {
+      if (this.#captureNums[i] !== null) {
+        match.push(copy[i]);
       }
     }
     return match;
@@ -311,24 +310,24 @@ function transformForLocalFlags(re, outerFlags) {
 /**
 Build the capture map and remove markers for anonymous captures (added to emulate extended syntax)
 @param {string} expression
-@returns {{expression: string; emulationGroupSlots: EmulationGroupSlots;}}
+@returns {{expression: string; captureNums: EmulationGroupSlots;}}
 */
 function unmarkEmulationGroups(expression) {
   const marker = emulationGroupMarker.replace(/\$/g, '\\$');
   /** @type {EmulationGroupSlots} */
-  const emulationGroupSlots = [0];
+  const captureNums = [0];
   let captureNum = 0;
   expression = replaceUnescaped(expression, `(?:${capturingDelim})${marker}`, ({0: m}) => {
     captureNum++;
     if (m.endsWith(emulationGroupMarker)) {
-      emulationGroupSlots.push(null);
+      captureNums.push(null);
       return m.slice(0, -emulationGroupMarker.length);
     }
-    emulationGroupSlots.push(captureNum);
+    captureNums.push(captureNum);
     return m;
   }, Context.DEFAULT);
   return {
-    emulationGroupSlots,
+    captureNums,
     expression,
   };
 }
