@@ -770,7 +770,7 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
-`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [`regex-utilities`](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` extensions.
+`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [regex-utilities](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` plugins.
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.

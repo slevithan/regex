@@ -19,7 +19,7 @@ Can be called as a function or template tag:
 - `` pattern`…` `` - Same as ``pattern(String.raw`…`)``.
 
 @overload
-@param {string} value
+@param {string | number} value
 @returns {Pattern}
 
 @overload
