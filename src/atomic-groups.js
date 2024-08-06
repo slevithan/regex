@@ -1,6 +1,8 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {emulationGroupMarker, noncapturingDelim} from './utils.js';
 
+const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
+
 /**
 @typedef {import('./regex.js').PluginData} PluginData
 */
@@ -13,11 +15,11 @@ export function atomicPlugin(expression, data) {
   if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
     return expression;
   }
-  const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\(?<backrefNum>[1-9]\d*)|\\?.`, 'gsu');
   const aGDelim = '(?>';
   const emulatedAGDelim = `(?:(?=(${data.useEmulationGroups ? emulationGroupMarker : ''}`;
-  let capturingGroupCountBeforeAG = 0;
-  let aGCount = 0;
+  const captureNumMap = [0];
+  let numCapturesBeforeAG = 0;
+  let numAGs = 0;
   let aGPos = NaN;
   let hasProcessedAG;
   do {
@@ -28,7 +30,7 @@ export function atomicPlugin(expression, data) {
     let match;
     token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
     while (match = token.exec(expression)) {
-      const {0: m, index, groups: {backrefNum, capturingStart, noncapturingStart}} = match;
+      const {0: m, index, groups: {capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
       } else if (!numCharClassesOpen) {
@@ -42,26 +44,21 @@ export function atomicPlugin(expression, data) {
           if (inAG) {
             numGroupsOpenInAG++;
           } else {
-            capturingGroupCountBeforeAG++;
+            numCapturesBeforeAG++;
+            captureNumMap.push(numCapturesBeforeAG + numAGs);
           }
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
-            aGCount++;
-            // Replace `expression` and use `\k<$$N>` as a temporary shield for the backref
-            // since numbered backrefs are prevented separately
+            numAGs++;
+            // Replace `expression` and use `<$$N>` as a temporary wrapper for the backref so it
+            // can avoid backref renumbering afterward
             expression = `${expression.slice(0, aGPos)}${emulatedAGDelim}${
                 expression.slice(aGPos + aGDelim.length, index)
-              }))\\k<$$${aGCount + capturingGroupCountBeforeAG}>)${expression.slice(index + 1)}`;
+              }))<$$${numAGs + numCapturesBeforeAG}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
             break;
           }
           numGroupsOpenInAG--;
-        } else if (backrefNum) {
-          // Could allow this with extra effort (adjusting both the backrefs found and those used
-          // to emulate atomic groups) but it's probably not worth it. To trigger this, the regex
-          // must contain both an atomic group and an interpolated regex with a numbered backref
-          // (since numbered backrefs outside regex interpolation are prevented by implicit flag n)
-          throw new Error(`Invalid decimal escape "${m}" in interpolated regex; cannot be used with atomic group`);
         }
 
       } else if (m === ']') {
@@ -71,11 +68,17 @@ export function atomicPlugin(expression, data) {
   // Start over from the beginning of the last atomic group's contents, in case the processed group
   // contains additional atomic groups
   } while (hasProcessedAG);
-  // Replace `\k<$$N>` added as a shield from the check for invalid numbered backrefs
+
+  // Second pass to adjust numbered backrefs
   expression = replaceUnescaped(
     expression,
-    String.raw`\\k<\$\$(?<backrefNum>\d+)>`,
-    ({groups: {backrefNum}}) => `\\${backrefNum}`,
+    String.raw`\\(?<backrefNum>[1-9]\d*)|<\$\$(?<wrappedBackrefNum>\d+)>`,
+    ({groups: {backrefNum, wrappedBackrefNum}}) => {
+      if (backrefNum) {
+        return `\\${captureNumMap[+backrefNum]}`;
+      }
+      return `\\${wrappedBackrefNum}`;
+    },
     Context.DEFAULT
   );
   return expression;

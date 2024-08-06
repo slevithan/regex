@@ -36,13 +36,11 @@ describe('atomic groups', () => {
     expect('abc').not.toMatch(regex`^a(?>${/()/}bc|b)c$`);
   });
 
-  // Just documenting current behavior; this could be supported in the future
-  it('should not allow numbered backreferences in interpolated regexes when using atomic groups', () => {
-    expect(() => regex`(?>)${/()\1/}`).toThrow();
-    expect(() => regex`${/()\1/}(?>)`).toThrow();
-    expect(() => regex`(?>${/()\1/})`).toThrow();
-    // This is okay
-    expect(() => regex`(?>${/(?<n>)\k<n>/})`).not.toThrow();
+  it('should adjust numbered backreferences when using atomic groups', () => {
+    expect('aax').toMatch(regex`^${/(a)\1/}(?>x)$`);
+    expect('xaa').toMatch(regex`^(?>x${/(a)\1/})$`);
+    expect('xaa').toMatch(regex`^(?>x)${/(a)\1/}$`);
+    expect('aaabababcabc').toMatch(regex({disable: {n: true}})`^(a)\1(?>\1(b)\1\2(?>\1\2))(c)\1\2\3$`);
   });
 
   it('should be invalid within character classes', () => {
