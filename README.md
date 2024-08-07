@@ -1,15 +1,16 @@
 <div align="center">
+  <a href="https://github.com/slevithan/regex#readme">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/slevithan/regex/raw/main/media/regex-logo-dark.svg">
+      <img alt="regex logo" height="180" src="https://github.com/slevithan/regex/raw/main/media/regex-logo.svg">
+    </picture>
+  </a>
 
-<a href="https://github.com/slevithan/regex#readme">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./regex-logo-dark.svg">
-    <img alt="regex logo" height="180" src="https://github.com/slevithan/regex/raw/main/regex-logo.svg">
-  </picture>
-</a>
+  <br>
 
-[![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
-[![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
-[![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
+  [![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
+  [![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
+  [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
 `regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
@@ -395,8 +396,6 @@ regex`\b(ab|cd)\b`
 
 > [!NOTE]
 > Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also always prevents this, despite not having flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
-
-> Aside: Flag <kbd>n</kbd>'s behavior also enables `regex` to emulate atomic groups, subroutines, and recursion.
 
 ## 🧩 Interpolation
 
