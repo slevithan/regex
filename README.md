@@ -5,8 +5,7 @@
       <img alt="regex logo" height="180" src="https://github.com/slevithan/regex/raw/main/media/regex-logo.svg">
     </picture>
   </a>
-
-  <br>
+  <br><br>
 
   [![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
   [![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
