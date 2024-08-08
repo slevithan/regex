@@ -82,7 +82,7 @@ const record = regex`
   )
 `;
 
-// Atomic group: avoids ReDoS from the nested, overlapping quantifier
+// Atomic group: Avoids ReDoS from the nested, overlapping quantifier
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware and safe interpolation
@@ -593,7 +593,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 2. Interpolated values are always aware of the context of where they're embedded.
 3. When relevant, interpolated values are always treated as complete units.
 
-> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation or unnamed backreferences, or if they're placed in a character class range or set operation.
+> Examples where rule #3 is relevant: With following quantifiers, if they contain top-level alternation or numbered backreferences, or if they're placed in a character class range or set operation.
 
 ### Interpolation contexts
 
