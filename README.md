@@ -12,7 +12,7 @@
   [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features that make them more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -59,7 +59,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
   - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
   - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
   - Subroutine definition groups via `(?(DEFINE)…)` allow groups within them to be used by reference only.
-  - Recursive matching is enabled by an extension.
+  - Recursive matching is enabled by a plugin.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
   - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
@@ -218,7 +218,7 @@ The backreference `\k<double>` matches whatever was matched by capturing group `
 
 - Subroutines can appear before the groups they reference.
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
-- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via an extension (see [*Recursion*](#recursion)).
+- Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via a plugin (see [*Recursion*](#recursion)).
 - Like backreferences, subroutines can't be used *within* character classes.
 - As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
@@ -308,7 +308,7 @@ console.log(match.groups);
 
 ### Recursion
 
-You can use the `regex` extension package [regex-recursion](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
+You can use the official `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ## 🚩 Flags
 
@@ -737,7 +737,7 @@ The claim that JavaScript with the `regex` library is among the best regex flavo
 
 1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that is missing any syntax for backtracking control—a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
 2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and Script_Extensions). These features are either not supported or not as robust in many other flavors.
-3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the `x` (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds `x` and turns it on by default, but it additionally adds regex subroutines (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
+3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
 <details name="faq">
