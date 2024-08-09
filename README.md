@@ -158,7 +158,7 @@ Historically, JavaScript regexes were not as powerful or readable as other major
 
 ### Atomic groups
 
-[Atomic groups](https://www.regular-expressions.info/atomic.html), written as `(?>…)`, automatically throw away all backtracking positions remembered by any tokens inside the group. They're most commonly used to improve performance, and are a much needed feature that `regex` brings to native JavaScript regular expressions.
+Atomic groups are noncapturing groups with special behavior, and are written as `(?>…)`. After matching the contents of an atomic group, the regex engine automatically throws away all backtracking positions remembered by any tokens within the group. Atomic groups are most commonly used to improve performance, and are a much needed feature that `regex` brings to native JavaScript regular expressions.
 
 Example:
 
@@ -169,6 +169,47 @@ regex`^(?>\w+\s?)+$`
 This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails to find a match if given a long list of words that end with something not allowed, like `'A target string that takes a long time or can even hang your browser!'`.
 
 Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it has taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `regex` and atomic groups to the rescue!
+
+<details>
+  <summary>👉 <b>Show more examples</b></summary>
+
+Let's look at a couple cases not related to performance. First, consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atomic group) doesn't match within `'aaaab'`, but the latter does. The former doesn't match because:
+
+- The regex engine starts by matching all the `a`s, using the `a+` within the atomic group.
+- Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
+- But because it isn't allowed to backtrack *into* the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
+
+For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags followed by `!`. You might try this:
+
+```js
+const re = regex('is')`<b>.*?</b>!`;
+
+// This is OK
+'<b>Hi</b>! <b>Bye</b>.'.match(re)[0];
+// '<b>Hi</b>!'
+
+// But not this
+'<b>Hi</b>. <b>Bye</b>!'.match(re)[0];
+// '<b>Hi</b>. <b>Bye</b>!' (WTF 😲)
+```
+
+What happened with the second string was that, when an `!` wasn't found immediately after the first `</b>`, the regex engine backtracked and expanded the `.*?` to match the next character `<` and then continue on, all the way to just before the `</b>!` at the end.
+
+You can prevent this by wrapping the lazily quantified token and its following delimiter in an atomic group, as follows:
+
+```js
+const re = regex('is')`<b>(?>.*?</b>)!`;
+
+'<b>Hi</b>! <b>Bye</b>.'.match(re)[0];
+// '<b>Hi</b>!'
+
+'<b>Hi</b>. <b>Bye</b>!'.match(re)[0];
+// '<b>Bye</b>!' (Yay 👍)
+```
+
+Now, after successfully finding `</b>`, the regex engine can't backtrack into the atomic group and expand what the `.*?` already matched.
+
+</details>
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.

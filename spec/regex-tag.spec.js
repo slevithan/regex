@@ -132,12 +132,12 @@ describe('regex', () => {
 
       it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {
         // String#matchAll
-        expect(Array.from('ab'.matchAll(regex({flags: 'g', subclass: true})`(?>(?<a>.))(?<b>.)`))[0][2]).toBe('b');
+        expect([...'ab'.matchAll(regex({flags: 'g', subclass: true})`(?>(?<a>.))(?<b>.)`)][0][2]).toBe('b');
         // String#split
         expect('ab'.split(regex({subclass: true})`(?>(?<a>.))(?<b>.)`)).toEqual(['', 'a', 'b', '']);
 
         // Documenting behavior when the option is not used
-        expect(Array.from('ab'.matchAll(regex({flags: 'g', subclass: false})`(?>(?<a>.))(?<b>.)`))[0][2]).not.toBe('b');
+        expect([...'ab'.matchAll(regex({flags: 'g', subclass: false})`(?>(?<a>.))(?<b>.)`)][0][2]).not.toBe('b');
         expect('ab'.split(regex({subclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
       });
     });

@@ -153,17 +153,17 @@ export function cleanPlugin(expression) {
   // - The beginning, if not followed by a quantifier.
   // - The end.
   // - Outside of character classes:
-  //   - If followed by one of `)|.[$\`, or `(` if that's not followed by `DEFINE)`.
+  //   - If followed by one of `)|.[$\\`, or `(` if that's not followed by `DEFINE)`.
   //     - Technically we shouldn't remove `(?:)` if preceded by `(?(DEFINE` and followed by `)`,
   //       but in this case flag x injects a sandboxing `(?:)` after the preceding invalid `(?`,
   //       so we already get an error from that.
-  //   - If preceded by one of `()|.]^>`, `\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
+  //   - If preceded by one of `()|.]^>`, `\\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
   //     - So long as the separator is not followed by a quantifier.
   //   - And, not followed by an emulation group marker.
   // Examples of things that are not safe to remove `(?:)` at the boundaries of:
   // - Anywhere: Letters, numbers, or any of `-=_,<?*+{}`.
   // - If followed by any of `:!>`.
-  // - If preceded by any of `\[cgkpPux]`.
+  // - If preceded by any of `\\[cgkpPux]`.
   // - Anything inside character classes.
   const marker = emulationGroupMarker.replace(/\$/g, '\\$');
   expression = replaceUnescaped(
