@@ -179,7 +179,7 @@ Consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atom
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
 - But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt immediately fails.
 
-For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags followed by `!`. You might try this:
+For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags that are followed by `!`. You might try this:
 
 ```js
 const re = regex('gis')`<b>.*?</b>!`;
@@ -190,24 +190,21 @@ const re = regex('gis')`<b>.*?</b>!`;
 
 // But not this
 '<b>Hi</b>. <b>Bye</b>!'.match(re);
-// → ['<b>Hi</b>. <b>Bye</b>!'] 😲
+// → ['<b>Hi</b>. <b>Bye</b>!'] 👎
 ```
 
-What happened with the second string was that, when an `!` wasn't found immediately following the first `</b>`, the regex engine backtracked and expanded the lazy `.*?` to match an additional character (in this case, the `<` of the closing `</b>` tag) and then continued onward, all the way to just before the `</b>!` at the end.
+What happened with the second string was that, when an `!` wasn't found immediately following the first `</b>`, the regex engine backtracked and expanded the lazy `.*?` to match an additional character (in this case, the `<` of the `</b>` tag) and then continued onward, all the way to just before the `</b>!` at the end.
 
 You can prevent this by wrapping the lazily quantified token and its following delimiter in an atomic group, as follows:
 
 ```js
 const re = regex('gis')`<b>(?>.*?</b>)!`;
 
-'<b>Hi</b>! <b>Bye</b>.'.match(re);
-// → ['<b>Hi</b>!']
-
 '<b>Hi</b>. <b>Bye</b>!'.match(re);
 // → ['<b>Bye</b>!'] 👍
 ```
 
-Now, after the regex engine finds `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched.
+Now, after the regex engine finds the first `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched. So the match attempt fails at that position. The regex engine moves on and starts over at subsequent positions in the target string, eventually finding `<b>Bye</b>!`. Success.
 </details>
 
 > [!NOTE]
@@ -783,12 +780,12 @@ The claim that JavaScript with the `regex` library is among the best regex flavo
 <details name="faq">
   <summary><b>Can <code>regex</code> be called as a function instead of using it with backticks?</b></summary>
 
-Yes, although you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression. For example:
+Yes, but you might not need to. If you want to use `regex` with dynamic input, you can interpolate a `pattern` call as the full expression. For example:
 
 ```js
 import {regex, pattern} from 'regex';
 const str = '…';
-const re = regex('gi')`${pattern(str)}`;
+const re = regex('g')`${pattern(str)}`;
 ```
 
 If you prefer to call `regex` as a function (rather than using it as a template tag), that requires explicitly providing the raw template strings array, as follows:
@@ -796,7 +793,7 @@ If you prefer to call `regex` as a function (rather than using it as a template 
 ```js
 import {regex} from 'regex';
 const str = '…';
-const re = regex('gi')({raw: [str]});
+const re = regex('g')({raw: [str]});
 ```
 </details>
 
