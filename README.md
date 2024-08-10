@@ -62,7 +62,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
   - Recursive matching is enabled by a plugin.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
-  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences are adjusted to work within the overall pattern.
+  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences within them are adjusted to work within the overall pattern.
 
 ## 🪧 Examples
 
@@ -177,38 +177,37 @@ Let's look at a couple cases not related to performance. First, consider `` rege
 
 - The regex engine starts by matching all the `a`s, using the `a+` within the atomic group.
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
-- But because it isn't allowed to backtrack *into* the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
+- But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
 
 For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags followed by `!`. You might try this:
 
 ```js
-const re = regex('is')`<b>.*?</b>!`;
+const re = regex('gis')`<b>.*?</b>!`;
 
 // This is OK
-'<b>Hi</b>! <b>Bye</b>.'.match(re)[0];
-// '<b>Hi</b>!'
+'<b>Hi</b>! <b>Bye</b>.'.match(re);
+// → ['<b>Hi</b>!']
 
 // But not this
-'<b>Hi</b>. <b>Bye</b>!'.match(re)[0];
-// '<b>Hi</b>. <b>Bye</b>!' (WTF 😲)
+'<b>Hi</b>. <b>Bye</b>!'.match(re);
+// → ['<b>Hi</b>. <b>Bye</b>!'] 😲
 ```
 
-What happened with the second string was that, when an `!` wasn't found immediately after the first `</b>`, the regex engine backtracked and expanded the `.*?` to match the next character `<` and then continue on, all the way to just before the `</b>!` at the end.
+What happened with the second string was that, when an `!` wasn't found immediately following the first `</b>`, the regex engine backtracked and expanded the `.*?` to match an additional character (in this case, the `<` of the closing `</b>` tag) and then continue onward, all the way to just before the `</b>!` at the end.
 
 You can prevent this by wrapping the lazily quantified token and its following delimiter in an atomic group, as follows:
 
 ```js
-const re = regex('is')`<b>(?>.*?</b>)!`;
+const re = regex('gis')`<b>(?>.*?</b>)!`;
 
-'<b>Hi</b>! <b>Bye</b>.'.match(re)[0];
-// '<b>Hi</b>!'
+'<b>Hi</b>! <b>Bye</b>.'.match(re);
+// → ['<b>Hi</b>!']
 
-'<b>Hi</b>. <b>Bye</b>!'.match(re)[0];
-// '<b>Bye</b>!' (Yay 👍)
+'<b>Hi</b>. <b>Bye</b>!'.match(re);
+// → ['<b>Bye</b>!'] 👍
 ```
 
-Now, after successfully finding `</b>`, the regex engine can't backtrack into the atomic group and expand what the `.*?` already matched.
-
+Now, after the regex engine finds `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched.
 </details>
 
 > [!NOTE]
@@ -453,7 +452,7 @@ regex('i')`hello-${/world/}`
 
 This is also true for other flags that can change how an inner regex is matched: `m` (`multiline`) and `s` (`dotAll`).
 
-> As with all interpolation in `regex`, embedded regexes are sandboxed and treated as complete units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex. Numbered backreferences are adjusted to work within the overall pattern.
+> As with all interpolation in `regex`, embedded regexes are sandboxed and treated as complete units. For example, a following quantifier repeats the entire embedded regex rather than just its last token, and top-level alternation in the embedded regex will not break out to affect the meaning of the outer regex. Numbered backreferences within embedded regexes are adjusted to work within the overall pattern.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -533,7 +532,7 @@ regex`[a${pattern`^`}]`
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. They don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
+Both of these examples therefore match a literal `^`. The interpolated `pattern`s don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
 > If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the pattern.
 
