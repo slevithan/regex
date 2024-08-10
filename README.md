@@ -12,7 +12,7 @@
   [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal or exceed native performance. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal native performance, or can exceed the performance of what you'd write yourself. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -62,7 +62,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
   - Recursive matching is enabled by a plugin.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
-  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and any numbered backreferences within them are adjusted to work within the overall pattern.
+  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
 
 ## 🪧 Examples
 
@@ -171,13 +171,13 @@ This matches strings that contain word characters separated by spaces, with the 
 Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it has taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `regex` and atomic groups to the rescue!
 
 <details>
-  <summary>👉 <b>Show more examples</b></summary>
+  <summary>👉 <b>Learn more with examples</b></summary>
 
 Let's look at a couple cases not related to performance. First, consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atomic group) doesn't match within `'aaaab'`, but the latter does. The former doesn't match because:
 
-- The regex engine starts by matching all the `a`s, using the `a+` within the atomic group.
+- The regex engine starts by matching all the `a`s in the string, using the greedy `a+` within the atomic group.
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
-- But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
+- But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt immediately fails.
 
 For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags followed by `!`. You might try this:
 
@@ -193,7 +193,7 @@ const re = regex('gis')`<b>.*?</b>!`;
 // → ['<b>Hi</b>. <b>Bye</b>!'] 😲
 ```
 
-What happened with the second string was that, when an `!` wasn't found immediately following the first `</b>`, the regex engine backtracked and expanded the `.*?` to match an additional character (in this case, the `<` of the closing `</b>` tag) and then continue onward, all the way to just before the `</b>!` at the end.
+What happened with the second string was that, when an `!` wasn't found immediately following the first `</b>`, the regex engine backtracked and expanded the lazy `.*?` to match an additional character (in this case, the `<` of the closing `</b>` tag) and then continued onward, all the way to just before the `</b>!` at the end.
 
 You can prevent this by wrapping the lazily quantified token and its following delimiter in an atomic group, as follows:
 
@@ -532,7 +532,7 @@ regex`[a${pattern`^`}]`
 
 Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. The interpolated `pattern`s don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
+Both of these examples therefore match a literal `^`. The interpolated patterns don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
 > If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the pattern.
 
