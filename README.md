@@ -173,7 +173,7 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 <details>
   <summary>👉 <b>Learn more with examples</b></summary>
 
-Let's look at a couple cases not related to performance. First, consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atomic group) doesn't match within `'aaaab'`, but the latter does. The former doesn't match because:
+Consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atomic group) doesn't match within `'aaaab'`, but the latter does. The former doesn't match because:
 
 - The regex engine starts by matching all the `a`s in the string, using the greedy `a+` within the atomic group.
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
