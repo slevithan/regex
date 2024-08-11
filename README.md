@@ -12,7 +12,7 @@
   [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal native performance, or can exceed the performance of what you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal native performance, and can exceed the performance of what you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -173,11 +173,11 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 <details>
   <summary>👉 <b>Learn more with examples</b></summary>
 
-Consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with the atomic group) doesn't match within `'aaaab'`, but the latter does. The former doesn't match because:
+Consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with an atomic group) doesn't match `'aaaab'`, but the latter does. The former doesn't match because:
 
-- The regex engine starts by matching all the `a`s in the string, using the greedy `a+` within the atomic group.
+- The regex engine starts by using the greedy `a+` within the atomic group to match all the `a`s in the target string.
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
-- But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt immediately fails.
+- But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
 
 For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags that are followed by `!`. You might try this:
 
@@ -204,7 +204,7 @@ const re = regex('gis')`<b>(?>.*?</b>)!`;
 // → ['<b>Bye</b>!'] 👍
 ```
 
-Now, after the regex engine finds the first `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched. So the match attempt fails at that position. The regex engine moves on and starts over at subsequent positions in the target string, eventually finding `<b>Bye</b>!`. Success.
+Now, after the regex engine finds the first `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched. As a result, the match attempt fails at the beginning of this example string. The regex engine then moves on and starts over at subsequent positions in the string, eventually finding `<b>Bye</b>!`. Success.
 </details>
 
 > [!NOTE]
