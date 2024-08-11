@@ -12,7 +12,7 @@
   [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal native performance, or can exceed the performance of what you'd write yourself. It's also lightweight, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that equal native performance, or can exceed the performance of what you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or added runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -810,7 +810,7 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
-`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js). `regex`'s only dependency is the ultra-lightweight [regex-utilities](https://github.com/slevithan/regex-utilities), which was separated so it can be reused by `regex` plugins.
+`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
 Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
 MIT License.
