@@ -596,30 +596,6 @@ regex`[a-${'d'}e]`
 ```
 </details>
 
-<details>
-  <summary>👉 <b>Show an example of composing a dynamic number of strings</b></summary>
-
-```js
-// Instead of
-new RegExp(`^(?:${
-  arr.map(RegExp.escape).join('|')
-})$`)
-
-// You can say
-regex`^${pattern(
-  arr.map(a => regex`${a}`.source).join('|')
-)}$`
-
-// And you could add your own sugar that returns a `pattern` value
-regex`^${anyOfEscaped(arr)}$`
-
-// You could do the same thing without `pattern` by calling `regex` as a
-// function instead of using it with backticks, then assembling the arguments
-// list dynamically and holding your nose
-regex({raw: ['^(', ...Array(arr.length - 1).fill('|'), ')$']}, ...arr)
-```
-</details>
-
 > Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`.
 
 ### Interpolation principles
