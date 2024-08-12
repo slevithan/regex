@@ -130,7 +130,6 @@ In browsers:
 <script src="https://cdn.jsdelivr.net/npm/regex@4.0.0/dist/regex.min.js"></script>
 <script>
   const {regex, pattern} = Regex;
-  // …
 </script>
 ```
 </details>
@@ -523,7 +522,7 @@ If you want to understand the handling of interpolated patterns more deeply, let
 First, let's consider:
 
 ```js
-regex`[${pattern`^`}]`
+regex`[${pattern`^`}a]`
 regex`[a${pattern`^`}]`
 ```
 
