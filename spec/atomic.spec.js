@@ -53,8 +53,89 @@ describe('atomic groups', () => {
     expect('aabb').toMatch(regex({plugins: [plugin]})`^(?>a+)$`);
   });
 
-  it('should allow controlling support for atomic groups via disable.atomic', () => {
+  it('should allow controlling support via disable.atomic', () => {
     expect(() => regex({disable: {atomic: true}})`(?>)`).toThrow();
     expect(() => regex({disable: {atomic: false}})`(?>)`).not.toThrow();
+  });
+});
+
+describe('possessive quantifiers', () => {
+  it('should not remember backtracking positions for repeated tokens', () => {
+    expect('aaa').not.toMatch(regex`^a++.$`);
+    expect('aa1').toMatch(regex`^a++1$`);
+    expect('aaa').not.toMatch(regex`^\u0061++.$`);
+    expect('aa1').toMatch(regex`^\u0061++1$`);
+  });
+
+  it('should work for all quantifier types', () => {
+    expect('a').toMatch(regex`^a?+$`);
+    expect('a').toMatch(regex`^a*+$`);
+    expect('a').toMatch(regex`^a++$`);
+    expect('a').toMatch(regex`^a{1}+$`);
+    expect('a').toMatch(regex`^a{1,}+$`);
+    expect('a').toMatch(regex`^a{1,2}+$`);
+  });
+
+  it('should work for character classes', () => {
+    expect('aaa').not.toMatch(regex`^[a-z]++.$`);
+    expect('aa1').toMatch(regex`^[a-z]++1$`);
+    expect('abb').not.toMatch(regex`^[a][\x62]++.$`);
+    expect('ab1').toMatch(regex`^[a][\x62]++1$`);
+    if (flagVSupported) {
+      expect('aaa').not.toMatch(regex`^[[a-z]--y]++.$`);
+      expect('aa1').toMatch(regex`^[[a-z]--y]++1$`);
+    }
+  });
+
+  it('should throw for unbalanced character classes', () => {
+    expect(() => regex`]++`).toThrow();
+    expect(() => regex`[]]++`).toThrow();
+    expect(() => regex`[[]]]++`).toThrow();
+  });
+
+  it('should work for groups', () => {
+    expect('aaa').not.toMatch(regex({disable: {n: true}})`^([a-z])++.$`);
+    expect('aa1').toMatch(regex({disable: {n: true}})`^([a-z])++1$`);
+    expect('aaa').not.toMatch(regex`^(?:[a-z])++.$`);
+    expect('aa1').toMatch(regex`^(?:[a-z])++1$`);
+    expect('aaa').not.toMatch(regex`^(?<name>[a-z])++.$`);
+    expect('aa1').toMatch(regex`^(?<name>[a-z])++1$`);
+    expect('aaa').not.toMatch(regex`^((a))++.$`);
+    expect('aa1').toMatch(regex`^((a))++1$`);
+  });
+
+  it('should throw for unbalanced groups', () => {
+    expect(() => regex`)++`).toThrow();
+    expect(() => regex`(++`).toThrow();
+  });
+
+  it('should not allow quantifying unquantifiable tokens', () => {
+    expect(() => regex`(?=a)++`).toThrow();
+    expect(() => regex`(?!a)++`).toThrow();
+    expect(() => regex`(?<=a)++`).toThrow();
+    expect(() => regex`(?<!a)++`).toThrow();
+    expect(() => regex`(++)`).toThrow();
+    expect(() => regex`|++`).toThrow();
+  });
+
+  it('should not allow adding + to a lazy quantifier', () => {
+    expect(() => regex`a??+`).toThrow();
+    expect(() => regex`a*?+`).toThrow();
+    expect(() => regex`a+?+`).toThrow();
+    expect(() => regex`a{2}?+`).toThrow();
+  });
+
+  it('should not allow adding + to a possessive quantifier', () => {
+    expect(() => regex`a?++`).toThrow();
+    expect(() => regex`a*++`).toThrow();
+    expect(() => regex`a+++`).toThrow();
+    expect(() => regex`a{2}++`).toThrow();
+  });
+
+  // Whitespace between quantifier chars: See `flag-x.spec.js`
+
+  it('should allow controlling support via disable.atomic', () => {
+    expect(() => regex({disable: {atomic: true}})`.++`).toThrow();
+    expect(() => regex({disable: {atomic: false}})`.++`).not.toThrow();
   });
 });

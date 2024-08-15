@@ -27,6 +27,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
 - [Context](#-context)
 - [Extended regex syntax](#-extended-regex-syntax)
   - [Atomic groups](#atomic-groups)
+  - [Possessive quantifiers](#possessive-quantifiers)
   - [Subroutines](#subroutines)
   - [Subroutine definition groups](#subroutine-definition-groups)
   - [Recursion](#recursion)
@@ -56,9 +57,8 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
     - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **Extended regex syntax**.
-  - Atomic groups via `(?>…)` can dramatically improve performance and prevent ReDoS.
-  - Subroutines via `\g<name>` enable powerful composition, improving readability and maintainability.
-  - Subroutine definition groups via `(?(DEFINE)…)` allow groups within them to be used by reference only.
+  - Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
+  - Subroutines and subroutine definition groups enable powerful composition, improving readability and maintainability.
   - Recursive matching is enabled by a plugin.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -143,13 +143,13 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
 2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
-3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
+3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, quantified lookahead, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for `\p` and `\P` within negated `[^…]`, and adds support for new features/syntax.
 </details>
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups via `(?>…)` to help you improve the performance of your regexes and avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 Extended regex syntax
 
@@ -205,6 +205,26 @@ const re = regex('gis')`<b>(?>.*?</b>)!`;
 
 Now, after the regex engine finds the first `</b>` and exits the atomic group, it can no longer backtrack into the group and change what the `.*?` already matched. As a result, the match attempt fails at the beginning of this example string. The regex engine then moves on and starts over at subsequent positions in the string, eventually finding `<b>Bye</b>!`. Success.
 </details>
+
+> [!NOTE]
+> Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
+
+### Possessive quantifiers
+
+Possessive quantifiers are syntactic sugar for when the contents of an [atomic group](#atomic-groups) is just a single repeated item. They're created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking if the rest of the pattern to the right fails to match.
+
+> Consider that, although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't succeed, the regex engine will backtrack and try all permutations of how many times the greedy quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
+
+Like atomic groups, possessive quantifiers are mostly useful for performance (and preventing ReDoS), but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters. The possessive `++` doesn't give back any of the `a`s it matched, so there is nothing left for the `.` at the end.
+
+Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
+
+| Repeat | Greedy | Lazy | Possessive |
+| :- | :-: | :-: | :-: |
+| 0 or 1 time | `?` | `??` | `?+` |
+| 0 or more times | `*` | `*?` | `*+` |
+| 1 or more times | `+` | `+?` | `++` |
+| *N* times | `{2}` | `{2}?` | `{2}+` |
 
 > [!NOTE]
 > Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
@@ -717,7 +737,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 - **`x`** - Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
 - **`n`** - Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
 - **`v`** - Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** - Prevents transpiling [atomic groups](#atomic-groups), resulting in a syntax error if they're used.
+- **`atomic`** - Prevents transpiling [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
 - **`subroutines`** - Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
 
 **`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
@@ -729,7 +749,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 `regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform equally as fast as native regexes. The use of `regex` can also be transpiled via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
-For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via the [atomic groups](#atomic-groups) feature built into `regex`.
+For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via `regex`'s [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers).
 
 ## 🪶 Compatibility
 

@@ -7,6 +7,7 @@ const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(
 @typedef {import('./regex.js').PluginData} PluginData
 */
 /**
+Apply transformations for atomic groups: `(?>…)`.
 @param {string} expression
 @param {PluginData} data
 @returns {string}
@@ -86,4 +87,87 @@ export function atomicPlugin(expression, data) {
     Context.DEFAULT
   );
   return expression;
+}
+
+const baseQuantifier = String.raw`(?:[?*+]|\{\d+(?:,\d*)?\})`;
+// Complete tokenizer for base syntax; doesn't (need to) know about character-class-only syntax
+const baseToken = new RegExp(String.raw`
+\\(?: \d+
+  | c[A-Za-z]
+  | [gk]<[^>]+>
+  | [pPu]\{[^\}]+\}
+  | u[A-Fa-f\d]{4}
+  | x[A-Fa-f\d]{2}
+  )
+| \((?: \? (?: [:=!>]
+  | <(?:[=!]|[^>]+>)
+  | [A-Za-z\-]+:
+  | \(DEFINE\)
+  ))?
+| ${baseQuantifier}(?<possessive>\+?)(?<invalid>[?*+\{]?)
+| \\?.
+`.replace(/\s+/g, ''), 'gsu');
+
+/**
+Transform posessive quantifiers into atomic groups. The posessessive quantifiers are:
+`?+`, `*+`, `++`, `{N}+`, `{N,}+`, `{N,N}+`.
+@param {string} expression
+@returns {string}
+*/
+export function possessivePlugin(expression) {
+  if (!hasUnescaped(expression, `${baseQuantifier}\+`, Context.DEFAULT)) {
+    return expression;
+  }
+  const openGroupIndices = [];
+  let lastGroupIndex = null;
+  let lastCharClassIndex = null;
+  let lastToken = '';
+  let numCharClassesOpen = 0;
+  let transformed = '';
+  baseToken.lastIndex = 0;
+  for (const {0: m, index, groups: {possessive, invalid}} of expression.matchAll(baseToken)) {
+    if (m === '[') {
+      if (!numCharClassesOpen) {
+        lastCharClassIndex = index;
+      }
+      numCharClassesOpen++;
+    } else if (m === ']') {
+      if (numCharClassesOpen) {
+        numCharClassesOpen--;
+      // Unmatched `]`
+      } else {
+        lastCharClassIndex = null;
+      }
+    } else {
+
+      if (possessive && lastToken && !lastToken.startsWith('(')) {
+        const nonpossessiveQ = m.slice(0, -1);
+        // Invalid following quantifier valid would become valid via the wrapping group
+        if (invalid) {
+          throw new Error(`Invalid quantifier "${m}"`);
+        }
+        if (lastToken === ')' || lastToken === ']') {
+          const nodeIndex = lastToken === ')' ? lastGroupIndex : lastCharClassIndex;
+          // Unmatched `)` would break out of the wrapping group and mess with handling
+          if (nodeIndex === null) {
+            throw new Error(`Invalid unmatched "${lastToken}"`);
+          }
+          const node = expression.slice(nodeIndex, index);
+          transformed = `${expression.slice(0, nodeIndex)}(?>${node}${nonpossessiveQ})`;
+        } else {
+          transformed = `${expression.slice(0, transformed.length - lastToken.length)}(?>${lastToken}${nonpossessiveQ})`;
+        }
+        // Avoid adding the match to `transformed`
+        continue;
+      } else if (m[0] === '(') {
+        openGroupIndices.push(index);
+      } else if (m === ')') {
+        lastGroupIndex = openGroupIndices.length ? openGroupIndices.pop() : null;
+      }
+
+    }
+    lastToken = m;
+    transformed += m;
+  }
+  return transformed;
 }

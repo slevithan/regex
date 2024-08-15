@@ -25,7 +25,7 @@ const token = new RegExp(String.raw`
 @typedef {import('./utils.js').Preprocessor} Preprocessor
 */
 /**
-Apply transformations for insignificant whitespace and line comments.
+Apply transformations for flag x (insignificant whitespace and line comments).
 
 Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
 regexes or strings.

@@ -33,23 +33,57 @@ describe('flag x', () => {
       expect(() => regex` ?`).toThrow();
     });
 
-    it('should not allow quantifiers to follow other complete quantifiers', function() {
-      expect(() => regex`a?? ?`).toThrow();
-      expect(() => regex`a*? ?`).toThrow();
-      expect(() => regex`a+? ?`).toThrow();
-      expect(() => regex`a{2}? ?`).toThrow();
-      expect(() => regex`a* *`).toThrow();
-      expect(() => regex`a+ +`).toThrow();
-      expect(() => regex`a{2} {2}`).toThrow();
-    });
-
-    // Follows Perl, PCRE, .NET, Java
-    // Not allowed in Python
+    // Follows Perl, PCRE, Java, .NET
+    // Not allowed in Python or Ruby
     it('should allow whitespace between a quantifier and the ? that makes it lazy', function() {
       expect(regex`^aa? ?`.exec('aaa')[0]).toBe('a');
+      expect(regex`^aa ? ?`.exec('aaa')[0]).toBe('a');
       expect(regex`^aa* ?`.exec('aaa')[0]).toBe('a');
+      expect(regex`^aa * ?`.exec('aaa')[0]).toBe('a');
       expect(regex`^aa+ ?`.exec('aaa')[0]).toBe('aa');
+      expect(regex`^aa + ?`.exec('aaa')[0]).toBe('aa');
       expect(regex`^aa{1,2} ?`.exec('aaa')[0]).toBe('aa');
+      expect(regex`^aa {1,2} ?`.exec('aaa')[0]).toBe('aa');
+    });
+
+    // Follows Perl, PCRE, Java
+    // Not allowed in Python or Ruby
+    it('should allow whitespace between a quantifier and the + that makes it possessive', function() {
+      expect(regex`^aa? +`.exec('aaa')[0]).toBe('aa');
+      expect(regex`^aa ? +`.exec('aaa')[0]).toBe('aa');
+      expect(regex`^aa* +`.exec('aaa')[0]).toBe('aaa');
+      expect(regex`^aa * +`.exec('aaa')[0]).toBe('aaa');
+      expect(regex`^aa+ +`.exec('aaa')[0]).toBe('aaa');
+      expect(regex`^aa + +`.exec('aaa')[0]).toBe('aaa');
+      expect(regex`^aa{1,2} +`.exec('aaa')[0]).toBe('aaa');
+      expect(regex`^aa {1,2} +`.exec('aaa')[0]).toBe('aaa');
+    });
+
+    it('should not allow whitespace-separated quantifiers to follow other complete quantifiers', function() {
+      expect(() => regex`a* *`).toThrow();
+      expect(() => regex`a{2} {2}`).toThrow();
+      // Lazy
+      expect(() => regex`a?? ?`).toThrow();
+      expect(() => regex`a?? +`).toThrow();
+      expect(() => regex`a*? ?`).toThrow();
+      expect(() => regex`a*? +`).toThrow();
+      expect(() => regex`a+? ?`).toThrow();
+      expect(() => regex`a+? +`).toThrow();
+      expect(() => regex`a{2}? ?`).toThrow();
+      expect(() => regex`a{2}? +`).toThrow();
+      // Possessive
+      expect(() => regex({disable: {atomic: true}})`a? +`).toThrow();
+      expect(() => regex({disable: {atomic: true}})`a* +`).toThrow();
+      expect(() => regex({disable: {atomic: true}})`a+ +`).toThrow();
+      expect(() => regex({disable: {atomic: true}})`a{2} +`).toThrow();
+      expect(() => regex`a?+ ?`).toThrow();
+      expect(() => regex`a?+ +`).toThrow();
+      expect(() => regex`a*+ ?`).toThrow();
+      expect(() => regex`a*+ +`).toThrow();
+      expect(() => regex`a++ ?`).toThrow();
+      expect(() => regex`a++ +`).toThrow();
+      expect(() => regex`a{2}+ ?`).toThrow();
+      expect(() => regex`a{2}+ +`).toThrow();
     });
 
     it('should not let the token following whitespace modify the preceding token', () => {

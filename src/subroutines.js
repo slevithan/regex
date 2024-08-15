@@ -39,7 +39,7 @@ ${subroutinePattern}
   }>} NamedCapturingGroupsMap
 */
 /**
-Transform `\g<name>`
+Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @param {boolean} useEmulationGroups
@@ -196,7 +196,7 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
 const defineGroupToken = new RegExp(String.raw`${namedCapturingDelim}|\(\?:\)|(?<invalid>\\?.)`, 'gsu');
 
 /**
-Strip `(?(DEFINE)…)`
+Remove valid subroutine definition groups: `(?(DEFINE)…)`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 IMPORTANT: Avoid using the `contents` property of `namedGroups` objects, because at this point
