@@ -738,7 +738,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 The following edge cases rely on modern JavaScript features:
 
 - To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes.
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [regex modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome/Edge 125 and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome/Edge 125 and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
 
@@ -787,5 +787,5 @@ The alternative syntax isn't used because it has several disadvantages:
 
 `regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-Crafted by Steven Levithan with ❤︎ for regular expressions and their enthusiasts.<br>
+Crafted by Steven Levithan with love for regular expressions and their enthusiasts.<br>
 MIT License.

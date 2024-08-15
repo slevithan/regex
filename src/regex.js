@@ -3,7 +3,7 @@ import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, 
 import {Pattern, pattern} from './pattern.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
-import {atomicPlugin} from './atomic-groups.js';
+import {atomicPlugin} from './atomic.js';
 import {subroutinesPlugin} from './subroutines.js';
 import {backcompatPlugin} from './backcompat.js';
 
