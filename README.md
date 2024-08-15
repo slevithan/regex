@@ -207,15 +207,15 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 </details>
 
 > [!NOTE]
-> Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
+> Atomic groups are supported in many other regex flavors, and there is a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
 
 ### Possessive quantifiers
 
-Possessive quantifiers are syntactic sugar for when the contents of an [atomic group](#atomic-groups) is just a single repeated item. They're created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking if the rest of the pattern to the right fails to match.
+Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item. They're created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking if the rest of the pattern to the right fails to match.
 
-> Consider that, although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't succeed, the regex engine will backtrack and try all permutations of how many times the greedy quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
+> Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't succeed, the regex engine will backtrack and try all permutations of how many times they should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
-Like atomic groups, possessive quantifiers are mostly useful for performance (and preventing ReDoS), but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters. The possessive `++` doesn't give back any of the `a`s it matched, so there is nothing left for the `.` at the end.
+Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters. The possessive `++` doesn't give back any of the `a`s it matched, so there is nothing left for the `.` at the end.
 
 Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
 
@@ -227,7 +227,7 @@ Here's how possessive quantifier syntax compares to the greedy and lazy quantifi
 | *N* times | `{2}` | `{2}?` | `{2}+` |
 
 > [!NOTE]
-> Atomic groups are based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) for them as well as support in many other regex flavors.
+> Possessive quantifiers are supported in many other regex flavors, and there is a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
 
 ### Subroutines
 
