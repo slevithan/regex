@@ -132,30 +132,27 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: subclass}));
   if (subclass) {
     const unmarked = unmarkEmulationGroups(expression);
-    return new WrappedRegex(unmarked.expression, fullFlags, {captureNums: unmarked.captureNums});
+    return new WrappedRegex(unmarked.expression, fullFlags, {emulationGroups: unmarked.emulationGroups});
   }
   return new RegExp(expression, fullFlags);
 }
 
-/**
-@typedef {Array<number | null>} EmulationGroupSlots
-*/
 class WrappedRegex extends RegExp {
-  #captureNums;
+  #emulationGroups;
   /**
   @param {string | WrappedRegex} expression
   @param {string} [flags]
-  @param {{captureNums: EmulationGroupSlots;}} [data]
+  @param {{emulationGroups: Array<boolean>;}} [data]
   */
   constructor(expression, flags, data) {
     super(expression, flags);
     if (data) {
-      this.#captureNums = data.captureNums;
+      this.#emulationGroups = data.emulationGroups;
     // The third argument `data` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
     } else if (expression instanceof WrappedRegex) {
       // Can read private properties of the existing object since it was created by this class
-      this.#captureNums = expression.#captureNums;
+      this.#emulationGroups = expression.#emulationGroups;
     }
   }
   /**
@@ -166,14 +163,14 @@ class WrappedRegex extends RegExp {
   */
   exec(str) {
     const match = RegExp.prototype.exec.call(this, str);
-    if (!match || !this.#captureNums) {
+    if (!match || !this.#emulationGroups) {
       return match;
     }
     const copy = [...match];
     // Empty all but the first value of the array while preserving its other properties
     match.length = 1;
     for (let i = 1; i < copy.length; i++) {
-      if (this.#captureNums[i] !== null) {
+      if (!this.#emulationGroups[i]) {
         match.push(copy[i]);
       }
     }
@@ -308,26 +305,24 @@ function transformForLocalFlags(re, outerFlags) {
 }
 
 /**
-Build the capture map and remove markers for anonymous captures (added to emulate extended syntax)
+Build the emulation group map and remove markers for anonymous captures which were added to emulate
+extended syntax.
 @param {string} expression
-@returns {{expression: string; captureNums: EmulationGroupSlots;}}
+@returns {{expression: string; emulationGroups: Array<boolean>;}}
 */
 function unmarkEmulationGroups(expression) {
   const marker = emulationGroupMarker.replace(/\$/g, '\\$');
-  /** @type {EmulationGroupSlots} */
-  const captureNums = [0];
-  let captureNum = 0;
+  const emulationGroups = [false];
   expression = replaceUnescaped(expression, `(?:${capturingDelim})${marker}`, ({0: m}) => {
-    captureNum++;
     if (m.endsWith(emulationGroupMarker)) {
-      captureNums.push(null);
+      emulationGroups.push(true);
       return m.slice(0, -emulationGroupMarker.length);
     }
-    captureNums.push(captureNum);
+    emulationGroups.push(false);
     return m;
   }, Context.DEFAULT);
   return {
-    captureNums,
+    emulationGroups,
     expression,
   };
 }
