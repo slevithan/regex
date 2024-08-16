@@ -207,7 +207,7 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 </details>
 
 > [!NOTE]
-> Atomic groups are supported in many other regex flavors, and there is a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
+> Atomic groups are supported in many other regex flavors. There's a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
 
 ### Possessive quantifiers
 
@@ -229,7 +229,7 @@ Here's how possessive quantifier syntax compares to the greedy and lazy quantifi
 | Between *N* and *M* | `{0,5}` | `{0,5}?` | `{0,5}+` |
 
 > [!NOTE]
-> Possessive quantifiers are supported in many other regex flavors, and there is a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
+> Possessive quantifiers are supported in many other regex flavors. There's a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
 
 ### Subroutines
 
