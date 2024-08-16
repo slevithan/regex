@@ -215,17 +215,18 @@ Possessive quantifiers are created by adding `+` to a quantifier, and they're si
 
 > Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item.
 
-Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this string there's nothing left for the `.` at the end.
+Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this case there's nothing left for the `.` to match.
 
 Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
 
 | | Greedy | Lazy | Possessive |
 | :- | :-: | :-: | :-: |
-| <b>Repeat</b> | As many as possible,<br>giving back as needed | As few as possible,<br>expanding as needed | As many as possible,<br>without giving back
+| <b>Repeat</b> | As many times as possible,<br>giving back as needed | As few times as possible,<br>expanding as needed | As many times as possible,<br>without giving back
 | Zero or one | `?` | `??` | `?+` |
 | Zero or more | `*` | `*?` | `*+` |
 | One or more | `+` | `+?` | `++` |
 | *N* or more | `{2,}` | `{2,}?` | `{2,}+` |
+| Between *N* and *M* | `{0,5}` | `{0,5}?` | `{0,5}+` |
 
 > [!NOTE]
 > Possessive quantifiers are supported in many other regex flavors, and there is a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
