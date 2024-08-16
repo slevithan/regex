@@ -58,7 +58,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
   - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 - **Extended regex syntax**.
   - Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
-  - Subroutines and subroutine definition groups enable powerful composition, improving readability and maintainability.
+  - Subroutines and definition groups enable powerful composition, improving readability and maintainability.
   - Recursive matching is enabled by a plugin.
 - **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
   - Interpolated strings have their special characters escaped.
@@ -211,19 +211,20 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 ### Possessive quantifiers
 
-Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item. They're created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking if the rest of the pattern to the right fails to match.
+Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking if the pattern to the right fails to match. Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item.
 
-> Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't succeed, the regex engine will backtrack and try all permutations of how many times they should repeat. Possessive quantifiers prevent the regex engine from doing this.
+> Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
-Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters. The possessive `++` doesn't give back any of the `a`s it matched, so there is nothing left for the `.` at the end.
+Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a`s followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this string there's nothing left for the `.` at the end.
 
 Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
 
 | Repeat | Greedy | Lazy | Possessive |
 | :- | :-: | :-: | :-: |
-| 0 or 1 time | `?` | `??` | `?+` |
-| 0 or more times | `*` | `*?` | `*+` |
-| 1 or more times | `+` | `+?` | `++` |
+| | As many as possible,<br>giving back as needed | As few as possible,<br>expanding as needed | As many as possible,<br>without giving back
+| Zero or one | `?` | `??` | `?+` |
+| Zero or more | `*` | `*?` | `*+` |
+| One or more | `+` | `+?` | `++` |
 | *N* times | `{2}` | `{2}?` | `{2}+` |
 
 > [!NOTE]

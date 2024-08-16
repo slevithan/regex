@@ -310,7 +310,7 @@ export function containsCharClassUnion(charClassPattern) {
     }
     if (['-', '--', '&&'].includes(m)) {
       hasFirst = false;
-    } else if (!['[', ']'].includes(m)) {
+    } else if (m !== '[' && m !== ']') {
       if (hasFirst || lastM === ']') {
         return true;
       }

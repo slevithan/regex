@@ -124,7 +124,6 @@ export function possessivePlugin(expression) {
   let lastToken = '';
   let numCharClassesOpen = 0;
   let transformed = '';
-  baseToken.lastIndex = 0;
   for (const {0: m, index, groups: {possessive, invalid}} of expression.matchAll(baseToken)) {
     if (m === '[') {
       if (!numCharClassesOpen) {
