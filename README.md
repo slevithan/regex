@@ -14,7 +14,7 @@
 
 `regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in TypeScript declarations, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Highlights include support for free spacing and comments, atomic groups via `(?>…)` and possessive quantifiers (e.g. `++`) that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the `regex` library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
