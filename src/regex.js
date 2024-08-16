@@ -124,8 +124,8 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   });
 
   [ ...plugins, // Run first, so provided plugins can output extended syntax
-    ...(disable.atomic ? [] : [possessivePlugin, atomicPlugin]),
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
+    ...(disable.atomic ? [] : [possessivePlugin, atomicPlugin]),
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
