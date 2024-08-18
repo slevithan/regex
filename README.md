@@ -213,7 +213,7 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
-> Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (token, character class, or group).
+> Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (which could be a token, character class, or group).
 
 Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this case there's nothing left for the `.` to match.
 
@@ -713,15 +713,15 @@ regex({
 <details>
   <summary>👉 <b>See details for each option</b></summary>
 
-**`flags`** - For providing flags when using an options object.
+**`flags`** — For providing flags when using an options object.
 
-**`subclass`** - When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
+**`subclass`** — When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (including atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
 
 Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass: true` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
 
 > This option isn't enabled by default because it would prevent `regex`'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
 
-**`plugins`** - An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
+**`plugins`** — An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
 
 1. The pattern, as processed so far by preceding plugins, etc.
 2. An object with a `flags` property that includes the native (non-emulated) flags that will be used by the regex.
@@ -730,23 +730,23 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 > The tiny [regex-utilities](https://github.com/slevithan/regex-utilities) library is intended for use in plugins, and can make it easier to work with regex syntax.
 
-**`unicodeSetsPlugin`** - A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
+**`unicodeSetsPlugin`** — A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
 > `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
 
 > This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
 
-**`disable`** - A set of options that can be individually disabled by setting their values to `true`.
+**`disable`** — A set of options that can be individually disabled by setting their values to `true`.
 
-- **`x`** - Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
-- **`n`** - Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
-- **`v`** - Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** - Prevents transpiling [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
-- **`subroutines`** - Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
+- **`x`** — Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
+- **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
+- **`v`** — Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
+- **`atomic`** — Prevents transpiling [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
+- **`subroutines`** — Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
 
-**`force`** - Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
+**`force`** — Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 
-- **`v`** - Force the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
+- **`v`** — Force the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
 ## ⚡ Performance
@@ -771,8 +771,8 @@ The following edge cases rely on modern JavaScript features:
 
 The claim that JavaScript with the `regex` library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
 
-1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that is missing any syntax for backtracking control—a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
-2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and Script_Extensions). These features are either not supported or not as robust in many other flavors.
+1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that is missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
+2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
 3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
