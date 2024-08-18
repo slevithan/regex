@@ -102,6 +102,7 @@ describe('possessive quantifiers', () => {
     expect('aa1').toMatch(regex`^(?<name>[a-z])++1$`);
     expect('aaa').not.toMatch(regex`^((a))++.$`);
     expect('aa1').toMatch(regex`^((a))++1$`);
+    expect('aaaa1').toMatch(regex`^(a(a))++1$`);
   });
 
   it('should throw for unbalanced groups', () => {

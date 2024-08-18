@@ -213,7 +213,7 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
-> Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item.
+> Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (token, character class, or group).
 
 Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this case there's nothing left for the `.` to match.
 
@@ -227,6 +227,8 @@ Here's how possessive quantifier syntax compares to the greedy and lazy quantifi
 | One or more | `+` | `+?` | `++` |
 | *N* or more | `{2,}` | `{2,}?` | `{2,}+` |
 | Between *N* and *M* | `{0,5}` | `{0,5}?` | `{0,5}+` |
+
+A fixed repetition quantifier like `{2}` behaves the same whether it is greedy `{2}`, lazy `{2}?`, or possessive `{2}+`.
 
 > [!NOTE]
 > Possessive quantifiers are supported in many other regex flavors. There's a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.

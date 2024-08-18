@@ -104,7 +104,7 @@ const baseToken = new RegExp(String.raw`
   | [A-Za-z\-]+:
   | \(DEFINE\)
   ))?
-| ${baseQuantifier}(?<possessive>\+?)(?<invalid>[?*+\{]?)
+| (?<q>${baseQuantifier})(?<possessive>\+?)(?<invalid>[?*+\{]?)
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
@@ -124,7 +124,7 @@ export function possessivePlugin(expression) {
   let lastToken = '';
   let numCharClassesOpen = 0;
   let transformed = '';
-  for (const {0: m, index, groups: {possessive, invalid}} of expression.matchAll(baseToken)) {
+  for (const {0: m, index, groups: {possessive, invalid, q}} of expression.matchAll(baseToken)) {
     if (m === '[') {
       if (!numCharClassesOpen) {
         lastCharClassIndex = index;
@@ -141,11 +141,15 @@ export function possessivePlugin(expression) {
 
       if (possessive && lastToken && !lastToken.startsWith('(')) {
         const nonpossessiveQ = m.slice(0, -1);
-        // Invalid following quantifier valid would become valid via the wrapping group
+        // Invalid following quantifier would become valid via the wrapping group
         if (invalid) {
           throw new Error(`Invalid quantifier "${m}"`);
         }
-        if (lastToken === ')' || lastToken === ']') {
+        // Possessivizing fixed repetition quantifiers like `{2}` does't change their behavior, so
+        // avoid doing so (convert them to greedy)
+        if (/^\{\d+\}$/.test(q)) {
+          transformed += q;
+        } else if (lastToken === ')' || lastToken === ']') {
           const nodeIndex = lastToken === ')' ? lastGroupIndex : lastCharClassIndex;
           // Unmatched `)` would break out of the wrapping group and mess with handling
           if (nodeIndex === null) {
@@ -157,6 +161,7 @@ export function possessivePlugin(expression) {
           transformed = `${expression.slice(0, transformed.length - lastToken.length)}(?>${lastToken}${nonpossessiveQ})`;
         }
         // Avoid adding the match to `transformed`
+        // Haven't updated `lastToken`, but it isn't needed
         continue;
       } else if (m[0] === '(') {
         openGroupIndices.push(index);
