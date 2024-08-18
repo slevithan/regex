@@ -228,7 +228,7 @@ Here's how possessive quantifier syntax compares to the greedy and lazy quantifi
 | *N* or more | `{2,}` | `{2,}?` | `{2,}+` |
 | Between *N* and *M* | `{0,5}` | `{0,5}?` | `{0,5}+` |
 
-A fixed repetition quantifier like `{2}` behaves the same whether it is greedy `{2}`, lazy `{2}?`, or possessive `{2}+`.
+> Fixed repetition quantifiers like `{2}` behave the same whether they're greedy `{2}`, lazy `{2}?`, or possessive `{2}+`.
 
 > [!NOTE]
 > Possessive quantifiers are supported in many other regex flavors. There's a [proposal](https://github.com/tc39/proposal-regexp-atomic-operators) to add them to JavaScript.
