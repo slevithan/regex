@@ -153,7 +153,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the `regex` library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, character class subtraction and intersection, etc.). The `regex` library, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the `regex` library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) (adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc.). The `regex` library, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -741,12 +741,12 @@ The final result after running all plugins is provided to the `RegExp` construct
 - **`x`** — Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
 - **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
 - **`v`** — Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
-- **`atomic`** — Prevents transpiling [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
-- **`subroutines`** — Prevents transpiling [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
+- **`atomic`** — Disables [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
+- **`subroutines`** — Disables [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
 
 **`force`** — Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 
-- **`v`** — Force the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
+- **`v`** — Forces the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
 ## ⚡ Performance
@@ -772,7 +772,7 @@ The following edge cases rely on modern JavaScript features:
 The claim that JavaScript with the `regex` library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
 
 1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that is missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
-2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", character class subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
+2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", set subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
 3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
