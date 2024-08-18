@@ -119,6 +119,7 @@ describe('regex', () => {
       it('should adjust for emulation groups when referencing groups by number from outside the regex', () => {
         // RegExp#exec
         expect(regex({subclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
+        expect(regex({subclass: true})`(?<a>.)(?>(?<b>.))`.exec('ab')[1]).toBe('a');
         // String#replace: replacement string
         expect('ab'.replace(regex({subclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
         // String#replace: replacement function

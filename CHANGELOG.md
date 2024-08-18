@@ -5,6 +5,10 @@
 - Combining atomic/possessive syntax with subroutines previously resulted in subroutines using capturing wrappers. This is now avoided when the regex doesn’t use backreferences, resulting in faster-running generated regex source.
 - Possessive fixed repetition quantifiers (e.g. `{2}+`) are now converted to greedy quantifiers, which gives the same behavior with faster-running generated regex source.
 
+**Fixes**
+
+- When using extended syntax (e.g. atomic groups) that resulted in the use of emulation groups in generated source, the `subclass: true` option led to incorrect values for submatches that preceded emulation groups.
+
 ## Released changes
 
 Changes for released versions are tracked on the GitHub [releases](https://github.com/slevithan/regex/releases) page.
