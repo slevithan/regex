@@ -20,11 +20,11 @@ describe('flag x', () => {
       expect('ac').toMatch(regex`^a#comment b$`);
     });
 
-    it('should allow mixing whitespace and line comments', function() {
+    it('should allow mixing whitespace and line comments', () => {
       expect('ab').toMatch(regex({raw: ['\f^ a \t\n ##comment\n #\nb $ # ignored']}));
     });
 
-    it('should apply a quantifier following whitespace or line comments to the preceding token', function() {
+    it('should apply a quantifier following whitespace or line comments to the preceding token', () => {
       expect('aaa').toMatch(regex`^a +$`);
       expect('aaa').toMatch(regex`^(a) +$`);
       expect('aaa').toMatch(regex({raw: ['^a#comment\n+$']}));
@@ -35,7 +35,7 @@ describe('flag x', () => {
 
     // Follows Perl, PCRE, Java, .NET
     // Not allowed in Python or Ruby
-    it('should allow whitespace between a quantifier and the ? that makes it lazy', function() {
+    it('should allow whitespace or line comments between a quantifier and the ? that makes it lazy', () => {
       expect(regex`^aa? ?`.exec('aaa')[0]).toBe('a');
       expect(regex`^aa ? ?`.exec('aaa')[0]).toBe('a');
       expect(regex`^aa* ?`.exec('aaa')[0]).toBe('a');
@@ -44,11 +44,14 @@ describe('flag x', () => {
       expect(regex`^aa + ?`.exec('aaa')[0]).toBe('aa');
       expect(regex`^aa{1,2} ?`.exec('aaa')[0]).toBe('aa');
       expect(regex`^aa {1,2} ?`.exec('aaa')[0]).toBe('aa');
+      // Separating line comments
+      expect('aaa').toMatch(regex({raw: ['^a+#comment\n?$']}));
+      expect('aaa').toMatch(regex({raw: ['^a+  #comment\n ?$']}));
     });
 
     // Follows Perl, PCRE, Java
     // Not allowed in Python or Ruby
-    it('should allow whitespace between a quantifier and the + that makes it possessive', function() {
+    it('should allow whitespace or line comments between a quantifier and the + that makes it possessive', () => {
       expect(regex`^aa? +`.exec('aaa')[0]).toBe('aa');
       expect(regex`^aa ? +`.exec('aaa')[0]).toBe('aa');
       expect(regex`^aa* +`.exec('aaa')[0]).toBe('aaa');
@@ -57,9 +60,12 @@ describe('flag x', () => {
       expect(regex`^aa + +`.exec('aaa')[0]).toBe('aaa');
       expect(regex`^aa{1,2} +`.exec('aaa')[0]).toBe('aaa');
       expect(regex`^aa {1,2} +`.exec('aaa')[0]).toBe('aaa');
+      // Separating line comments
+      expect('aaa').toMatch(regex({raw: ['^a+#comment\n+$']}));
+      expect('aaa').toMatch(regex({raw: ['^a+  #comment\n +$']}));
     });
 
-    it('should not allow whitespace-separated quantifiers to follow other complete quantifiers', function() {
+    it('should not allow whitespace-separated quantifiers to follow other complete quantifiers', () => {
       expect(() => regex`a* *`).toThrow();
       expect(() => regex`a{2} {2}`).toThrow();
       // Lazy

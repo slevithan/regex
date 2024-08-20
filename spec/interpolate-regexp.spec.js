@@ -46,7 +46,7 @@ describe('interpolation: regexes', () => {
       expect('\nxa\n\n').not.toMatch(regex('m')`^.${/a.$/s}`);
     });
 
-    it('should adjust the backreferences of interpolated regexes based on preceding captures in the outer regex', function() {
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in the outer regex', () => {
       expect('aabb').toMatch(regex`^(?<n1>)(?<n2>${/(.)\1/}${/(.)\1/})$`);
       expect('aa').toMatch(regex`^(?<outer>)${/(?<inner>.)\1/}$`);
       // These rely on the backref adjustments to make them into errors
@@ -54,12 +54,12 @@ describe('interpolation: regexes', () => {
       expect(() => regex`(?<n>)${/()\2/}`).toThrow();
     });
 
-    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated regex', function() {
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated regex', () => {
       expect('aaba').not.toMatch(regex`^${/(.)\1/}${/(.)\1/}$`);
       expect('aabb').toMatch(regex`^${/(.)\1/}${/(.)\1/}$`);
     });
 
-    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated pattern', function() {
+    it('should adjust the backreferences of interpolated regexes based on preceding captures in an interpolated pattern', () => {
       expect('aa').toMatch(regex`^${pattern`(?<n>)`}${/(.)\1/}$`);
     });
 
