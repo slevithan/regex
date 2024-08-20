@@ -104,7 +104,7 @@ const baseToken = new RegExp(String.raw`
   | [A-Za-z\-]+:
   | \(DEFINE\)
   ))?
-| (?<q>${baseQuantifier})(?<possessive>\+?)(?<invalid>[?*+\{]?)
+| (?<q>${baseQuantifier})(?<qMod>[?+]?)(?<invalidQ>[?*+\{]?)
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
@@ -124,7 +124,7 @@ export function possessivePlugin(expression) {
   let lastToken = '';
   let numCharClassesOpen = 0;
   let transformed = '';
-  for (const {0: m, index, groups: {possessive, invalid, q}} of expression.matchAll(baseToken)) {
+  for (const {0: m, index, groups: {q, qMod, invalidQ}} of expression.matchAll(baseToken)) {
     if (m === '[') {
       if (!numCharClassesOpen) {
         lastCharClassIndex = index;
@@ -139,10 +139,9 @@ export function possessivePlugin(expression) {
       }
     } else {
 
-      if (possessive && lastToken && !lastToken.startsWith('(')) {
-        const nonpossessiveQ = m.slice(0, -1);
+      if (qMod === '+' && lastToken && !lastToken.startsWith('(')) {
         // Invalid following quantifier would become valid via the wrapping group
-        if (invalid) {
+        if (invalidQ) {
           throw new Error(`Invalid quantifier "${m}"`);
         }
         // Possessivizing fixed repetition quantifiers like `{2}` does't change their behavior, so
@@ -156,9 +155,9 @@ export function possessivePlugin(expression) {
             throw new Error(`Invalid unmatched "${lastToken}"`);
           }
           const node = expression.slice(nodeIndex, index);
-          transformed = `${expression.slice(0, nodeIndex)}(?>${node}${nonpossessiveQ})`;
+          transformed = `${expression.slice(0, nodeIndex)}(?>${node}${q})`;
         } else {
-          transformed = `${expression.slice(0, transformed.length - lastToken.length)}(?>${lastToken}${nonpossessiveQ})`;
+          transformed = `${expression.slice(0, transformed.length - lastToken.length)}(?>${lastToken}${q})`;
         }
         // Avoid adding the match to `transformed`
         // Haven't updated `lastToken`, but it isn't needed
