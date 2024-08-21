@@ -14,9 +14,9 @@
   },
   "browser": "./dist/regex.min.js",
   "scripts": {
-    "bundle:global": "esbuild --sourcemap src/regex.js --global-name=Regex --bundle --minify --outfile=dist/regex.min.js",
-    "bundle:esm": "esbuild --sourcemap src/regex.js --format=esm --bundle --outfile=dist/regex.mjs",
-    "bundle:cjs": "esbuild --sourcemap src/regex.js --format=cjs --bundle --outfile=dist/regex.cjs",
+    "bundle:global": "esbuild src/regex.js --global-name=Regex --bundle --minify --sourcemap --outfile=dist/regex.min.js",
+    "bundle:esm": "esbuild src/regex.js --format=esm --bundle --sourcemap --outfile=dist/regex.mjs",
+    "bundle:cjs": "esbuild src/regex.js --format=cjs --bundle --sourcemap --outfile=dist/regex.cjs",
     "types": "tsc src/regex.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
     "prebuild": "rm -rf dist/* types/*",
     "build": "npm run bundle:global && npm run bundle:esm && npm run bundle:cjs && npm run types",
@@ -37,8 +37,8 @@
     "regexp"
   ],
   "devDependencies": {
-    "esbuild": "^0.23.0",
-    "expect-type": "^0.19.0",
+    "esbuild": "^0.23.1",
+    "expect-type": "^0.20.0",
     "jasmine": "^5.2.0",
     "regex-utilities": "^2.2.0",
     "typescript": "^5.5.4"
