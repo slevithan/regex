@@ -290,10 +290,10 @@ The following regex matches an IPv4 address such as "192.168.12.123":
 
 ```js
 const ipv4 = regex`
-  \b \g<byte> (\.\g<byte>){3} \b
+  \b \g<byte> (\. \g<byte>){3} \b
 
   # Define the 'byte' subpattern
-  (?<byte> 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d ){0}
+  (?<byte> 25[0-5] | 2[0-4]\d | 1\d\d | [1-9]?\d){0}
 `;
 ```
 
@@ -368,7 +368,7 @@ console.log(match.groups);
 
 ### Recursion
 
-You can use the official `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) to match recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
+The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) allows matching recursive patterns via `(?R)` and `\g<name>`, up to a specified max depth.
 
 ## 🚩 Flags
 
@@ -421,7 +421,7 @@ const re = regex`
   ${pattern`\d + | [a - z]`}
 
   # Interpolated regexes use their own flags, so they preserve their whitespace
-  ${/^Hakuna matata$/m}
+  ${/^Fat cat$/m}
 `;
 ```
 
@@ -771,8 +771,8 @@ The following edge cases rely on modern JavaScript features:
 
 The claim that JavaScript with the `regex` library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
 
-1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that is missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
-2. **Support for advanced features** that enable easily creating patterns for common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", set subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
+1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that's missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
+2. **Support for advanced features** that handle common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", set subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
 3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
