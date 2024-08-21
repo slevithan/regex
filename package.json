@@ -16,7 +16,7 @@
     "bundle:global": "esbuild src/regex.js --global-name=Regex --bundle --minify --outfile=dist/regex.min.js",
     "bundle:esm": "esbuild src/regex.js --format=esm --bundle --outfile=dist/regex.mjs",
     "types": "tsc src/regex.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outdir types",
-    "prebuild": "rimraf --glob dist/* types/*",
+    "prebuild": "rm -rf dist/* types/*",
     "build": "npm run bundle:global && npm run bundle:esm && npm run types",
     "pretest": "npm run build",
     "test": "jasmine && tsc --project spec/types/tsconfig.test.json",
@@ -39,7 +39,6 @@
     "expect-type": "^0.19.0",
     "jasmine": "^5.2.0",
     "regex-utilities": "^2.2.0",
-    "rimraf": "^6.0.1",
     "typescript": "^5.5.4"
   }
 }
