@@ -507,7 +507,7 @@ regex`[a-${str}]`
 // Given the context at the end of a range, throws if more than one char in str
 
 // Instead of
-new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v')
+new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v') // Set subtraction
 // You can say
 regex`[\w--${str}]`
 ```

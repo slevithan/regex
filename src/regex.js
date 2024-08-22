@@ -35,7 +35,7 @@ import {backcompatPlugin} from './backcompat.js';
   (template: RawTemplate, ...substitutions: ReadonlyArray<InterpolatedValue>): T;
   (flags?: string): RegexTag<T>;
   (options: RegexTagOptions & {subclass?: false}): RegexTag<T>;
-  (options: RegexTagOptions & {subclass: true}): RegexTag<WrappedRegex>;
+  (options: RegexTagOptions & {subclass: true}): RegexTag<WrappedRegExp>;
 }}
 */
 /**
@@ -132,15 +132,15 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: subclass}));
   if (subclass) {
     const unmarked = unmarkEmulationGroups(expression);
-    return new WrappedRegex(unmarked.expression, fullFlags, {captureMap: unmarked.captureMap});
+    return new WrappedRegExp(unmarked.expression, fullFlags, {captureMap: unmarked.captureMap});
   }
   return new RegExp(expression, fullFlags);
 }
 
-class WrappedRegex extends RegExp {
+class WrappedRegExp extends RegExp {
   #captureMap;
   /**
-  @param {string | WrappedRegex} expression
+  @param {string | WrappedRegExp} expression
   @param {string} [flags]
   @param {{captureMap: Array<boolean>;}} [data]
   */
@@ -150,7 +150,7 @@ class WrappedRegex extends RegExp {
       this.#captureMap = data.captureMap;
     // The third argument `data` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
-    } else if (expression instanceof WrappedRegex) {
+    } else if (expression instanceof WrappedRegExp) {
       // Can read private properties of the existing object since it was created by this class
       this.#captureMap = expression.#captureMap;
     }
