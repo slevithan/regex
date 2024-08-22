@@ -128,7 +128,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     ...(disable.atomic ? [] : [possessivePlugin, atomicPlugin]),
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
-    ...(useFlagV || !unicodeSetsPlugin ? [] : [unicodeSetsPlugin]),
+    ...((useFlagV || !unicodeSetsPlugin) ? [] : [unicodeSetsPlugin]),
   ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: subclass}));
   if (subclass) {
     const unmarked = unmarkEmulationGroups(expression);

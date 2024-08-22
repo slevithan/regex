@@ -696,7 +696,7 @@ regex({
   flags: '',
   subclass: false,
   plugins: [],
-  unicodeSetsPlugin: <function>
+  unicodeSetsPlugin: <function>,
   disable: {
     x: false,
     n: false,
