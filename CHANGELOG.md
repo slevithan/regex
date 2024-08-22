@@ -1,9 +1,6 @@
 ## Unreleased changes
 
-**Improvements**
-
-- Added a CommonJS bundle, and sourcemaps for all bundles.
-  - Merges #18 from @subtleGradient.
+-
 
 ## Released changes
 
