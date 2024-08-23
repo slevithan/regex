@@ -11,6 +11,9 @@ export class Pattern {
 }
 
 /**
+@typedef {string | RegExp | Pattern | number} InterpolatedValue
+*/
+/**
 Returns a value that can be interpolated into a `regex` template string without having its special
 characters escaped.
 
@@ -24,7 +27,7 @@ Can be called as a function or template tag:
 
 @overload
 @param {TemplateStringsArray} template
-@param {...string} substitutions
+@param {...InterpolatedValue} substitutions
 @returns {Pattern}
 */
 export function pattern(first, ...substitutions) {
