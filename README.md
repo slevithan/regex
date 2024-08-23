@@ -441,7 +441,7 @@ const re = regex`
 
 ### Flag `n`
 
-Emulated flag <kbd>n</kbd> gives you *named capture only* mode, which prevents the grouping metacharacters `(…)` from capturing. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
+Emulated flag <kbd>n</kbd> gives you *named capture only* mode, which turns unnamed groups `(…)` into noncapturing groups. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
 Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
@@ -715,7 +715,7 @@ regex({
 
 **`flags`** — For providing flags when using an options object.
 
-**`subclass`** — When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (including atomic groups and subroutines) can add anonymous captures to generated regex source that might affect group numbering.
+**`subclass`** — When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax (including atomic groups and subroutines) can add unnamed captures to generated regex source that might affect group numbering.
 
 Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass: true` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
 
@@ -739,7 +739,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 **`disable`** — A set of options that can be individually disabled by setting their values to `true`.
 
 - **`x`** — Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
-- **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use anonymous captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable option `subclass` when disabling `n`.
+- **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use unnamed captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax (atomic groups and subroutines) might add "emulation groups" to generated regex source. It's therefore recommended to enable the `subclass` option when disabling `n`.
 - **`v`** — Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
 - **`atomic`** — Disables [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
 - **`subroutines`** — Disables [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
