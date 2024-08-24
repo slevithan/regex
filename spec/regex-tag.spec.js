@@ -82,6 +82,9 @@ describe('regex', () => {
     it('should allow removing the built-in unicodeSetsPlugin', () => {
       expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`.`).not.toThrow();
       expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`[[]]`).toThrow();
+      // Don't escape lone double punctuators that aren't allowed to be escaped with flag u
+      // See also `backcompat.spec.js`
+      expect(() => regex({unicodeSetsPlugin: null, disable: {v: true}})`[>]`).not.toThrow();
     });
 
     it('should not use the unicodeSetsPlugin when flag v is used', () => {

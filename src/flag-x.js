@@ -46,7 +46,7 @@ export function flagXPreprocessor(value, runningContext) {
     separatorNeeded = false;
     return str;
   };
-  for (const [m] of value.matchAll(token)) {
+  for (const {0: m, index} of value.matchAll(token)) {
     if (ignoringComment) {
       if (m === '\n') {
         ignoringComment = false;
@@ -122,7 +122,15 @@ export function flagXPreprocessor(value, runningContext) {
       ) {
         transformed += update(m[1], {prefix: false});
       } else if (charClassContext === CharClassContext.DEFAULT) {
-        transformed += update(sandboxLoneDoublePunctuatorChar(sandboxUnsafeNulls(m)));
+        const nextChar = value[index + 1] ?? '';
+        let updated = sandboxUnsafeNulls(m);
+        // Avoid escaping lone double punctuators unless required, since some of them are not
+        // allowed to be escaped with flag u (the `unicodeSetsPlugin` already unescapes them when
+        // using flag u, but it can be set to `null` via an option)
+        if (charClassWs.test(nextChar) || m === '^') {
+          updated = sandboxLoneDoublePunctuatorChar(updated);
+        }
+        transformed += update(updated);
       } else {
         transformed += update(m);
       }
