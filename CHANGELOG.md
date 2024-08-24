@@ -2,7 +2,7 @@
 
 **Improvements**
 
-- Added a top-level `types` field to `package.json` for tools that rely on it.
+- Added a top-level `types` field to `package.json` for tools and configurations that rely on it.
   - Merges #23 from @jaslong.
 
 ## Released changes
