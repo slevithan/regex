@@ -46,7 +46,7 @@ Apply transformations for subroutines: `\g<name>`.
 @returns {string}
 */
 function processSubroutines(expression, namedGroups, useEmulationGroups) {
-  if (!hasUnescaped(expression, '\\\\g<', Context.DEFAULT)) {
+  if (!/\\g</.test(expression)) {
     return expression;
   }
   // Can skip a lot of processing and avoid adding captures if there are no backrefs

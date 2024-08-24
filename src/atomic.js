@@ -1,4 +1,4 @@
-import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
+import {Context, replaceUnescaped} from 'regex-utilities';
 import {emulationGroupMarker, noncapturingDelim} from './utils.js';
 
 const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
@@ -13,7 +13,7 @@ Apply transformations for atomic groups: `(?>…)`.
 @returns {string}
 */
 export function atomicPlugin(expression, data) {
-  if (!hasUnescaped(expression, '\\(\\?>', Context.DEFAULT)) {
+  if (!/\(\?>/.test(expression)) {
     return expression;
   }
   const aGDelim = '(?>';
@@ -115,7 +115,7 @@ Transform posessive quantifiers into atomic groups. The posessessive quantifiers
 @returns {string}
 */
 export function possessivePlugin(expression) {
-  if (!hasUnescaped(expression, `${baseQuantifier}\+`, Context.DEFAULT)) {
+  if (!new RegExp(`${baseQuantifier}\\+`).test(expression)) {
     return expression;
   }
   const openGroupIndices = [];

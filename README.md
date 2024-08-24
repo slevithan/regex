@@ -619,7 +619,7 @@ regex`[a-${'d'}e]`
 ```
 </details>
 
-> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`. However, `pattern`s are not intended as an intermediate regex type. Rather, `pattern` is a string wrapper that indicates your intention to the `regex` tag: treat this string as a partial pattern rather than a string to be matched literally.
+> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`. However, patterns are not intended as an intermediate regex type. You can think of `pattern` as a directive to the `regex` tag: treat this string as a partial pattern rather than a string to be matched literally.
 
 ### Interpolation principles
 
@@ -761,7 +761,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 The following edge cases rely on modern JavaScript features:
 
-- To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes. But there's an easy workaround: Put the whole character class in a `pattern` and interpolate a string into the `pattern`.
+- To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes. There's also an easy workaround: Put the whole character class in a `pattern` and interpolate a string into the pattern.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome/Edge 125 and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
