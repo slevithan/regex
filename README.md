@@ -12,7 +12,7 @@
   [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in TypeScript declarations, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
+`regex` is a template tag that extends JavaScript regular expressions with key features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in TypeScript declarations, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` and possessive quantifiers (e.g. `++`) that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -215,7 +215,7 @@ Possessive quantifiers are created by adding `+` to a quantifier, and they're si
 
 > Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (which could be a token, character class, or group).
 
-Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this case there's nothing left for the `.` to match.
+Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so there's nothing left for the following `.` to match.
 
 Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
 
@@ -619,7 +619,9 @@ regex`[a-${'d'}e]`
 ```
 </details>
 
-> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`. However, patterns are not intended as an intermediate regex type. You can think of `pattern` as a directive to the `regex` tag: treat this string as a partial pattern rather than a string to be matched literally.
+> Implementation note: `pattern` returns an object with a custom `toString` that simply returns `String(value)`.
+
+> Patterns are not intended as an intermediate regex type. You can think of `pattern` as a directive to the `regex` tag: treat this string as a partial pattern rather than a string to be matched literally.
 
 ### Interpolation principles
 
