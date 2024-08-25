@@ -368,7 +368,7 @@ console.log(match.groups);
 
 ### Recursion
 
-The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive patterns up to a specified max depth. This allows matching balanced constructs.
+The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth.
 
 ## 🚩 Flags
 
@@ -454,7 +454,7 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, the implicit flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also always prevents this, despite not having flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also always prevents this, despite not having flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
 ## 🧩 Interpolation
 
@@ -514,7 +514,7 @@ regex`[\w--${str}]`
 
 Some examples of where context awareness comes into play:
 
-- A `~` is not escaped at the top level, but it must be escaped within character classes in case it's immediately followed by another `~` (in or outside of the interpolation) which would turn it into a reserved UnicodeSets double punctuator.
+- A `~` is not escaped at the top level, but it must be escaped within character classes if it's immediately preceded or followed by another `~` (in or outside of the interpolation) which would turn it into a reserved UnicodeSets double punctuator.
 - Leading digits must be escaped if they're preceded by a numbered backreference or `\0`, else `RegExp` throws (or in Unicode-unaware mode they might turn into octal escapes).
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
