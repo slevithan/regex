@@ -811,6 +811,8 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
+If you find `regex` useful, please consider [sponsoring](https://github.com/sponsors/slevithan) future development to show support.
+
 `regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
 Crafted by Steven Levithan with love for regular expressions and their enthusiasts.<br>
