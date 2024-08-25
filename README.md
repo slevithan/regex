@@ -811,9 +811,8 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
-If you find `regex` useful, please consider [sponsoring](https://github.com/sponsors/slevithan) future development to show support.
+`regex` was crafted by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors), with love for regular expressions and their enthusiasts. Inspiration includes [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-`regex` was partly inspired by [XRegExp](https://github.com/slevithan/xregexp)'s `.tag` and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
+If you find `regex` useful and want to support it, please consider [sponsoring](https://github.com/sponsors/slevithan) future development.
 
-Crafted by Steven Levithan with love for regular expressions and their enthusiasts.<br>
 MIT License.
