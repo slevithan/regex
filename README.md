@@ -403,9 +403,9 @@ Example:
 ```js
 const re = regex`
   # Match a date in YYYY-MM-DD format
-  (?<year>  \d{4} ) - # Year part
-  (?<month> \d{2} ) - # Month part
-  (?<day>   \d{2} )   # Day part
+  (?<year>  \d{4}) - # Year part
+  (?<month> \d{2}) - # Month part
+  (?<day>   \d{2})   # Day part
 
   # Escape whitespace and hashes to match them literally
   \    # space char
@@ -811,8 +811,8 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
-`regex` was crafted by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors). Inspiration included [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
+`regex` was crafted by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors), with love for regular expressions and their enthusiasts. Inspiration included [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
-If you want to support `regex`, [sponsoring](https://github.com/sponsors/slevithan) future development is greatly appreciated.
+If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) future development.
 
 MIT License.
