@@ -143,7 +143,7 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 1. Unicode-unaware (legacy) mode is the default and can easily and silently create Unicode-related bugs.
 2. Named capture mode changes the meaning of `\k` when a named capture appears anywhere in a regex.
-3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved letter escapes, octal escapes, escaped literal digits, quantified lookahead, and unescaped special characters in some contexts), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
+3. Unicode mode with flag <kbd>u</kbd> adds strict errors (for unreserved escapes, octal escapes, quantified lookahead, etc.), switches to code-point-based matching (changing the potential handling of the dot, negated sets like `\W`, character class ranges, and quantifiers), changes flag <kbd>i</kbd> to apply Unicode case-folding, and adds support for new syntax.
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for `\p` and `\P` within negated `[^…]`, and adds support for new features/syntax.
 </details>
 
@@ -734,9 +734,9 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 **`unicodeSetsPlugin`** — A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
-> `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
-
-> This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
+- Setting `unicodeSetsPlugin` to `null` prevents `regex` from applying flag <kbd>v</kbd>'s escaping rules. This can be useful in combination with option `disable: {v: true}` for tools that want to use `regex`'s extended syntax and/or flags but need to accept input with flag <kbd>u</kbd>'s escaping rules.
+- `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
+- This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
 
 **`disable`** — A set of options that can be individually disabled by setting their values to `true`.
 
