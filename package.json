@@ -41,7 +41,7 @@
     "esbuild": "^0.23.1",
     "expect-type": "^0.20.0",
     "jasmine": "^5.2.0",
-    "regex-utilities": "^2.2.0",
+    "regex-utilities": "^2.3.0",
     "typescript": "^5.5.4"
   }
 }
