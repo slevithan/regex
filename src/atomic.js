@@ -52,7 +52,9 @@ export function atomicPlugin(expression, data) {
           if (!numGroupsOpenInAG) {
             numAGs++;
             // Replace `expression` and use `<$$N>` as a temporary wrapper for the backref so it
-            // can avoid backref renumbering afterward
+            // can avoid backref renumbering afterward. Need to wrap the whole substitution
+            // (including the lookahead and following backref) in a noncapturing group to handle
+            // following quantifiers and literal digits
             expression = `${expression.slice(0, aGPos)}${emulatedAGDelim}${
                 expression.slice(aGPos + aGDelim.length, index)
               }))<$$${numAGs + numCapturesBeforeAG}>)${expression.slice(index + 1)}`;

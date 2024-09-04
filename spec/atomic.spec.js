@@ -15,6 +15,10 @@ describe('atomic groups', () => {
     expect('one two').toMatch(regex`^(?>\w+\s?)+$`);
   });
 
+  it('should work when followed by a literal digit', () => {
+    expect('a0').toMatch(regex`^(?>a)0$`);
+  });
+
   it('should work when named capturing groups present', () => {
     expect('abcc').toMatch(regex`^(?<n>)a(?>bc|b)c$`);
     expect('abc').not.toMatch(regex`^(?<n>)a(?>bc|b)c$`);
