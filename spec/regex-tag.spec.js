@@ -29,19 +29,21 @@ describe('regex', () => {
     expect(regex(undefined)``).toBeInstanceOf(RegExp);
   });
 
-  it('should implicitly add flag v', () => {
+  it('should implicitly add flag v or u', () => {
     // See also `backcompat-spec.js`
     if (flagVSupported) {
       expect(regex``.flags).toContain('v');
       expect(regex``.unicodeSets).toBeTrue();
       expect(regex('g')``.unicodeSets).toBeTrue();
     } else {
-      expect(regex``.flags).not.toContain('v');
+      expect(regex``.flags).toContain('u');
+      expect(regex``.unicode).toBeTrue();
+      expect(regex('g')``.unicode).toBeTrue();
     }
   });
 
   it('should not allow explicitly adding implicit flags', () => {
-    const flags = ['v', 'x', 'n', 'u'];
+    const flags = ['n', 'u', 'v', 'x'];
     flags.forEach(f => {
       expect(() => regex(f)``).toThrow();
       expect(() => regex(`i${f}m`)``).toThrow();

@@ -54,7 +54,7 @@ const regex = (first, ...substitutions) => {
     return regexFromTemplate({}, first, ...substitutions);
   // Given flags
   } else if ((typeof first === 'string' || first === undefined) && !substitutions.length) {
-    return regexFromTemplate.bind(null, {flags: first});
+    return regexFromTemplate.bind(null, {flags: first ?? ''});
   // Given an options object
   } else if ({}.toString.call(first) === '[object Object]' && !substitutions.length) {
     return regexFromTemplate.bind(null, first);
@@ -74,37 +74,15 @@ Returns a RegExp from a template and substitutions to fill the template holes.
 @type {RegexFromTemplate<RegExp>}
 */
 const regexFromTemplate = (options, template, ...substitutions) => {
-  const {
-    flags = '',
-    subclass = false,
-    plugins = [],
-    unicodeSetsPlugin = backcompatPlugin,
-    disable = {},
-    force = {},
-  } = options;
-  if (/[vu]/.test(flags)) {
-    throw new Error('Flags v/u cannot be explicitly added');
-  }
-  const useFlagV = force.v || (disable.v ? false : flagVSupported);
-  const fullFlags = (useFlagV ? 'v' : 'u') + flags;
-
-  // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
-  // comments could cause problems when parsing
-  if (!disable.x) {
-    ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
-  }
-  // Implicit flag n is a preprocessor because capturing groups affect backreference rewriting in
-  // both interpolation and plugins
-  if (!disable.n) {
-    ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
-  }
+  const opts = getOptions(options);
+  const prepped = handlePreprocessors(template, substitutions, opts);
 
   let precedingCaptures = 0;
   let expression = '';
   let runningContext;
   // Intersperse raw template strings and substitutions
-  template.raw.forEach((raw, i) => {
-    const wrapEscapedStr = !!(template.raw[i] || template.raw[i + 1]);
+  prepped.template.raw.forEach((raw, i) => {
+    const wrapEscapedStr = !!(prepped.template.raw[i] || prepped.template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
@@ -112,9 +90,9 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     expression += sandboxUnsafeNulls(raw, Context.CHAR_CLASS);
     runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext, charClassContext} = runningContext;
-    if (i < template.raw.length - 1) {
-      const substitution = substitutions[i];
-      expression += interpolate(substitution, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+    if (i < prepped.template.raw.length - 1) {
+      const substitution = prepped.substitutions[i];
+      expression += interpolate(substitution, opts.flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
       if (substitution instanceof RegExp) {
         precedingCaptures += countCaptures(substitution.source);
       } else if (substitution instanceof Pattern) {
@@ -123,18 +101,99 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     }
   });
 
+  expression = handlePlugins(expression, opts);
+  if (opts.subclass) {
+    const unmarked = unmarkEmulationGroups(expression);
+    return new WrappedRegExp(unmarked.expression, opts.flags, {captureMap: unmarked.captureMap});
+  }
+  return new RegExp(expression, opts.flags);
+}
+
+/**
+Returns the processed expression and flags as strings.
+@param {string} expression
+@param {RegexTagOptions} [options]
+@returns {{expression: string; flags: string;}}
+*/
+function processRegex(expression = '', options = {}) {
+  const opts = getOptions(options);
+  if (opts.subclass) {
+    // Don't allow including emulation group markers in output
+    throw new Error('Option subclass not supported');
+  }
+  return {
+    expression: handlePlugins(
+      handlePreprocessors({raw: [expression]}, [], opts).template.raw[0],
+      opts
+    ),
+    flags: opts.flags,
+  };
+}
+
+/**
+Returns a complete set of options, with default values set for options that weren't provided.
+@param {RegexTagOptions} options
+@returns {Required<RegexTagOptions>}
+*/
+function getOptions(options) {
+  const opts = {
+    flags: '',
+    subclass: false,
+    plugins: [],
+    unicodeSetsPlugin: backcompatPlugin,
+    disable: {/* n, v, x, atomic, subroutines */},
+    force: {/* v */},
+    ...options,
+  };
+  if (/[nuvx]/.test(opts.flags)) {
+    throw new Error('Implicit flags v/u/x/n cannot be explicitly added');
+  }
+  const useFlagV = opts.force.v || (opts.disable.v ? false : flagVSupported);
+  opts.flags += useFlagV ? 'v' : 'u';
+  return opts;
+}
+
+/**
+@param {RawTemplate} template
+@param {ReadonlyArray<InterpolatedValue>} substitutions
+@param {Required<RegexTagOptions>} options
+@returns {{
+  template: RawTemplate;
+  substitutions: ReadonlyArray<InterpolatedValue>;
+}}
+*/
+function handlePreprocessors(template, substitutions, options) {
+  // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
+  // comments could cause problems when parsing
+  if (!options.disable.x) {
+    ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
+  }
+  // Implicit flag n is a preprocessor because capturing groups affect backreference rewriting in
+  // both interpolation and plugins
+  if (!options.disable.n) {
+    ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
+  }
+  return {
+    template,
+    substitutions,
+  };
+}
+
+/**
+@param {string} expression
+@param {Required<RegexTagOptions>} options
+@returns {string}
+*/
+function handlePlugins(expression, options) {
+  const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
     ...(disable.atomic ? [] : [possessivePlugin, atomicPlugin]),
     ...(disable.x ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
-    ...((useFlagV || !unicodeSetsPlugin) ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags: fullFlags, useEmulationGroups: subclass}));
-  if (subclass) {
-    const unmarked = unmarkEmulationGroups(expression);
-    return new WrappedRegExp(unmarked.expression, fullFlags, {captureMap: unmarked.captureMap});
-  }
-  return new RegExp(expression, fullFlags);
+    ...((!unicodeSetsPlugin || flags.includes('v')) ? [] : [unicodeSetsPlugin]),
+  ].forEach(p => expression = p(expression, {flags, useEmulationGroups: subclass}));
+  return expression;
 }
 
 class WrappedRegExp extends RegExp {
@@ -269,7 +328,7 @@ function transformForLocalFlags(re, outerFlags) {
     if (patternModsSupported) {
       modFlagsObj.i = re.ignoreCase;
     } else {
-      throw new Error('Pattern modifiers not supported, so the value of flag i on the interpolated RegExp must match the outer regex');
+      throw new Error('Pattern modifiers not supported, so flag i on the outer and interpolated regex must match');
     }
   }
   if (re.dotAll !== outerFlags.includes('s')) {
@@ -333,4 +392,8 @@ function unmarkEmulationGroups(expression) {
   };
 }
 
-export {regex, pattern};
+export {
+  regex,
+  pattern,
+  processRegex,
+};

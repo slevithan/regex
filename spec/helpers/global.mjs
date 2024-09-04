@@ -1,4 +1,4 @@
-import {regex, pattern} from '../../dist/regex.mjs';
+import {regex, pattern, processRegex} from '../../dist/regex.mjs';
 
 // So specs can be shared with the browser test runner
-Object.assign(globalThis, {regex, pattern});
+Object.assign(globalThis, {regex, pattern, processRegex});

@@ -751,6 +751,19 @@ The final result after running all plugins is provided to the `RegExp` construct
 - **`v`** — Forces the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
+For tools that want processed output as a string rather than a regex, you can use function `processRegex`:
+
+```js
+import {processRegex} from 'regex';
+processRegex('^ . $', {flags: 'g'});
+/* → {
+  expression: '^.$',
+  flags: 'gv'
+} */
+```
+
+Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives you the same result as using the `regex` tag. `processRegex` shares `regex`'s options, described above. Since it isn't a template tag itself, it doesn't provide context-aware interpolation, and doesn't automatically handle input as a raw string (so you need to escape your backslashes).
+
 ## ⚡ Performance
 
 `regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform equally as fast as native regexes. The use of `regex` can also be transpiled via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
