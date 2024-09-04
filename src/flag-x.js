@@ -31,7 +31,7 @@ Preprocessors are applied to the outer regex and interpolated patterns, but not 
 regexes or strings.
 @type {Preprocessor}
 */
-export function flagXPreprocessor(value, runningContext) {
+export function flagXPreprocessor(value, runningContext, options) {
   value = String(value);
   let ignoringWs = false;
   let ignoringCharClassWs = false;
@@ -71,9 +71,11 @@ export function flagXPreprocessor(value, runningContext) {
     runningContext = getEndContextForIncompleteExpression(expression, runningContext);
     const {regexContext, charClassContext} = runningContext;
     if (
+      // `--` is matched in one step, so boundary chars aren't `-` unless separated by whitespace
       m === '-' &&
       regexContext === RegexContext.CHAR_CLASS &&
-      lastSignificantCharClassContext === CharClassContext.RANGE
+      lastSignificantCharClassContext === CharClassContext.RANGE &&
+      (options.unicodeSetsPlugin || options.flags.includes('v'))
     ) {
       // Need to handle this here since the main regex-parsing code would think the hyphen forms
       // part of a subtraction operator since we've removed preceding whitespace

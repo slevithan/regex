@@ -244,17 +244,53 @@ describe('flag x', () => {
         '[ - -]',
         '[- - ]',
         '[ - - ]',
-        '[a- -]',
-        '[a - -]',
+        '[\\0- -]',
+        '[\\0 - -]',
         '[- -b]',
         '[- - b]',
-        '[a- -b]',
-        '[a- - b]',
-        '[a - -b]',
-        '[a - - b]',
+        '[\\0- -b]',
+        '[\\0- - b]',
+        '[\\0 - -b]',
+        '[\\0 - - b]',
       ];
       values.forEach(v => {
-        expect(() => regex({raw: [v]})).withContext(v).toThrow();
+        expect(() => regex()({raw: [v]})).withContext(v).toThrow();
+        expect(() => regex({disable: {v: true}})({raw: [v]})).withContext(v).toThrow();
+        // Doesn't throw if using flag u syntax; unescaped non-range hyphens are matched literally
+        expect(() => regex({disable: {v: true}, unicodeSetsPlugin: null})({raw: [v]})).withContext(v).not.toThrow();
+      });
+    });
+
+    it('should not interfere with two unescaped hyphens not separated by whitespace', () => {
+      const invalid = [
+        '[--]',
+        '[ --]',
+        '[-- ]',
+        '[ -- ]',
+        '[\\0--]',
+        '[\\0 --]',
+        '[--b]',
+        '[-- b]',
+      ];
+      invalid.forEach(v => {
+        expect(() => regex()({raw: [v]})).withContext(v).toThrow();
+        // Invalid unescaped hyphen error from built-in `unicodeSetsPlugin`
+        expect(() => regex({disable: {v: true}})({raw: [v]})).withContext(v).toThrow();
+        // Doesn't throw if using flag u syntax; unescaped non-range hyphens are matched literally
+        expect(() => regex({disable: {v: true}, unicodeSetsPlugin: null})({raw: [v]})).withContext(v).not.toThrow();
+      });
+      const valid = [
+        '[\\0--b]',
+        '[\\0-- b]',
+        '[\\0 --b]',
+        '[\\0 -- b]',
+      ];
+      valid.forEach(v => {
+        expect(() => regex()({raw: [v]})).withContext(v).not.toThrow();
+        // Invalid set operator error from built-in `unicodeSetsPlugin`
+        expect(() => regex({disable: {v: true}})({raw: [v]})).withContext(v).toThrow();
+        // Doesn't throw if using flag u syntax; unescaped non-range hyphens are matched literally
+        expect(() => regex({disable: {v: true}, unicodeSetsPlugin: null})({raw: [v]})).withContext(v).not.toThrow();
       });
     });
 

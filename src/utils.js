@@ -324,7 +324,12 @@ export function containsCharClassUnion(charClassPattern) {
 /**
 @typedef {import('./regex.js').InterpolatedValue} InterpolatedValue
 @typedef {import('./regex.js').RawTemplate} RawTemplate
-@typedef {(value: InterpolatedValue, runningContext: RunningContext) => {
+@typedef {import('./regex.js').RegexTagOptions} RegexTagOptions
+@typedef {(
+  value: InterpolatedValue,
+  runningContext: RunningContext,
+  options: Required<RegexTagOptions>
+) => {
   transformed: string;
   runningContext: RunningContext;
 }} Preprocessor
@@ -335,20 +340,21 @@ processes substitutions that are instanceof `Pattern`.
 @param {RawTemplate} template
 @param {ReadonlyArray<InterpolatedValue>} substitutions
 @param {Preprocessor} preprocessor
+@param {Required<RegexTagOptions>} options
 @returns {{template: RawTemplate; substitutions: ReadonlyArray<InterpolatedValue>;}}
 */
-export function preprocess(template, substitutions, preprocessor) {
+export function preprocess(template, substitutions, preprocessor, options) {
   let /** @type {RawTemplate} */ newTemplate = {raw: []};
   let newSubstitutions = [];
   let runningContext;
   template.raw.forEach((raw, i) => {
-    const result = preprocessor(raw, {...runningContext, lastPos: 0});
+    const result = preprocessor(raw, {...runningContext, lastPos: 0}, options);
     newTemplate.raw.push(result.transformed);
     runningContext = result.runningContext;
     if (i < template.raw.length - 1) {
       const substitution = substitutions[i];
       if (substitution instanceof Pattern) {
-        const result = preprocessor(substitution, {...runningContext, lastPos: 0});
+        const result = preprocessor(substitution, {...runningContext, lastPos: 0}, options);
         newSubstitutions.push(pattern(result.transformed));
         runningContext = result.runningContext;
       } else {

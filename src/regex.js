@@ -164,15 +164,19 @@ function getOptions(options) {
 }}
 */
 function handlePreprocessors(template, substitutions, options) {
+  const preprocessors = [];
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
   if (!options.disable.x) {
-    ({template, substitutions} = preprocess(template, substitutions, flagXPreprocessor));
+    preprocessors.push(flagXPreprocessor);
   }
   // Implicit flag n is a preprocessor because capturing groups affect backreference rewriting in
   // both interpolation and plugins
   if (!options.disable.n) {
-    ({template, substitutions} = preprocess(template, substitutions, flagNPreprocessor));
+    preprocessors.push(flagNPreprocessor);
+  }
+  for (const pp of preprocessors) {
+    ({template, substitutions} = preprocess(template, substitutions, pp, options));
   }
   return {
     template,
