@@ -6,6 +6,13 @@ describe('processRegex', () => {
 
   it('should accept empty arguments', () => {
     expect(processRegex().expression).toBe('');
+    expect(processRegex(undefined).expression).toBe('');
+  });
+
+  it('should coerce first argument to string', () => {
+    expect(processRegex(null).expression).toBe('null');
+    expect(processRegex(false).expression).toBe('false');
+    expect(processRegex(10).expression).toBe('10');
   });
 
   it('should accept a string without options', () => {
@@ -70,5 +77,7 @@ describe('processRegex', () => {
       expect(' a a ').toMatch(toRegExp('^ a a $', {disable: {x: true}}));
       expect('aa').toMatch(toRegExp('^(a)\\1$', {disable: {n: true}}));
     });
+
+    // More options: See `regex-tag.spec.js`
   });
 });
