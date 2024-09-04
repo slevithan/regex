@@ -751,15 +751,17 @@ The final result after running all plugins is provided to the `RegExp` construct
 - **`v`** — Forces the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
-For tools that want processed output as a string rather than a regex, you can use function `processRegex`:
+### Getting output as a string
+
+Function `processRegex` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful for tools that want to further process the output.
 
 ```js
 import {processRegex} from 'regex';
-processRegex('^ . $', {flags: 'g'});
-// → {expression: '^.$', flags: 'gv'}
+processRegex('^ (ab | cd) $', {flags: 'm'});
+// → {expression: '^(?:ab|cd)$', flags: 'mv'}
 ```
 
-`processRegex` shares `regex`'s options (described above). Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives the same result as a tagged `regex` template. However, since `processRegex` isn't a template tag, it doesn't provide context-aware interpolation, and it doesn't automatically handle input as a raw string (so you need to escape your backslashes).
+`processRegex` shares `regex`'s options (described above). Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives the same result as a tagged `regex` template. However, `processRegex` isn't a template tag, so it doesn't provide context-aware interpolation, and it doesn't automatically handle input as a raw string (you need to escape your backslashes).
 
 ## ⚡ Performance
 
