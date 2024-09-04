@@ -286,7 +286,9 @@ describe('flag x', () => {
         '[\\0 -- b]',
       ];
       valid.forEach(v => {
-        expect(() => regex()({raw: [v]})).withContext(v).not.toThrow();
+        if (flagVSupported) {
+          expect(() => regex()({raw: [v]})).withContext(v).not.toThrow();
+        }
         // Invalid set operator error from built-in `unicodeSetsPlugin`
         expect(() => regex({disable: {v: true}})({raw: [v]})).withContext(v).toThrow();
         // Doesn't throw if using flag u syntax; unescaped non-range hyphens are matched literally
