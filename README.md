@@ -756,13 +756,10 @@ For tools that want processed output as a string rather than a regex, you can us
 ```js
 import {processRegex} from 'regex';
 processRegex('^ . $', {flags: 'g'});
-/* → {
-  expression: '^.$',
-  flags: 'gv'
-} */
+// → {expression: '^.$', flags: 'gv'}
 ```
 
-Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives you the same result as using the `regex` tag. `processRegex` shares `regex`'s options, described above. Since it isn't a template tag itself, it doesn't provide context-aware interpolation, and doesn't automatically handle input as a raw string (so you need to escape your backslashes).
+`processRegex` shares `regex`'s options (described above). Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives the same result as a tagged `regex` template. However, since `processRegex` isn't a template tag, it doesn't provide context-aware interpolation, and it doesn't automatically handle input as a raw string (so you need to escape your backslashes).
 
 ## ⚡ Performance
 

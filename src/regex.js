@@ -131,7 +131,8 @@ function processRegex(expression = '', options = {}) {
 }
 
 /**
-Returns a complete set of options, with default values set for options that weren't provided.
+Returns a complete set of options, with default values set for options that weren't provided. Also
+adds implicit flag v or u to the provided flags.
 @param {RegexTagOptions} options
 @returns {Required<RegexTagOptions>}
 */
