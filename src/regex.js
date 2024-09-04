@@ -115,11 +115,14 @@ Returns the processed expression and flags as strings.
 @param {RegexTagOptions} [options]
 @returns {{expression: string; flags: string;}}
 */
-function processRegex(expression = '', options = {}) {
+function processRegex(expression, options = {}) {
   const opts = getOptions(options);
   if (opts.subclass) {
     // Don't allow including emulation group markers in output
-    throw new Error('Option subclass not supported');
+    throw new Error('Cannot use option subclass');
+  }
+  if (expression === undefined) {
+    expression = '';
   }
   return {
     expression: handlePlugins(

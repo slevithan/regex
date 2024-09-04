@@ -757,11 +757,11 @@ Function `processRegex` returns an object with properties `expression` and `flag
 
 ```js
 import {processRegex} from 'regex';
-processRegex('^ (ab | cd) $', {flags: 'm'});
-// → {expression: '^(?:ab|cd)$', flags: 'mv'}
+processRegex('^ (ab | cd)', {flags: 'm'});
+// → {expression: '^(?:ab|cd)', flags: 'mv'}
 ```
 
-`processRegex` shares `regex`'s options (described above). Passing the resulting `expression` and `flags` properties to the `RegExp` constructor gives the same result as a tagged `regex` template. However, `processRegex` isn't a template tag, so it doesn't provide context-aware interpolation, and it doesn't automatically handle input as a raw string (you need to escape your backslashes).
+`processRegex` shares all of `regex`'s options (described above) except `subclass`. Providing the resulting `expression` and `flags` properties to the `RegExp` constructor produces the same result as a tagged `regex` template. However, since `processRegex` isn't a template tag, it doesn't provide context-aware interpolation and doesn't automatically handle input as a raw string (you need to escape your backslashes).
 
 ## ⚡ Performance
 
