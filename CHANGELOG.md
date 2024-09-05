@@ -1,6 +1,8 @@
 ## Unreleased changes
 
--
+### 🚀 Features
+
+- Renamed `processRegex` as `rewrite`. The name `processRegex` remains as a deprecated alias.
 
 ## Released changes
 
