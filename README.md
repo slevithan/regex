@@ -751,17 +751,19 @@ The final result after running all plugins is provided to the `RegExp` construct
 - **`v`** — Forces the use of flag <kbd>v</kbd> even when it's not supported natively (resulting in an error).
 </details>
 
-### Getting output as a string
+### Returning a string
 
-Function `processRegex` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful for tools that want to further process the output.
+Function `rewrite` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful for tools that want to process the output.
 
 ```js
-import {processRegex} from 'regex';
-processRegex('^ (ab | cd)', {flags: 'm'});
+import {rewrite} from 'regex';
+rewrite('^ (ab | cd)', {flags: 'm'});
 // → {expression: '^(?:ab|cd)', flags: 'mv'}
 ```
 
-`processRegex` shares all of `regex`'s options (described above) except `subclass`. Providing the resulting `expression` and `flags` properties to the `RegExp` constructor produces the same result as a tagged `regex` template. However, since `processRegex` isn't a template tag, it doesn't provide context-aware interpolation and doesn't automatically handle input as a raw string (you need to escape your backslashes).
+`rewrite` shares all of `regex`'s options (described above) except `subclass`. Providing the resulting `expression` and `flags` to the `RegExp` constructor produces the same result as using the `regex` tag.
+
+> Since `rewrite` isn't a template tag, it doesn't provide context-aware interpolation and doesn't automatically handle input as a raw string (you need to escape your backslashes).
 
 ## ⚡ Performance
 

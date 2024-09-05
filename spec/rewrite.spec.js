@@ -1,40 +1,40 @@
-describe('processRegex', () => {
+describe('rewrite', () => {
   function toRegExp(expression, options) {
-    const result = processRegex(expression, options);
+    const result = rewrite(expression, options);
     return new RegExp(result.expression, result.flags);
   }
 
   it('should accept empty arguments', () => {
-    expect(processRegex().expression).toBe('');
-    expect(processRegex(undefined).expression).toBe('');
+    expect(rewrite().expression).toBe('');
+    expect(rewrite(undefined).expression).toBe('');
   });
 
   it('should coerce first argument to string', () => {
-    expect(processRegex(null).expression).toBe('null');
-    expect(processRegex(false).expression).toBe('false');
-    expect(processRegex(10).expression).toBe('10');
+    expect(rewrite(null).expression).toBe('null');
+    expect(rewrite(false).expression).toBe('false');
+    expect(rewrite(10).expression).toBe('10');
   });
 
   it('should accept a string without options', () => {
-    expect(processRegex('').expression).toBe('');
-    expect(processRegex('.').expression).toBe('.');
+    expect(rewrite('').expression).toBe('');
+    expect(rewrite('.').expression).toBe('.');
   });
 
   describe('implicit flags', () => {
     it('should implicitly add flag v or u', () => {
       if (flagVSupported) {
-        expect(processRegex('').flags).toContain('v');
-        expect(processRegex('').flags).not.toContain('u');
+        expect(rewrite('').flags).toContain('v');
+        expect(rewrite('').flags).not.toContain('u');
       } else {
-        expect(processRegex('').flags).toContain('u');
-        expect(processRegex('').flags).not.toContain('v');
+        expect(rewrite('').flags).toContain('u');
+        expect(rewrite('').flags).not.toContain('v');
       }
     });
 
     it('should not allow explicitly adding implicit flags', () => {
       const flags = ['n', 'u', 'v', 'x'];
       flags.forEach(f => {
-        expect(() => processRegex('', {flags: f})).toThrow();
+        expect(() => rewrite('', {flags: f})).toThrow();
       });
     });
 
@@ -44,7 +44,7 @@ describe('processRegex', () => {
 
     it('should process emulated flag n', () => {
       expect(toRegExp('^(a)$').exec('a')).toHaveSize(1);
-      expect(() => processRegex('^(a)\\1$')).toThrow();
+      expect(() => rewrite('^(a)\\1$')).toThrow();
     });
   });
 
@@ -70,7 +70,7 @@ describe('processRegex', () => {
 
   describe('options', () => {
     it('should not allow enabling option subclass', () => {
-      expect(() => processRegex('', {subclass: true})).toThrow();
+      expect(() => rewrite('', {subclass: true})).toThrow();
     });
 
     it('should allow diabling implicit flags', () => {

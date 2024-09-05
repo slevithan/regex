@@ -115,7 +115,7 @@ Returns the processed expression and flags as strings.
 @param {RegexTagOptions} [options]
 @returns {{expression: string; flags: string;}}
 */
-function processRegex(expression, options = {}) {
+function rewrite(expression, options = {}) {
   const opts = getOptions(options);
   if (opts.subclass) {
     // Don't allow including emulation group markers in output
@@ -403,5 +403,6 @@ function unmarkEmulationGroups(expression) {
 export {
   regex,
   pattern,
-  processRegex,
+  rewrite,
+  rewrite as processRegex, // Deprecated alias
 };

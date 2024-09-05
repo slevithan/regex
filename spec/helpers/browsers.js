@@ -1,4 +1,4 @@
 if (globalThis.Regex) {
-  const {regex, pattern, processRegex} = Regex;
-  Object.assign(globalThis, {regex, pattern, processRegex});
+  const {regex, pattern, rewrite} = Regex;
+  Object.assign(globalThis, {regex, pattern, rewrite});
 }
