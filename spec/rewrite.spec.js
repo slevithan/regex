@@ -7,12 +7,14 @@ describe('rewrite', () => {
   it('should accept empty arguments', () => {
     expect(rewrite().expression).toBe('');
     expect(rewrite(undefined).expression).toBe('');
+    expect(rewrite(undefined, undefined).expression).toBe('');
   });
 
   it('should coerce first argument to string', () => {
     expect(rewrite(null).expression).toBe('null');
     expect(rewrite(false).expression).toBe('false');
-    expect(rewrite(10).expression).toBe('10');
+    expect(rewrite(true).expression).toBe('true');
+    expect(rewrite(0).expression).toBe('0');
   });
 
   it('should accept a string without options', () => {

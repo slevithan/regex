@@ -75,7 +75,7 @@ export function flagXPreprocessor(value, runningContext, options) {
       m === '-' &&
       regexContext === RegexContext.CHAR_CLASS &&
       lastSignificantCharClassContext === CharClassContext.RANGE &&
-      (options.unicodeSetsPlugin || options.flags.includes('v'))
+      (options.flags.includes('v') || options.unicodeSetsPlugin)
     ) {
       // Need to handle this here since the main regex-parsing code would think the hyphen forms
       // part of a subtraction operator since we've removed preceding whitespace

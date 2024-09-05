@@ -115,14 +115,11 @@ Returns the processed expression and flags as strings.
 @param {RegexTagOptions} [options]
 @returns {{expression: string; flags: string;}}
 */
-function rewrite(expression, options = {}) {
+function rewrite(expression = '', options = {}) {
   const opts = getOptions(options);
   if (opts.subclass) {
     // Don't allow including emulation group markers in output
     throw new Error('Cannot use option subclass');
-  }
-  if (expression === undefined) {
-    expression = '';
   }
   return {
     expression: handlePlugins(
@@ -134,8 +131,8 @@ function rewrite(expression, options = {}) {
 }
 
 /**
-Returns a complete set of options, with default values set for options that weren't provided. Also
-adds implicit flag v or u to the provided flags.
+Returns a complete set of options, with default values set for options that weren't provided, and
+some options augmented for use.
 @param {RegexTagOptions} options
 @returns {Required<RegexTagOptions>}
 */
@@ -154,6 +151,9 @@ function getOptions(options) {
   }
   const useFlagV = opts.force.v || (opts.disable.v ? false : flagVSupported);
   opts.flags += useFlagV ? 'v' : 'u';
+  if (useFlagV) {
+    opts.unicodeSetsPlugin = null;
+  }
   return opts;
 }
 
@@ -196,10 +196,10 @@ function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutinesPlugin]),
-    ...(disable.atomic ? [] : [possessivePlugin, atomicPlugin]),
-    ...(disable.x ? [] : [cleanPlugin]),
+    ...(disable.atomic      ? [] : [possessivePlugin, atomicPlugin]),
+    ...(disable.x           ? [] : [cleanPlugin]),
     // Run last, so it doesn't have to worry about parsing extended syntax
-    ...((!unicodeSetsPlugin || flags.includes('v')) ? [] : [unicodeSetsPlugin]),
+    ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
   ].forEach(p => expression = p(expression, {flags, useEmulationGroups: subclass}));
   return expression;
 }
