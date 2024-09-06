@@ -24,13 +24,8 @@ describe('rewrite', () => {
 
   describe('implicit flags', () => {
     it('should implicitly add flag v or u', () => {
-      if (flagVSupported) {
-        expect(rewrite('').flags).toContain('v');
-        expect(rewrite('').flags).not.toContain('u');
-      } else {
-        expect(rewrite('').flags).toContain('u');
-        expect(rewrite('').flags).not.toContain('v');
-      }
+      expect(rewrite('').flags).toContain(flagVSupported ? 'v' : 'u');
+      expect(rewrite('', {disable: {v: true}}).flags).toContain('u');
     });
 
     it('should not allow explicitly adding implicit flags', () => {
