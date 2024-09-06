@@ -404,5 +404,4 @@ export {
   regex,
   pattern,
   rewrite,
-  rewrite as processRegex, // Deprecated alias
 };
