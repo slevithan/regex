@@ -83,7 +83,7 @@ export function sandboxLoneCharClassCaret(str) {
 }
 
 /**
-Converts `\0` tokens to `\u{0}` in the given context.
+Converts `\0` tokens to `\x00` in the given context.
 @param {string} str
 @param {'DEFAULT' | 'CHAR_CLASS'} [context] `Context` option from lib `regex-utilities`
 @returns {string}
@@ -91,8 +91,8 @@ Converts `\0` tokens to `\u{0}` in the given context.
 export function sandboxUnsafeNulls(str, context) {
   // regex`[\0${0}]` and regex`[${pattern`\0`}0]` can't be guarded against via nested `[…]`
   // sandboxing in character classes if the interpolated value doesn't contain union (since it
-  // might be placed on a range boundary). So escape `\0` in character classes as `\u{0}`
-  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\u{0}', context);
+  // might be placed on a range boundary). So escape `\0` in character classes as `\x00`
+  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\x00', context);
 }
 
 // No special handling for escaped versions of the characters
