@@ -1,5 +1,5 @@
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim} from './utils.js';
+import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim, spliceStr} from './utils.js';
 
 /**
 @typedef {import('./regex.js').PluginData} PluginData
@@ -335,15 +335,4 @@ function lastOf(arr) {
   // Remove when support for ES2022 array method `at` (Node.js 16.6) is no longer an issue:
   // <https://caniuse.com/mdn-javascript_builtins_array_at>
   return arr[arr.length - 1];
-}
-
-/**
-@param {string} str
-@param {number} pos
-@param {string} oldValue
-@param {string} newValue
-@returns {string}
-*/
-function spliceStr(str, pos, oldValue, newValue) {
-  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
 }

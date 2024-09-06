@@ -6,13 +6,17 @@ describe('atomic groups', () => {
     expect('aaaaaab').toMatch(regex`(?>a)+ab`);
   });
 
-  it('should allow nested atomic groups', () => {
-    expect('integerrr+').toMatch(regex`\b(?>int(?>eger+)?|insert)\b(?>.)`);
-    expect('integerrr+').not.toMatch(regex`\b(?>int(?>eger+)??|insert)\b(?>.)`);
-  });
-
   it('should allow quantifying atomic groups', () => {
     expect('one two').toMatch(regex`^(?>\w+\s?)+$`);
+  });
+
+  it('should work for multiple atomic groups', () => {
+    expect('ab').toMatch(regex`^(?>a)(?>b)$`);
+  });
+
+  it('should work for nested atomic groups', () => {
+    expect('integerrr+').toMatch(regex`\b(?>int(?>eger+)?|insert)\b(?>.)`);
+    expect('integerrr+').not.toMatch(regex`\b(?>int(?>eger+)??|insert)\b(?>.)`);
   });
 
   it('should work when followed by a literal digit', () => {
@@ -112,6 +116,17 @@ describe('possessive quantifiers', () => {
   it('should throw for unbalanced groups', () => {
     expect(() => regex`)++`).toThrow();
     expect(() => regex`(++`).toThrow();
+  });
+
+  it('should work for multiple possessive quantifiers', () => {
+    expect('ab').toMatch(regex`^a++b++$`);
+    expect('ab').toMatch(regex`^[a]++[b]++$`);
+    expect('ab').toMatch(regex`^(a)++(b)++$`);
+  });
+
+  it('should work for nested possessive quantifiers', () => {
+    expect('ababb').toMatch(regex`^(ab++)++$`);
+    expect('ababb').toMatch(regex`^(a(b)++)++$`);
   });
 
   it('should not allow quantifying unquantifiable tokens', () => {

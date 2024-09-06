@@ -1,7 +1,7 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {emulationGroupMarker, noncapturingDelim} from './utils.js';
+import {emulationGroupMarker, noncapturingDelim, spliceStr} from './utils.js';
 
-const token = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
+const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
 
 /**
 @typedef {import('./regex.js').PluginData} PluginData
@@ -29,8 +29,8 @@ export function atomicPlugin(expression, data) {
     let numGroupsOpenInAG = 0;
     let inAG = false;
     let match;
-    token.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
-    while (match = token.exec(expression)) {
+    atomicPluginToken.lastIndex = Number.isNaN(aGPos) ? 0 : aGPos + emulatedAGDelim.length;
+    while (match = atomicPluginToken.exec(expression)) {
       const {0: m, index, groups: {capturingStart, noncapturingStart}} = match;
       if (m === '[') {
         numCharClassesOpen++;
@@ -93,7 +93,7 @@ export function atomicPlugin(expression, data) {
 
 const baseQuantifier = String.raw`(?:[?*+]|\{\d+(?:,\d*)?\})`;
 // Complete tokenizer for base syntax; doesn't (need to) know about character-class-only syntax
-const baseToken = new RegExp(String.raw`
+const possessivePluginToken = new RegExp(String.raw`
 \\(?: \d+
   | c[A-Za-z]
   | [gk]<[^>]+>
@@ -106,18 +106,20 @@ const baseToken = new RegExp(String.raw`
   | [A-Za-z\-]+:
   | \(DEFINE\)
   ))?
-| (?<q>${baseQuantifier})(?<qMod>[?+]?)(?<invalidQ>[?*+\{]?)
+| (?<qBase>${baseQuantifier})(?<qMod>[?+]?)(?<invalidQ>[?*+\{]?)
 | \\?.
 `.replace(/\s+/g, ''), 'gsu');
 
 /**
 Transform posessive quantifiers into atomic groups. The posessessive quantifiers are:
 `?+`, `*+`, `++`, `{N}+`, `{N,}+`, `{N,N}+`.
+This follows Java, PCRE, Perl, and Python.
+Possessive quantifiers in Oniguruma and Onigmo are only: `?+`, `*+`, `++`.
 @param {string} expression
 @returns {string}
 */
 export function possessivePlugin(expression) {
-  if (!new RegExp(`${baseQuantifier}\\+`).test(expression)) {
+  if (!(new RegExp(`${baseQuantifier}\\+`).test(expression))) {
     return expression;
   }
   const openGroupIndices = [];
@@ -125,8 +127,10 @@ export function possessivePlugin(expression) {
   let lastCharClassIndex = null;
   let lastToken = '';
   let numCharClassesOpen = 0;
-  let transformed = '';
-  for (const {0: m, index, groups: {q, qMod, invalidQ}} of expression.matchAll(baseToken)) {
+  let match;
+  possessivePluginToken.lastIndex = 0;
+  while (match = possessivePluginToken.exec(expression)) {
+    const {0: m, index, groups: {qBase, qMod, invalidQ}} = match;
     if (m === '[') {
       if (!numCharClassesOpen) {
         lastCharClassIndex = index;
@@ -146,24 +150,25 @@ export function possessivePlugin(expression) {
         if (invalidQ) {
           throw new Error(`Invalid quantifier "${m}"`);
         }
+        let charsAdded = -1; // -1 for removed trailing `+`
         // Possessivizing fixed repetition quantifiers like `{2}` does't change their behavior, so
         // avoid doing so (convert them to greedy)
-        if (/^\{\d+\}$/.test(q)) {
-          transformed += q;
-        } else if (lastToken === ')' || lastToken === ']') {
-          const nodeIndex = lastToken === ')' ? lastGroupIndex : lastCharClassIndex;
-          // Unmatched `)` would break out of the wrapping group and mess with handling
-          if (nodeIndex === null) {
-            throw new Error(`Invalid unmatched "${lastToken}"`);
-          }
-          const node = expression.slice(nodeIndex, index);
-          transformed = `${expression.slice(0, nodeIndex)}(?>${node}${q})`;
+        if (/^\{\d+\}$/.test(qBase)) {
+          expression = spliceStr(expression, index + qBase.length, qMod, '');
         } else {
-          transformed = `${expression.slice(0, transformed.length - lastToken.length)}(?>${lastToken}${q})`;
+          if (lastToken === ')' || lastToken === ']') {
+            const nodeIndex = lastToken === ')' ? lastGroupIndex : lastCharClassIndex;
+            // Unmatched `)` would break out of the wrapping group and mess with handling
+            if (nodeIndex === null) {
+              throw new Error(`Invalid unmatched "${lastToken}"`);
+            }
+            expression = `${expression.slice(0, nodeIndex)}(?>${expression.slice(nodeIndex, index)}${qBase})${expression.slice(index + m.length)}`;
+          } else {
+            expression = `${expression.slice(0, index - lastToken.length)}(?>${lastToken}${qBase})${expression.slice(index + m.length)}`;
+          }
+          charsAdded += 4; // `(?>)`
         }
-        // Avoid adding the match to `transformed`
-        // Haven't updated `lastToken`, but it isn't needed
-        continue;
+        possessivePluginToken.lastIndex += charsAdded;
       } else if (m[0] === '(') {
         openGroupIndices.push(index);
       } else if (m === ')') {
@@ -172,7 +177,6 @@ export function possessivePlugin(expression) {
 
     }
     lastToken = m;
-    transformed += m;
   }
-  return transformed;
+  return expression;
 }

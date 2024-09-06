@@ -262,6 +262,17 @@ export function adjustNumberedBackrefs(expression, precedingCaptures) {
   );
 }
 
+/**
+@param {string} str
+@param {number} pos
+@param {string} oldValue
+@param {string} newValue
+@returns {string}
+*/
+export function spliceStr(str, pos, oldValue, newValue) {
+  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
+}
+
 // Properties of strings as of ES2024
 const stringPropertyNames = [
   'Basic_Emoji',
