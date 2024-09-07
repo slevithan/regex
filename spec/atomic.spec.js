@@ -154,6 +154,15 @@ describe('possessive quantifiers', () => {
 
   // Whitespace between quantifier chars: See `flag-x.spec.js`
 
+  it('should be literal within character classes', () => {
+    expect('*').toMatch(regex`^[.*+]$`);
+  });
+
+  it('should handle possessive quantifiers added by plugins', () => {
+    const plugin = str => str.replace(/\$$/, 'b++$');
+    expect('aabb').toMatch(regex({plugins: [plugin]})`^a+$`);
+  });
+
   it('should allow controlling support via disable.atomic', () => {
     expect(() => regex({disable: {atomic: true}})`.++`).toThrow();
     expect(() => regex({disable: {atomic: false}})`.++`).not.toThrow();

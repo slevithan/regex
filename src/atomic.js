@@ -143,7 +143,7 @@ export function possessivePlugin(expression) {
       } else {
         lastCharClassIndex = null;
       }
-    } else {
+    } else if (!numCharClassesOpen) {
 
       if (qMod === '+' && lastToken && !lastToken.startsWith('(')) {
         // Invalid following quantifier would become valid via the wrapping group
@@ -158,7 +158,9 @@ export function possessivePlugin(expression) {
         } else {
           if (lastToken === ')' || lastToken === ']') {
             const nodeIndex = lastToken === ')' ? lastGroupIndex : lastCharClassIndex;
-            // Unmatched `)` would break out of the wrapping group and mess with handling
+            // Unmatched `)` would break out of the wrapping group and mess with handling.
+            // Unmatched `]` wouldn't be a problem, but it's unnecessary to have dedicated support
+            // for unescaped `]++` since this won't work with flag u or v anyway
             if (nodeIndex === null) {
               throw new Error(`Invalid unmatched "${lastToken}"`);
             }
