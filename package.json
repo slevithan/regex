@@ -1,6 +1,6 @@
 {
   "name": "regex",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "description": "Regex template tag with extended syntax, context-aware interpolation, and always-on best practices",
   "author": "Steven Levithan",
   "license": "MIT",
@@ -40,7 +40,7 @@
   "devDependencies": {
     "esbuild": "^0.23.1",
     "expect-type": "^0.20.0",
-    "jasmine": "^5.2.0",
+    "jasmine": "^5.3.0",
     "regex-utilities": "^2.3.0",
     "typescript": "^5.5.4"
   }
