@@ -263,6 +263,13 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     // break sandboxing) since other errors would be handled by the invalid generated regex syntax
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
+  if (
+    typeof value === "number" &&
+    (regexContext === RegexContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.ENCLOSED_TOKEN)
+  ) {
+    // No need to care about the token type since `\p{number}` and `\P{number}` would result in an error anyway
+    return value.toString(16);
+  }
   const isPattern = value instanceof Pattern;
   let escapedValue = '';
   if (!(value instanceof RegExp)) {
