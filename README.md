@@ -321,7 +321,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 </details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences that make its subroutines not always act as independent subpatterns.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names.
 
 ### Subroutine definition groups
 
@@ -778,7 +778,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 The following edge cases rely on modern JavaScript features:
 
 - To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes. There's also an easy workaround: put the whole character class in a `pattern` and interpolate a string into the pattern.
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome/Edge 125 and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Chrome 125, Edge 125, Opera 111, and Firefox 132. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
 
