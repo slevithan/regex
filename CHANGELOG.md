@@ -2,7 +2,7 @@
 
 ### 🚀 Features
 
-- When an invalid regex throws, include the generated source in the error message (some browsers automatically include the source, but Firefox and Safari don't).
+- When an invalid regex throws, always include the generated source in the error message (some browsers automatically include it, but Firefox and Safari don't).
 
 ### 🐞 Fixes
 

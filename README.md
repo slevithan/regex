@@ -666,7 +666,7 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
   <tr>
     <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
-    <td><code>regex`\u{${'A0'}}`</code> <br> <code>regex`\u{${0xA0}}`</code></td>
+    <td><code>regex`\u{${'A0'}}`</code></td>
   </tr>
   <tr>
     <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
