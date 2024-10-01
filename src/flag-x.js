@@ -108,8 +108,8 @@ export function flagXPreprocessor(value, runningContext, options) {
       if (
         charClassWs.test(m) &&
         ( charClassContext === CharClassContext.DEFAULT ||
-          charClassContext === CharClassContext.RANGE ||
-          charClassContext === CharClassContext.Q_TOKEN
+          charClassContext === CharClassContext.ENCLOSED_Q ||
+          charClassContext === CharClassContext.RANGE
         )
       ) {
         ignoringCharClassWs = true;
@@ -120,7 +120,7 @@ export function flagXPreprocessor(value, runningContext, options) {
         throw new Error(`Invalid incomplete token in character class: "${m}"`);
       } else if (
         escapedCharClassWs.test(m) &&
-        (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.Q_TOKEN)
+        (charClassContext === CharClassContext.DEFAULT || charClassContext === CharClassContext.ENCLOSED_Q)
       ) {
         transformed += update(m[1], {prefix: false});
       } else if (charClassContext === CharClassContext.DEFAULT) {

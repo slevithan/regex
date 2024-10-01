@@ -1,5 +1,5 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, charClassEnclosedTokenContexts, containsCharClassUnion, countCaptures, emulationGroupMarker, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, regexEnclosedTokenContexts, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, containsCharClassUnion, countCaptures, emulationGroupMarker, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Pattern, pattern} from './pattern.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
@@ -265,7 +265,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
   }
   if (
     typeof value === 'number' &&
-    (regexContext === RegexContext.U_TOKEN || charClassContext === CharClassContext.U_TOKEN)
+    (regexContext === RegexContext.ENCLOSED_U || charClassContext === CharClassContext.ENCLOSED_U)
   ) {
     return value.toString(16);
   }
@@ -289,8 +289,8 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
   if (
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
     regexContext === RegexContext.GROUP_NAME ||
-    regexEnclosedTokenContexts.has(regexContext) ||
-    charClassEnclosedTokenContexts.has(charClassContext)
+    enclosedTokenRegexContexts.has(regexContext) ||
+    enclosedTokenCharClassContexts.has(charClassContext)
   ) {
     return isPattern ? String(value) : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
