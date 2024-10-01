@@ -674,11 +674,16 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
+<details>
+  <summary>👉 <b>Show more details</b></summary>
+
 - *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. For example, in default context, `${foo}*` matches any number of `foo`; not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
 - Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at these positions.
+- Numbers interpolated into an enclosed `\u{…}` context are converted to hexadecimal.
 
 > The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
+</details>
 
 ## 🔩 Options
 
