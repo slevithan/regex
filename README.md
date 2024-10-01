@@ -541,7 +541,7 @@ Apart from edge cases, `pattern` just embeds the provided string or other value 
 If you want to understand the handling of interpolated patterns more deeply, let's look at some edge cases…
 
 <details>
-  <summary>👉 <b>Show me some edge cases</b></summary>
+  <summary>👉 <b>Show some edge cases</b></summary>
 
 First, let's consider:
 
@@ -550,9 +550,9 @@ regex`[${pattern`^`}a]`
 regex`[a${pattern`^`}]`
 ```
 
-Although `[^…]` is a negated character class, `^` ***within*** a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
+Although `[^…]` is a negated character class, `^` *within* a class doesn't need to be escaped, even with the strict escaping rules of flags <kbd>u</kbd> and <kbd>v</kbd>.
 
-Both of these examples therefore match a literal `^`. The interpolated patterns don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped. `` pattern`^^` `` embedded in character class context would still correctly lead to an "invalid set operation" error due to the use of a reserved double-punctuator.
+Both of these examples therefore match a literal `^` or `a`. The interpolated patterns don't change the meaning of the surrounding character class. However, note that the `^` is not simply escaped, as it would be with `` regex`[${'^'}a]` ``. You can see this by the fact that embedding `` pattern`^^` `` in a character class correctly leads to an "invalid set operation" error due to the use of a reserved double-punctuator.
 
 > If you wanted to dynamically choose whether to negate a character class, you could put the whole character class inside the pattern.
 
@@ -681,8 +681,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
 - Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at these positions.
 - Numbers interpolated into an enclosed `\u{…}` context are converted to hexadecimal.
-
-> The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
+- The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 </details>
 
 ## 🔩 Options
@@ -718,7 +717,7 @@ regex({
 ```
 
 <details>
-  <summary>👉 <b>See details for each option</b></summary>
+  <summary>👉 <b>Show details for each option</b></summary>
 
 **`flags`** — For providing flags when using an options object.
 
