@@ -102,11 +102,21 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   });
 
   expression = handlePlugins(expression, opts);
+  let captureMap;
   if (opts.subclass) {
-    const unmarked = unmarkEmulationGroups(expression);
-    return new WrappedRegExp(unmarked.expression, opts.flags, {captureMap: unmarked.captureMap});
+    ({expression, captureMap} = unmarkEmulationGroups(expression));
   }
-  return new RegExp(expression, opts.flags);
+  try {
+    return opts.subclass ?
+      new WrappedRegExp(expression, opts.flags, {captureMap}) :
+      new RegExp(expression, opts.flags);
+  } catch (err) {
+    // Improve DX by always including the generated source in the error message. Some browsers
+    // include it automatically, but not Firefox or Safari
+    const stripped = err.message.replace(/ \/.+\/[a-z]*:/, '');
+    err.message = `${stripped}: /${expression}/${opts.flags}`;
+    throw err;
+  }
 }
 
 /**

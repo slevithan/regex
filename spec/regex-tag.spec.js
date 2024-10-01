@@ -60,6 +60,17 @@ describe('regex', () => {
     expect(() => regex({}, {raw: ['']})).toThrow();
   });
 
+  it('should include the generated regex in the error if the RegExp constructor throws', () => {
+    const values = [
+      ['\\u', '\\u'],
+      ['(?<a>.)\\g<a>|*', '(?<a>.)(?:.)|*'],
+    ];
+    values.forEach(([input, output]) => {
+      expect(() => regex({raw: [input]})).toThrowMatching(err => err.message.includes(`/${output}/`));
+      expect(() => regex({subclass: true})({raw: [input]})).toThrowMatching(err => err.message.includes(`/${output}/`));
+    });
+  });
+
   describe('options', () => {
     it('should allow setting flags via an option', () => {
       expect(regex({flags: ''})``.global).toBeFalse();
