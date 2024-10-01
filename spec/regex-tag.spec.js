@@ -52,7 +52,7 @@ describe('regex', () => {
   });
 
   it('should coerce non-string values in raw array', () => {
-    expect('1aNaN').toMatch(regex({raw: ['^', 1, NaN, '$']}, '', 'a', ''));
+    expect('99aNaN').toMatch(regex({raw: ['^', 99, NaN, '$']}, '', 'a', ''));
   });
 
   it('should not allow unexpected arguments', () => {

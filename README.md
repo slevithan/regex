@@ -666,7 +666,7 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
   <tr>
     <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
-    <td><code>regex`\u{${'A0'}}`</code></td>
+    <td><code>regex`\u{${'A0'}}`</code> <br> <code>regex`\u{${0xA0}}`</code></td>
   </tr>
   <tr>
     <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
@@ -674,7 +674,7 @@ The above descriptions of interpolation might feel complex. But there are three 
   </tr>
 </table>
 
-- *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. Example: In default context, `${x}*` matches any number of the value specified by `x`, and not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
+- *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. For example, in default context, `${foo}*` matches any number of `foo`; not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
 - Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at these positions.
 

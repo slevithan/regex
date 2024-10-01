@@ -1,7 +1,13 @@
 describe('interpolation: escaped strings', () => {
   describe('in default context', () => {
-    it('should coerce non-string/regex values', () => {
-      expect('9').toMatch(regex`${9}`);
+    it('should coerce non-string/number/regex/pattern values', () => {
+      expect('undefined').toMatch(regex`^${undefined}$`);
+      expect('null').toMatch(regex`^${null}$`);
+      expect('true').toMatch(regex`^${true}$`);
+      expect('false').toMatch(regex`^${false}$`);
+      expect('').toMatch(regex`^${[]}$`);
+      expect('^').toMatch(regex`^${['^']}$`);
+      expect('[object Object]').toMatch(regex`^${{}}$`);
     });
 
     it('should match literal characters', () => {
@@ -35,8 +41,13 @@ describe('interpolation: escaped strings', () => {
   });
 
   describe('in character class context', () => {
-    it('should coerce non-string/regex values', () => {
-      expect('5').toMatch(regex`[1-${9}]`);
+    it('should coerce non-string/number/regex/pattern values', () => {
+      expect('u').toMatch(regex`^[${undefined}]$`);
+      if (flagVSupported) {
+        expect('a').toMatch(regex`^[[a-z]--${null}]$`);
+        expect('n').not.toMatch(regex`^[[a-z]--${null}]$`);
+      }
+      expect('^').toMatch(regex`^[${['^']}a]$`);
     });
 
     it('should allow at range boundary for escaped strings that do not contain union', () => {

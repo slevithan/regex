@@ -34,7 +34,7 @@ export function pattern(first, ...substitutions) {
       first.raw.flatMap((raw, i) => i < first.raw.length - 1 ? [raw, substitutions[i]] : raw).join('')
     );
   } else if (!substitutions.length) {
-    return new Pattern(first ?? '');
+    return new Pattern(first === undefined ? '' : first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...substitutions])}`);
 }

@@ -1,6 +1,8 @@
 ## Unreleased changes
 
--
+### 🐞 Fixes
+
+- Convert numbers interpolated in enclosed `\u{…}` to hexadecimal. Ex: `` regex`\u{${160}}` `` returns `/\u{A0}/`. (#24, @graphemecluster)
 
 ## Released changes
 

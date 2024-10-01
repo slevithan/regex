@@ -1,7 +1,7 @@
 describe('interpolation: patterns', () => {
   describe('in default context', () => {
     it('should coerce non-string values', () => {
-      expect('9').toMatch(regex`${pattern(9)}`);
+      expect('99').toMatch(regex`^${pattern(99)}$`);
     });
 
     it('should be quantified as an atomic unit', () => {
@@ -64,11 +64,11 @@ describe('interpolation: patterns', () => {
     });
 
     it('should not change the meaning of the preceding token', () => {
-      expect('\u{0}0').toMatch(regex`\0${pattern`0`}`);
+      expect('\u{0}0').toMatch(regex`^\0${pattern`0`}$`);
     });
 
     it('should not change the meaning of the following token', () => {
-      expect('\u{0}0').toMatch(regex`${pattern`\0`}0`);
+      expect('\u{0}0').toMatch(regex`^${pattern`\0`}0$`);
     });
 
     it('should not allow a leading quantifier', () => {
@@ -83,6 +83,7 @@ describe('interpolation: patterns', () => {
       quantifiers.forEach(q => {
         expect(() => regex`.${pattern(q)}`).toThrow();
         expect(() => regex`.${pattern(`${q}?`)}`).toThrow();
+        expect(() => regex`.${pattern(`${q}+`)}`).toThrow();
       });
     });
   });
@@ -91,7 +92,7 @@ describe('interpolation: patterns', () => {
     const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~'.split('');
 
     it('should coerce non-string values', () => {
-      expect('5').toMatch(regex`[1-${pattern(9)}]`);
+      expect('5').toMatch(regex`^[1-${pattern(9)}]$`);
     });
 
     it('should allow at range boundary for a lone double-punctuator character', () => {
@@ -227,11 +228,11 @@ describe('interpolation: patterns', () => {
     });
 
     it('should not change the meaning of the preceding token', () => {
-      expect('\u{0}0').toMatch(regex`[\0${pattern`0`}]{2}`);
+      expect('\u{0}0').toMatch(regex`^[\0${pattern`0`}]{2}$`);
     });
 
     it('should not change the meaning of the following token', () => {
-      expect('\u{0}0').toMatch(regex`[${pattern`\0`}0]{2}`);
+      expect('\u{0}0').toMatch(regex`^[${pattern`\0`}0]{2}$`);
     });
 
     it('should throw for a leading range hyphen', () => {

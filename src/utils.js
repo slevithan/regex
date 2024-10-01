@@ -5,7 +5,8 @@ export const RegexContext = {
   DEFAULT: 'R_DEFAULT',
   CHAR_CLASS: 'R_CHAR_CLASS',
   GROUP_NAME: 'R_GROUP_NAME',
-  ENCLOSED_TOKEN: 'R_ENCLOSED_TOKEN',
+  P_TOKEN: 'R_P_TOKEN',
+  U_TOKEN: 'R_U_TOKEN',
   INTERVAL_QUANTIFIER: 'R_INTERVAL_QUANTIFIER',
   INVALID_INCOMPLETE_TOKEN: 'R_INVALID_INCOMPLETE_TOKEN',
 };
@@ -13,10 +14,22 @@ export const RegexContext = {
 export const CharClassContext = {
   DEFAULT: 'CC_DEFAULT',
   RANGE: 'CC_RANGE',
-  ENCLOSED_TOKEN: 'CC_ENCLOSED_TOKEN',
+  P_TOKEN: 'CC_P_TOKEN',
   Q_TOKEN: 'CC_Q_TOKEN',
+  U_TOKEN: 'CC_U_TOKEN',
   INVALID_INCOMPLETE_TOKEN: 'CC_INVALID_INCOMPLETE_TOKEN',
 };
+
+export const regexEnclosedTokenContexts = new Set([
+  RegexContext.P_TOKEN,
+  RegexContext.U_TOKEN,
+]);
+
+export const charClassEnclosedTokenContexts = new Set([
+  CharClassContext.P_TOKEN,
+  CharClassContext.Q_TOKEN,
+  CharClassContext.U_TOKEN,
+]);
 
 export const patternModsSupported = (() => {
   try {
@@ -122,14 +135,13 @@ export function getBreakoutChar(expression, regexContext, charClassContext) {
     return getUnbalancedChar(escapesRemoved, '(', ')');
   } else if (
     regexContext === RegexContext.CHAR_CLASS &&
-    !(charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)
+    !charClassEnclosedTokenContexts.has(charClassContext)
   ) {
     return getUnbalancedChar(escapesRemoved, '[', ']');
   } else if (
-    regexContext === RegexContext.ENCLOSED_TOKEN ||
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
-    charClassContext === CharClassContext.ENCLOSED_TOKEN ||
-    charClassContext === CharClassContext.Q_TOKEN
+    regexEnclosedTokenContexts.has(regexContext) ||
+    charClassEnclosedTokenContexts.has(charClassContext)
   ) {
     if (escapesRemoved.includes('}')) {
       return '}';
@@ -144,7 +156,7 @@ export function getBreakoutChar(expression, regexContext, charClassContext) {
 
 const contextToken = new RegExp(String.raw`
 (?<groupN>\(\?<(?![=!])|\\[gk]<)
-| (?<enclosedT>\\[pPu]\{)
+| (?<enclosedPU>\\[pPu]\{)
 | (?<qT>\\q\{)
 | (?<intervalQ>\{)
 | (?<incompleteT>\\(?: $
@@ -181,7 +193,7 @@ export function getEndContextForIncompleteExpression(incompleteExpression, {
   contextToken.lastIndex = lastPos;
   let match;
   while (match = contextToken.exec(incompleteExpression)) {
-    const {0: m, groups: {groupN, enclosedT, qT, intervalQ, incompleteT}} = match;
+    const {0: m, groups: {groupN, enclosedPU, qT, intervalQ, incompleteT}} = match;
     if (m === '[') {
       charClassDepth++;
       regexContext = RegexContext.CHAR_CLASS;
@@ -199,12 +211,12 @@ export function getEndContextForIncompleteExpression(incompleteExpression, {
         charClassContext = CharClassContext.INVALID_INCOMPLETE_TOKEN;
       } else if (m === '-') {
         charClassContext = CharClassContext.RANGE;
-      } else if (enclosedT) {
-        charClassContext = CharClassContext.ENCLOSED_TOKEN;
+      } else if (enclosedPU) {
+        charClassContext = m[1] === 'u' ? CharClassContext.U_TOKEN : CharClassContext.P_TOKEN;
       } else if (qT) {
         charClassContext = CharClassContext.Q_TOKEN;
       } else if (
-        (m === '}' && (charClassContext === CharClassContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.Q_TOKEN)) ||
+        (m === '}' && charClassEnclosedTokenContexts.has(charClassContext)) ||
         // Don't continue in these contexts since we've advanced another token
         charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN ||
         charClassContext === CharClassContext.RANGE
@@ -216,13 +228,13 @@ export function getEndContextForIncompleteExpression(incompleteExpression, {
         regexContext = RegexContext.INVALID_INCOMPLETE_TOKEN;
       } else if (groupN) {
         regexContext = RegexContext.GROUP_NAME;
-      } else if (enclosedT) {
-        regexContext = RegexContext.ENCLOSED_TOKEN;
+      } else if (enclosedPU) {
+        regexContext = m[1] === 'u' ? RegexContext.U_TOKEN : RegexContext.P_TOKEN;
       } else if (intervalQ) {
         regexContext = RegexContext.INTERVAL_QUANTIFIER;
       } else if (
         (m === '>' && regexContext === RegexContext.GROUP_NAME) ||
-        (m === '}' && (regexContext === RegexContext.ENCLOSED_TOKEN || regexContext === RegexContext.INTERVAL_QUANTIFIER)) ||
+        (m === '}' && (regexContext === RegexContext.INTERVAL_QUANTIFIER || regexEnclosedTokenContexts.has(regexContext))) ||
         // Don't continue in this context since we've advanced another token
         regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN
        ) {

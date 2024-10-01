@@ -12,9 +12,15 @@ describe('rewrite', () => {
 
   it('should coerce first argument to string', () => {
     expect(rewrite(null).expression).toBe('null');
-    expect(rewrite(false).expression).toBe('false');
-    expect(rewrite(true).expression).toBe('true');
     expect(rewrite(0).expression).toBe('0');
+    expect(rewrite(99).expression).toBe('99');
+    expect(rewrite(NaN).expression).toBe('NaN');
+    expect(rewrite(true).expression).toBe('true');
+    expect(rewrite(false).expression).toBe('false');
+    expect(rewrite(/\./).expression).toBe('/\\./');
+    expect(rewrite([]).expression).toBe('');
+    expect(rewrite(['^']).expression).toBe('^');
+    expect(rewrite({}, {disable: {x: true}}).expression).toBe('[object Object]');
   });
 
   it('should accept a string without options', () => {

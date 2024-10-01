@@ -1,5 +1,5 @@
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, containsCharClassUnion, countCaptures, emulationGroupMarker, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, charClassEnclosedTokenContexts, containsCharClassUnion, countCaptures, emulationGroupMarker, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, regexEnclosedTokenContexts, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Pattern, pattern} from './pattern.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
@@ -264,10 +264,9 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
   if (
-    typeof value === "number" &&
-    (regexContext === RegexContext.ENCLOSED_TOKEN || charClassContext === CharClassContext.ENCLOSED_TOKEN)
+    typeof value === 'number' &&
+    (regexContext === RegexContext.U_TOKEN || charClassContext === CharClassContext.U_TOKEN)
   ) {
-    // No need to care about the token type since `\p{number}` and `\P{number}` would result in an error anyway
     return value.toString(16);
   }
   const isPattern = value instanceof Pattern;
@@ -288,11 +287,10 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
   }
 
   if (
-    regexContext === RegexContext.ENCLOSED_TOKEN ||
     regexContext === RegexContext.INTERVAL_QUANTIFIER ||
     regexContext === RegexContext.GROUP_NAME ||
-    charClassContext === CharClassContext.ENCLOSED_TOKEN ||
-    charClassContext === CharClassContext.Q_TOKEN
+    regexEnclosedTokenContexts.has(regexContext) ||
+    charClassEnclosedTokenContexts.has(charClassContext)
   ) {
     return isPattern ? String(value) : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
