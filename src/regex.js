@@ -416,7 +416,7 @@ function unmarkEmulationGroups(expression) {
 }
 
 export {
-  regex,
   pattern,
+  regex,
   rewrite,
 };

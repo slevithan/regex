@@ -7,9 +7,10 @@
   </a>
   <br><br>
 
-  [![build status](https://github.com/slevithan/regex/workflows/CI/badge.svg)](https://github.com/slevithan/regex/actions)
-  [![npm](https://img.shields.io/npm/v/regex)](https://www.npmjs.com/package/regex)
-  [![bundle size](https://deno.bundlejs.com/badge?q=regex&treeshake=[*])](https://bundlejs.com/?q=regex&treeshake=[*])
+  [![build status][build-src]][build-href]
+  [![npm version][npm-version-src]][npm-version-href]
+  [![npm downloads][npm-downloads-src]][npm-downloads-href]
+  [![bundle][bundle-src]][bundle-href]
 </div>
 
 `regex` is a template tag that extends JavaScript regular expressions with key features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in TypeScript declarations, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
@@ -834,3 +835,14 @@ The alternative syntax isn't used because it has several disadvantages:
 If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) future development.
 
 © 2024–present. MIT License.
+
+<!-- Badges -->
+
+[build-src]: https://github.com/slevithan/regex/workflows/CI/badge.svg
+[build-href]: https://github.com/slevithan/regex/actions
+[npm-version-src]: https://img.shields.io/npm/v/regex?color=78C372
+[npm-version-href]: https://npmjs.com/package/regex
+[npm-downloads-src]: https://img.shields.io/npm/dm/regex?color=78C372
+[npm-downloads-href]: https://npmjs.com/package/regex
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/regex?color=78C372&label=minzip
+[bundle-href]: https://bundlephobia.com/result?p=regex
