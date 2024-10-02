@@ -43,6 +43,7 @@ With the `regex` library, JavaScript steps up as one of the best regex flavors a
   - [Interpolation principles](#interpolation-principles)
   - [Interpolation contexts](#interpolation-contexts)
 - [Options](#-options)
+  - [Returning a string](#returning-a-string)
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
 - [FAQ](#-faq)

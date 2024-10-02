@@ -1,6 +1,6 @@
 {
   "name": "regex",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "description": "Regex template tag with extended syntax, context-aware interpolation, and always-on best practices",
   "author": "Steven Levithan",
   "license": "MIT",
