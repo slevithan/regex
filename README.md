@@ -7,7 +7,6 @@
   </a>
   <br><br>
 
-  [![build status][build-src]][build-href]
   [![npm version][npm-version-src]][npm-version-href]
   [![npm downloads][npm-downloads-src]][npm-downloads-href]
   [![bundle][bundle-src]][bundle-href]
@@ -838,8 +837,6 @@ If you want to support this project, I'd love your help by contributing improvem
 
 <!-- Badges -->
 
-[build-src]: https://github.com/slevithan/regex/workflows/CI/badge.svg
-[build-href]: https://github.com/slevithan/regex/actions
 [npm-version-src]: https://img.shields.io/npm/v/regex?color=78C372
 [npm-version-href]: https://npmjs.com/package/regex
 [npm-downloads-src]: https://img.shields.io/npm/dm/regex?color=78C372
