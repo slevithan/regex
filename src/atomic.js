@@ -9,7 +9,7 @@ const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncaptur
 /**
 Apply transformations for atomic groups: `(?>…)`.
 @param {string} expression
-@param {PluginData} data
+@param {PluginData} [data]
 @returns {string}
 */
 export function atomicPlugin(expression, data) {
@@ -17,7 +17,7 @@ export function atomicPlugin(expression, data) {
     return expression;
   }
   const aGDelim = '(?>';
-  const emulatedAGDelim = `(?:(?=(${data.useEmulationGroups ? emulationGroupMarker : ''}`;
+  const emulatedAGDelim = `(?:(?=(${data?.useEmulationGroups ? emulationGroupMarker : ''}`;
   const captureNumMap = [0];
   let numCapturesBeforeAG = 0;
   let numAGs = 0;

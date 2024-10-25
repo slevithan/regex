@@ -6,7 +6,7 @@ import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim
 */
 /**
 @param {string} expression
-@param {PluginData} data
+@param {PluginData} [data]
 @returns {string}
 */
 export function subroutinesPlugin(expression, data) {
@@ -14,7 +14,7 @@ export function subroutinesPlugin(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, data.useEmulationGroups);
+  const transformed = processSubroutines(expression, namedGroups, !!data?.useEmulationGroups);
   return processDefinitionGroup(transformed, namedGroups);
 }
 

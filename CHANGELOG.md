@@ -1,6 +1,8 @@
 ## Unreleased changes
 
--
+### 🚀 Features
+
+- New exports `atomic` and `possessive` allow using just these plugins in other libraries.
 
 ## Released changes
 

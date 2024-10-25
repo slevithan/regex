@@ -416,6 +416,8 @@ function unmarkEmulationGroups(expression) {
 }
 
 export {
+  atomicPlugin as atomic,
+  possessivePlugin as possessive,
   pattern,
   regex,
   rewrite,
