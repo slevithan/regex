@@ -1,11 +1,11 @@
-import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, adjustNumberedBackrefs, capturingDelim, containsCharClassUnion, countCaptures, emulationGroupMarker, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
-import {Pattern, pattern} from './pattern.js';
-import {flagNPreprocessor} from './flag-n.js';
-import {flagXPreprocessor, cleanPlugin} from './flag-x.js';
-import {atomicPlugin, possessivePlugin} from './atomic.js';
-import {subroutinesPlugin} from './subroutines.js';
+import {atomic, possessive} from './atomic.js';
 import {backcompatPlugin} from './backcompat.js';
+import {flagNPreprocessor} from './flag-n.js';
+import {clean, flagXPreprocessor} from './flag-x.js';
+import {Pattern, pattern} from './pattern.js';
+import {subroutines} from './subroutines.js';
+import {adjustNumberedBackrefs, capturingDelim, CharClassContext, containsCharClassUnion, countCaptures, emulationGroupMarker, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
@@ -60,7 +60,7 @@ const regex = (first, ...substitutions) => {
     return regexFromTemplate.bind(null, first);
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...substitutions])}`);
-}
+};
 
 /**
 @template T
@@ -117,7 +117,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     err.message = `${stripped}: /${expression}/${opts.flags}`;
     throw err;
   }
-}
+};
 
 /**
 Returns the processed expression and flags as strings.
@@ -205,9 +205,9 @@ function handlePreprocessors(template, substitutions, options) {
 function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
-    ...(disable.subroutines ? [] : [subroutinesPlugin]),
-    ...(disable.atomic      ? [] : [possessivePlugin, atomicPlugin]),
-    ...(disable.x           ? [] : [cleanPlugin]),
+    ...(disable.subroutines ? [] : [subroutines]),
+    ...(disable.atomic      ? [] : [possessive, atomic]),
+    ...(disable.x           ? [] : [clean]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
   ].forEach(p => expression = p(expression, {flags, useEmulationGroups: subclass}));
@@ -416,8 +416,6 @@ function unmarkEmulationGroups(expression) {
 }
 
 export {
-  atomicPlugin as atomic,
-  possessivePlugin as possessive,
   pattern,
   regex,
   rewrite,

@@ -10,11 +10,14 @@
       "types": "./types/regex.d.ts",
       "import": "./dist/regex.mjs",
       "require": "./dist/regex.cjs"
+    },
+    "./atomic.js": {
+      "types": "./types/atomic.d.ts",
+      "import": "./src/atomic.js"
     }
   },
   "browser": "./dist/regex.min.js",
   "types": "./types/regex.d.ts",
-  "sideEffects": false,
   "scripts": {
     "bundle:global": "esbuild src/regex.js --global-name=Regex --bundle --minify --sourcemap --outfile=dist/regex.min.js",
     "bundle:esm": "esbuild src/regex.js --format=esm --bundle --sourcemap --outfile=dist/regex.mjs",

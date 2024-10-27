@@ -1,5 +1,5 @@
-import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 import {Pattern, pattern} from './pattern.js';
+import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 
 export const RegexContext = {
   DEFAULT: 'DEFAULT',
@@ -49,15 +49,96 @@ export const flagVSupported = (() => {
   return true;
 })();
 
-export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 // This marker was chosen because it's impossible to match (so its extemely unlikely to be used in
-// user-provided regex); it's not at risk of being optimized away, transformed, or flagged as an
+// a user-provided regex); it's not at risk of being optimized away, transformed, or flagged as an
 // error by a plugin; and it ends with an unquantifiable token
 export const emulationGroupMarker = '$E$';
-
+export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
 export const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;
 export const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
+
+/**
+@param {string} expression
+@param {number} precedingCaptures
+@returns {string}
+*/
+export function adjustNumberedBackrefs(expression, precedingCaptures) {
+  return replaceUnescaped(
+    expression,
+    String.raw`\\(?<num>[1-9]\d*)`,
+    ({groups: {num}}) => `\\${+num + precedingCaptures}`,
+    Context.DEFAULT
+  );
+}
+
+// Properties of strings as of ES2024
+const stringPropertyNames = [
+  'Basic_Emoji',
+  'Emoji_Keycap_Sequence',
+  'RGI_Emoji_Modifier_Sequence',
+  'RGI_Emoji_Flag_Sequence',
+  'RGI_Emoji_Tag_Sequence',
+  'RGI_Emoji_ZWJ_Sequence',
+  'RGI_Emoji',
+].join('|');
+const charClassUnionToken = new RegExp(String.raw`
+\\(?: c[A-Za-z]
+  | p\{(?<pStrProp>${stringPropertyNames})\}
+  | [pP]\{[^\}]+\}
+  | (?<qStrProp>q)
+  | u(?:[A-Fa-f\d]{4}|\{[A-Fa-f\d]+\})
+  | x[A-Fa-f\d]{2}
+  | .
+)
+| --
+| &&
+| .
+`.replace(/\s+/g, ''), 'gsu');
+
+// Assumes flag v and doesn't worry about syntax errors that are caught by it
+export function containsCharClassUnion(charClassPattern) {
+  // Return `true` if it contains:
+  // - `\p` (lowercase only) and the name is a property of strings (case sensitive).
+  // - `\q`.
+  // - Two single-char-matching tokens in sequence.
+  // - One single-char-matching token followed immediately by unescaped `[`.
+  // - One single-char-matching token preceded immediately by unescaped `]`.
+  // Else, `false`.
+  // Ranges with `-` create a single token.
+  // Subtraction and intersection with `--` and `&&` create a single token.
+  // Supports any number of nested classes
+  let hasFirst = false;
+  let lastM;
+  for (const {0: m, groups} of charClassPattern.matchAll(charClassUnionToken)) {
+    if (groups.pStrProp || groups.qStrProp) {
+      return true;
+    }
+    if (m === '[' && hasFirst) {
+      return true;
+    }
+    if (['-', '--', '&&'].includes(m)) {
+      hasFirst = false;
+    } else if (m !== '[' && m !== ']') {
+      if (hasFirst || lastM === ']') {
+        return true;
+      }
+      hasFirst = true;
+    }
+    lastM = m;
+  }
+  return false;
+}
+
+/**
+@param {string} expression
+@returns {number}
+*/
+export function countCaptures(expression) {
+  let num = 0;
+  forEachUnescaped(expression, capturingDelim, () => num++, Context.DEFAULT);
+  return num;
+}
 
 /**
 Escape special characters for the given context, assuming flag v.
@@ -72,55 +153,6 @@ export function escapeV(str, context) {
     return str.replace(new RegExp(String.raw`[()\[\]{}|\\/\-${doublePunctuatorChars}]`, 'g'), '\\$&');
   }
   return str.replace(/[()\[\]{}|\\^$*+?.]/g, '\\$&');
-}
-
-// Sandbox without escaping by repeating the character and escaping only the first one. The second
-// one is so that, if followed by the same symbol, the resulting double punctuator will still throw
-// as expected. Details:
-// - Only need to check the first position because, if it's part of an implicit union,
-//   interpolation handling will wrap it in nested `[…]`.
-// - Can't just wrap in nested `[…]` here, since the value might be used in a range.
-// - Can't add a second unescaped symbol if a lone symbol is the entire string because it might be
-//   followed by the same unescaped symbol outside an interpolation, and since it won't be wrapped,
-//   the second symbol wouldn't be sandboxed from the one following it.
-export function sandboxLoneDoublePunctuatorChar(str) {
-  return str.replace(new RegExp(`^([${doublePunctuatorChars}])(?!\\1)`), (m, _, pos) => {
-    return `\\${m}${pos + 1 === str.length ? '' : m}`;
-  });
-}
-
-// Sandbox `^` if relevant, done so it can't change the meaning of the surrounding character class
-// if we happen to be at the first position. See `sandboxLoneDoublePunctuatorChar` for more details
-export function sandboxLoneCharClassCaret(str) {
-  return str.replace(/^\^/, '\\^^');
-}
-
-/**
-Converts `\0` tokens to `\x00` in the given context.
-@param {string} str
-@param {'DEFAULT' | 'CHAR_CLASS'} [context] `Context` option from lib `regex-utilities`
-@returns {string}
-*/
-export function sandboxUnsafeNulls(str, context) {
-  // regex`[\0${0}]` and regex`[${pattern`\0`}0]` can't be guarded against via nested `[…]`
-  // sandboxing in character classes if the interpolated value doesn't contain union (since it
-  // might be placed on a range boundary). So escape `\0` in character classes as `\x00`
-  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\x00', context);
-}
-
-// No special handling for escaped versions of the characters
-function getUnbalancedChar(expression, leftChar, rightChar) {
-  let numOpen = 0;
-  for (const [m] of expression.matchAll(new RegExp(`[${escapeV(leftChar + rightChar, Context.CHAR_CLASS)}]`, 'g'))) {
-    numOpen += m === leftChar ? 1 : -1;
-    if (numOpen < 0) {
-      return rightChar;
-    }
-  }
-  if (numOpen > 0) {
-    return leftChar;
-  }
-  return '';
 }
 
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
@@ -250,98 +282,19 @@ export function getEndContextForIncompleteExpression(incompleteExpression, {
   };
 }
 
-/**
-@param {string} expression
-@returns {number}
-*/
-export function countCaptures(expression) {
-  let num = 0;
-  forEachUnescaped(expression, capturingDelim, () => num++, Context.DEFAULT);
-  return num;
-}
-
-/**
-@param {string} expression
-@param {number} precedingCaptures
-@returns {string}
-*/
-export function adjustNumberedBackrefs(expression, precedingCaptures) {
-  return replaceUnescaped(
-    expression,
-    String.raw`\\(?<num>[1-9]\d*)`,
-    ({groups: {num}}) => `\\${+num + precedingCaptures}`,
-    Context.DEFAULT
-  );
-}
-
-/**
-@param {string} str
-@param {number} pos
-@param {string} oldValue
-@param {string} newValue
-@returns {string}
-*/
-export function spliceStr(str, pos, oldValue, newValue) {
-  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
-}
-
-// Properties of strings as of ES2024
-const stringPropertyNames = [
-  'Basic_Emoji',
-  'Emoji_Keycap_Sequence',
-  'RGI_Emoji_Modifier_Sequence',
-  'RGI_Emoji_Flag_Sequence',
-  'RGI_Emoji_Tag_Sequence',
-  'RGI_Emoji_ZWJ_Sequence',
-  'RGI_Emoji',
-].join('|');
-
-const charClassUnionToken = new RegExp(String.raw`
-\\(?: c[A-Za-z]
-  | p\{(?<pStrProp>${stringPropertyNames})\}
-  | [pP]\{[^\}]+\}
-  | (?<qStrProp>q)
-  | u(?:[A-Fa-f\d]{4}|\{[A-Fa-f\d]+\})
-  | x[A-Fa-f\d]{2}
-  | .
-)
-| --
-| &&
-| .
-`.replace(/\s+/g, ''), 'gsu');
-
-// Assumes flag v and doesn't worry about syntax errors that are caught by it
-export function containsCharClassUnion(charClassPattern) {
-  // Return `true` if it contains:
-  // - `\p` (lowercase only) and the name is a property of strings (case sensitive).
-  // - `\q`.
-  // - Two single-char-matching tokens in sequence.
-  // - One single-char-matching token followed immediately by unescaped `[`.
-  // - One single-char-matching token preceded immediately by unescaped `]`.
-  // Else, `false`.
-  // Ranges with `-` create a single token.
-  // Subtraction and intersection with `--` and `&&` create a single token.
-  // Supports any number of nested classes
-  let hasFirst = false;
-  let lastM;
-  for (const {0: m, groups} of charClassPattern.matchAll(charClassUnionToken)) {
-    if (groups.pStrProp || groups.qStrProp) {
-      return true;
+// No special handling for escaped versions of the characters
+function getUnbalancedChar(expression, leftChar, rightChar) {
+  let numOpen = 0;
+  for (const [m] of expression.matchAll(new RegExp(`[${escapeV(leftChar + rightChar, Context.CHAR_CLASS)}]`, 'g'))) {
+    numOpen += m === leftChar ? 1 : -1;
+    if (numOpen < 0) {
+      return rightChar;
     }
-    if (m === '[' && hasFirst) {
-      return true;
-    }
-    if (['-', '--', '&&'].includes(m)) {
-      hasFirst = false;
-    } else if (m !== '[' && m !== ']') {
-      if (hasFirst || lastM === ']') {
-        return true;
-      }
-      hasFirst = true;
-    }
-    lastM = m;
   }
-  return false;
+  if (numOpen > 0) {
+    return leftChar;
+  }
+  return '';
 }
 
 /**
@@ -389,4 +342,49 @@ export function preprocess(template, substitutions, preprocessor, options) {
     template: newTemplate,
     substitutions: newSubstitutions,
   };
+}
+
+// Sandbox `^` if relevant, done so it can't change the meaning of the surrounding character class
+// if we happen to be at the first position. See `sandboxLoneDoublePunctuatorChar` for more details
+export function sandboxLoneCharClassCaret(str) {
+  return str.replace(/^\^/, '\\^^');
+}
+
+// Sandbox without escaping by repeating the character and escaping only the first one. The second
+// one is so that, if followed by the same symbol, the resulting double punctuator will still throw
+// as expected. Details:
+// - Only need to check the first position because, if it's part of an implicit union,
+//   interpolation handling will wrap it in nested `[…]`.
+// - Can't just wrap in nested `[…]` here, since the value might be used in a range.
+// - Can't add a second unescaped symbol if a lone symbol is the entire string because it might be
+//   followed by the same unescaped symbol outside an interpolation, and since it won't be wrapped,
+//   the second symbol wouldn't be sandboxed from the one following it.
+export function sandboxLoneDoublePunctuatorChar(str) {
+  return str.replace(new RegExp(`^([${doublePunctuatorChars}])(?!\\1)`), (m, _, pos) => {
+    return `\\${m}${pos + 1 === str.length ? '' : m}`;
+  });
+}
+
+/**
+Converts `\0` tokens to `\x00` in the given context.
+@param {string} str
+@param {'DEFAULT' | 'CHAR_CLASS'} [context] `Context` option from lib `regex-utilities`
+@returns {string}
+*/
+export function sandboxUnsafeNulls(str, context) {
+  // regex`[\0${0}]` and regex`[${pattern`\0`}0]` can't be guarded against via nested `[…]`
+  // sandboxing in character classes if the interpolated value doesn't contain union (since it
+  // might be placed on a range boundary). So escape `\0` in character classes as `\x00`
+  return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\x00', context);
+}
+
+/**
+@param {string} str
+@param {number} pos
+@param {string} oldValue
+@param {string} newValue
+@returns {string}
+*/
+export function spliceStr(str, pos, oldValue, newValue) {
+  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
 }

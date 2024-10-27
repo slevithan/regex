@@ -1,4 +1,4 @@
-import {RegexContext, getEndContextForIncompleteExpression, noncapturingDelim} from './utils.js';
+import {getEndContextForIncompleteExpression, noncapturingDelim, RegexContext} from './utils.js';
 
 const token = new RegExp(String.raw`
 ${noncapturingDelim}

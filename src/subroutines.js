@@ -1,5 +1,5 @@
-import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim, spliceStr} from './utils.js';
+import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
 @typedef {import('./regex.js').PluginData} PluginData
@@ -9,7 +9,7 @@ import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim
 @param {PluginData} [data]
 @returns {string}
 */
-export function subroutinesPlugin(expression, data) {
+export function subroutines(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result

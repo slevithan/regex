@@ -1,5 +1,5 @@
+import {CharClassContext, doublePunctuatorChars, emulationGroupMarker, getEndContextForIncompleteExpression, noncapturingDelim, RegexContext, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
-import {CharClassContext, RegexContext, doublePunctuatorChars, emulationGroupMarker, getEndContextForIncompleteExpression, noncapturingDelim, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
@@ -155,7 +155,7 @@ Remove `(?:)` token separators (most likely added by flag x) in cases where it's
 @param {string} expression
 @returns {string}
 */
-export function cleanPlugin(expression) {
+export function clean(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
   expression = replaceUnescaped(expression, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);

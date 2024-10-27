@@ -1,5 +1,5 @@
-import {Context, replaceUnescaped} from 'regex-utilities';
 import {emulationGroupMarker, noncapturingDelim, spliceStr} from './utils.js';
+import {Context, replaceUnescaped} from 'regex-utilities';
 
 const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
 
@@ -12,7 +12,7 @@ Apply transformations for atomic groups: `(?>…)`.
 @param {PluginData} [data]
 @returns {string}
 */
-export function atomicPlugin(expression, data) {
+export function atomic(expression, data) {
   if (!/\(\?>/.test(expression)) {
     return expression;
   }
@@ -118,7 +118,7 @@ Possessive quantifiers in Oniguruma and Onigmo are only: `?+`, `*+`, `++`.
 @param {string} expression
 @returns {string}
 */
-export function possessivePlugin(expression) {
+export function possessive(expression) {
   if (!(new RegExp(`${baseQuantifier}\\+`).test(expression))) {
     return expression;
   }
