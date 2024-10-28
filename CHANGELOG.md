@@ -2,7 +2,7 @@
 
 ### 🚀 Features
 
-- Added `./atomic.js` to exports, allowing direct use of `atomic` and `possessive` plugins in other libraries.
+- Added `./atomic` to exports, allowing direct use of the `atomic` and `possessive` plugins in other libraries.
 
 ## Released changes
 

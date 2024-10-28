@@ -11,7 +11,7 @@
       "import": "./dist/regex.mjs",
       "require": "./dist/regex.cjs"
     },
-    "./atomic.js": {
+    "./atomic": {
       "types": "./types/atomic.d.ts",
       "import": "./src/atomic.js"
     }
