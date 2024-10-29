@@ -4,7 +4,7 @@ describe('subroutines', () => {
     expect('babab').toMatch(regex`^b(?<n>a)b\g<n>b$`);
   });
 
-  it('should be quantified as an atomic unit', () => {
+  it('should be quantified as a complete unit', () => {
     expect('ababab').toMatch(regex`^(?<n>ab)\g<n>+$`);
     expect('ababb').not.toMatch(regex`^(?<n>ab)\g<n>+$`);
   });
@@ -177,7 +177,7 @@ describe('subroutines', () => {
   });
 });
 
-describe('definition groups', () => {
+describe('subroutine definition groups', () => {
   it('should not have its groups appear on the groups object of matches', () => {
     expect(regex`\g<a>(?(DEFINE)(?<a>.))`.exec('a').groups).toBeUndefined();
     expect('b' in regex`(?<a>\g<b>)(?(DEFINE)(?<b>.))`.exec('a').groups).toBeFalse();

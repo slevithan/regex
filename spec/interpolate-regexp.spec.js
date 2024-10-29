@@ -1,6 +1,6 @@
 describe('interpolation: regexes', () => {
   describe('in default context', () => {
-    it('should be quantified as an atomic unit', () => {
+    it('should be quantified as a complete unit', () => {
       expect('_abc_abc').toMatch(regex`^${/.abc/}+$`);
     });
 

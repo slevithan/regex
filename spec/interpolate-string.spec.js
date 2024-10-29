@@ -15,7 +15,7 @@ describe('interpolation: escaped strings', () => {
       expect(str).toMatch(regex`${str}`);
     });
 
-    it('should be quantified as an atomic unit', () => {
+    it('should be quantified as a complete unit', () => {
       const str = 'abc';
       expect(str.repeat(2)).toMatch(regex`^${str}+$`);
       expect(str.repeat(2)).toMatch(regex`${str}{2}`);

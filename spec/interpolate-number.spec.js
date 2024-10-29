@@ -5,7 +5,7 @@ describe('interpolation: numbers', () => {
       expect('NaN').toMatch(regex`^${NaN}$`);
     });
 
-    it('should be quantified as an atomic unit', () => {
+    it('should be quantified as a complete unit', () => {
       expect('123123').toMatch(regex`^${123}+$`);
       expect('1233').not.toMatch(regex`^${123}+$`);
     });
