@@ -8,14 +8,11 @@ ${noncapturingDelim}
 `.replace(/\s+/g, ''), 'gsu');
 
 /**
-@typedef {import('./utils.js').Preprocessor} Preprocessor
-*/
-/**
 Apply transformations for flag n (named capture only).
 
 Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
 regexes or strings.
-@type {Preprocessor}
+@type {import('./utils.js').Preprocessor}
 */
 export function flagNPreprocessor(value, runningContext) {
   value = String(value);

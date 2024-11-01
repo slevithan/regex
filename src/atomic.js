@@ -4,12 +4,9 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
 
 /**
-@typedef {import('./regex.js').PluginData} PluginData
-*/
-/**
 Apply transformations for atomic groups: `(?>…)`.
 @param {string} expression
-@param {PluginData} [data]
+@param {import('./regex.js').PluginData} [data]
 @returns {string}
 */
 export function atomic(expression, data) {

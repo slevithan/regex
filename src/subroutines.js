@@ -2,11 +2,8 @@ import {capturingDelim, countCaptures, emulationGroupMarker, namedCapturingDelim
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
-@typedef {import('./regex.js').PluginData} PluginData
-*/
-/**
 @param {string} expression
-@param {PluginData} [data]
+@param {import('./regex.js').PluginData} [data]
 @returns {string}
 */
 export function subroutines(expression, data) {
