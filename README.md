@@ -112,15 +112,15 @@ npm install regex
 ```
 
 ```js
-import {regex, pattern} from 'regex';
+import {regex} from 'regex';
 ```
 
 In browsers:
 
 ```html
 <script type="module">
-  import {regex, pattern} from 'https://esm.run/regex';
-  // …
+  import {regex} from 'https://esm.run/regex';
+  const re = regex`…`;
 </script>
 ```
 
@@ -130,7 +130,8 @@ In browsers:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
 <script>
-  const {regex, pattern} = Regex;
+  const {regex} = Regex;
+  const re = regex`…`;
 </script>
 ```
 </details>
@@ -533,7 +534,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
 
-For all of these cases, you can interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
+For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 
 Apart from edge cases, `pattern` just embeds the provided string or other value directly. But because it handles the edge cases, patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
 
