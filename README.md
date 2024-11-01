@@ -644,32 +644,32 @@ The above descriptions of interpolation might feel complex. But there are three 
     <th>Pattern</th>
     <th>RegExp</th>
   </tr>
-  <tr>
-    <td>Default<br><br><br></td>
-    <td><code>regex`${'^.+'}`</code><br><br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped <br><br></td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br><br></td>
+  <tr valign="top">
+    <td>Default</td>
+    <td><code>regex`${'^.+'}`</code></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized</td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Backrefs adjusted <br> •&nbsp;Flags localized</td>
   </tr>
-  <tr>
+  <tr valign="top">
     <td>Character class: <code>[…]</code>, <code>[^…]</code>, <code>[[…]]</code>, etc.</td>
-    <td><code>regex`[${'a-z'}]`</code><br><br></td>
+    <td><code>regex`[${'a-z'}]`</code></td>
     <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br> •&nbsp;Escaped</td>
-    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized <br><br></td>
-    <td><i>Error</i> <br><br><br></td>
+    <td>•&nbsp;Sandboxed <br> •&nbsp;Atomized</td>
+    <td><i>Error</i></td>
   </tr>
-  <tr>
+  <tr valign="top">
     <td>Interval quantifier: <code>{…}</code></td>
     <td><code>regex`.{1,${5}}`</code></td>
-    <td rowspan="3">•&nbsp;Sandboxed <br> •&nbsp;Escaped <br><br><br></td>
-    <td rowspan="3">•&nbsp;Sandboxed <br><br><br><br></td>
-    <td rowspan="3"><i>Error</i> <br><br><br><br></td>
+    <td rowspan="3">•&nbsp;Sandboxed <br> •&nbsp;Escaped</td>
+    <td rowspan="3">•&nbsp;Sandboxed</td>
+    <td rowspan="3"><i>Error</i></td>
   </tr>
-  <tr>
+  <tr valign="top">
     <td>Enclosed token: <code>\p{…}</code>, <code>\P{…}</code>, <code>\u{…}</code>, <code>[\q{…}]</code></td>
     <td><code>regex`\u{${'A0'}}`</code></td>
   </tr>
-  <tr>
+  <tr valign="top">
     <td>Group name: <code>(?<…>)</code>, <code>\k<…></code>, <code>\g<…></code></td>
     <td><code>regex`…\k<${'a'}>`</code></td>
   </tr>
