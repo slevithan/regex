@@ -213,7 +213,7 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 ### Possessive quantifiers
 
-Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
+Possessive quantifiers are created by adding `+` to any quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
 > Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (which could be a token, character class, or group).
 
@@ -319,11 +319,11 @@ const record = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object, with the value `undefined` (which is the value for any capturing group that didn't participate in a match). See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to prevent such groups from appearing on the `groups` object.
+When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined` (which is the value for any capturing group that didn't participate in a match). See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to prevent such groups from appearing on the `groups` object.
 </details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including `\g<name>`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names that arguably make them more confusing and less useful.
 
 ### Subroutine definition groups
 
@@ -370,7 +370,7 @@ console.log(match.groups);
 
 ### Recursion
 
-The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth.
+The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth (2-100).
 
 ## 🚩 Flags
 
@@ -529,10 +529,10 @@ These and other issues (including the effects of current and potential future fl
 
 As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Some example use cases:
 
-- Composing a dynamic number of strings.
 - Adding a pattern inside a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
-- Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 - When you don't want the pattern to specify its own, local flags.
+- Composing a dynamic number of strings escaped via `regex` interpolation.
+- Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 
 For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 
@@ -843,5 +843,5 @@ If you want to support this project, I'd love your help by contributing improvem
 [npm-version-href]: https://npmjs.com/package/regex
 [npm-downloads-src]: https://img.shields.io/npm/dm/regex?color=78C372
 [npm-downloads-href]: https://npmjs.com/package/regex
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/regex?color=78C372&label=minzip
-[bundle-href]: https://bundlephobia.com/result?p=regex
+[bundle-src]: https://img.shields.io/bundlejs/size/regex?color=78C372&label=minzip
+[bundle-href]: https://bundlejs.com/?q=regex&treeshake=[*]
