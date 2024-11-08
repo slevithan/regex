@@ -16,7 +16,7 @@ Regex+ (aka `regex`, based on its package and tag name) is a template tag that e
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` and possessive quantifiers (e.g. `++`) that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
-With the `regex` library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
+With the Regex+ library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
 <details>
   <summary><b>Table of contents</b></summary>
@@ -160,7 +160,7 @@ Additionally, JavaScript regex syntax is hard to write and even harder to read a
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the `regex` library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The `regex` library, with its extended syntax and implicit flags, adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags from `regex` adds the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -541,7 +541,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 
 For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 
-Apart from edge cases, `pattern` just embeds the provided string or other value directly. But because it handles the edge cases, patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding pattern.
+Apart from edge cases, `pattern` just embeds the provided string or other value directly. But because it handles the edge cases, patterns can safely be interpolated anywhere in a regex without worrying about their meaning being changed by (or making unintended changes in meaning to) the surrounding expression.
 
 > As with all interpolation in `regex`, patterns are sandboxed and treated as complete units. This is relevant e.g. if a pattern is followed by a quantifier, if it contains top-level alternation, or if it's bordered by a character class range, subtraction, or intersection operator.
 
@@ -796,11 +796,11 @@ The following edge cases rely on modern JavaScript features:
 <details name="faq">
   <summary><b>How are you comparing regex flavors?</b></summary>
 
-The claim that JavaScript with the `regex` library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
+The claim that JavaScript with the Regex+ library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
 
-1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that's missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. The `regex` library adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
+1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that's missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. `regex` adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
 2. **Support for advanced features** that handle common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", set subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
-3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. The `regex` library not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
+3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. `regex` not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
 
 <details name="faq">
@@ -836,7 +836,7 @@ The alternative syntax isn't used because it has several disadvantages:
 
 ## 🏷️ About
 
-`regex` was created by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors). Inspiration included [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
+Regex+ was created by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors). Inspiration included [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
 If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) ongoing development.
 
