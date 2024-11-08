@@ -12,7 +12,7 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-`regex` is a template tag that extends JavaScript regular expressions with key features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in TypeScript declarations, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
+Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
 
 Highlights include support for free spacing and comments, atomic groups via `(?>…)` and possessive quantifiers (e.g. `++`) that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
@@ -72,8 +72,8 @@ import {regex, pattern} from 'regex';
 
 // Subroutines and subroutine definition group
 const record = regex`
-  ^ Admitted:\ (?<admitted> \g<date>) \n
-    Released:\ (?<released> \g<date>) $
+  ^ Admitted: \g<date> \n
+    Released: \g<date> $
 
   (?(DEFINE)
     (?<date>  \g<year>-\g<month>-\g<day>)
@@ -86,13 +86,13 @@ const record = regex`
 // Atomic group: Avoids ReDoS from the nested, overlapping quantifier
 const words = regex`^(?>\w+\s?)+$`;
 
-// Context-aware and safe interpolation
+// Context-aware interpolation
 const re = regex('m')`
   # Only the inner regex is case insensitive (flag i)
   # Also, the outer regex's flag m is not applied to it
   ${/^a.b$/i}
   |
-  # Strings are contextually escaped and repeated as complete units
+  # Strings are escaped and repeated as complete units
   ^ ${'a.b'}+ $
   |
   # This string is contextually sandboxed but not escaped
@@ -113,6 +113,11 @@ npm install regex
 
 ```js
 import {regex} from 'regex';
+
+// Works with all string/regexp methods since it returns a native JS regexp
+const str = 'abc';
+regex`.`.test(str);
+str.match(regex('g')`.`);
 ```
 
 In browsers:
@@ -120,7 +125,7 @@ In browsers:
 ```html
 <script type="module">
   import {regex} from 'https://esm.run/regex';
-  const re = regex`…`;
+  // …
 </script>
 ```
 
@@ -131,7 +136,7 @@ In browsers:
 <script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
 <script>
   const {regex} = Regex;
-  const re = regex`…`;
+  // …
 </script>
 ```
 </details>
@@ -323,7 +328,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 </details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names that arguably make them more confusing and less useful.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names that arguably make them less useful.
 
 ### Subroutine definition groups
 
