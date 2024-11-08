@@ -12,9 +12,9 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features from other leading regex libraries that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
+Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
 
-Highlights include support for free spacing and comments, atomic groups via `(?>…)` and possessive quantifiers (e.g. `++`) that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines via `\g<name>` and subroutine definition groups via `(?(DEFINE)…)` that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Highlights include support for insignificant whitespace, comments, atomic groups and possessive quantifiers that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines and subroutine definition groups that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 With the Regex+ library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
@@ -154,13 +154,13 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for `\p` and `\P` within negated `[^…]`, and adds support for new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, subroutine definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and easy to understand.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, subroutine definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and intuitive.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking. And it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking, and it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags from `regex` adds the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags provided by `regex` add key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
@@ -375,7 +375,7 @@ console.log(match.groups);
 
 ### Recursion
 
-The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth (2-100).
+The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth (2–100).
 
 ## 🚩 Flags
 
