@@ -22,8 +22,8 @@ With the Regex+ library, JavaScript steps up as one of the best regex flavors al
   <summary><b>Table of contents</b></summary>
 
 - [Features](#-features)
-- [Examples](#-examples)
 - [Install and use](#️-install-and-use)
+- [Examples](#-examples)
 - [Context](#-context)
 - [Extended regex syntax](#-extended-regex-syntax)
   - [Atomic groups](#atomic-groups)
@@ -65,6 +65,44 @@ With the Regex+ library, JavaScript steps up as one of the best regex flavors al
   - Interpolated strings have their special characters escaped.
   - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
 
+## 🕹️ Install and use
+
+```sh
+npm install regex
+```
+
+```js
+import {regex} from 'regex';
+
+// Works with all string/regexp methods since it returns a native regexp
+const str = 'abc';
+regex`\w`.test(str); // → true
+str.match(regex('g')`\w`); // → ['a', 'b', 'c']
+```
+
+<details>
+  <summary>In browsers</summary>
+
+ESM:
+
+```html
+<script type="module">
+  import {regex} from 'https://esm.run/regex';
+  // …
+</script>
+```
+
+Using a global name:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
+<script>
+  const {regex} = Regex;
+  // …
+</script>
+```
+</details>
+
 ## 🪧 Examples
 
 ```js
@@ -105,41 +143,7 @@ regex`^ (?<first>.) ${double} ${double} $`;
 // → /^(?<first>.)(.)\2(.)\3$/v
 ```
 
-## 🕹️ Install and use
-
-```sh
-npm install regex
-```
-
-```js
-import {regex} from 'regex';
-
-// Works with all string/regexp methods since it returns a native regexp
-const str = 'abc';
-regex`.`.test(str);
-str.match(regex('g')`.`);
-```
-
-In browsers:
-
-```html
-<script type="module">
-  import {regex} from 'https://esm.run/regex';
-  // …
-</script>
-```
-
-<details>
-  <summary>Using a global name (no import)</summary>
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/regex/dist/regex.min.js"></script>
-<script>
-  const {regex} = Regex;
-  // …
-</script>
-```
-</details>
+See also this example of using a subroutine definition group to [refactor an IP address regex for readability](https://x.com/slevithan/status/1828112006353953055).
 
 ## ❓ Context
 
@@ -359,8 +363,6 @@ console.log(match.groups);
   released: '2024-01-03'
 } */
 ```
-
-See also this example of using a subroutine definition group to [refactor an IP address regex for readability](https://x.com/slevithan/status/1828112006353953055).
 
 > [!NOTE]
 > Subroutine definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
