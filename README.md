@@ -114,7 +114,7 @@ npm install regex
 ```js
 import {regex} from 'regex';
 
-// Works with all string/regexp methods since it returns a native JS regexp
+// Works with all string/regexp methods since it returns a native regexp
 const str = 'abc';
 regex`.`.test(str);
 str.match(regex('g')`.`);
@@ -328,7 +328,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 </details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to backreferences and duplicate group names that arguably make them less useful.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that arguably make them less useful.
 
 ### Subroutine definition groups
 
@@ -352,13 +352,15 @@ const re = regex`
 `;
 
 const record = 'Admitted: 2024-01-01\nReleased: 2024-01-03';
-const match = re.exec(record); // Same as `record.match(re)`
+const match = record.match(re);
 console.log(match.groups);
 /* → {
   admitted: '2024-01-01',
   released: '2024-01-03'
 } */
 ```
+
+See also this example of using a subroutine definition group to [refactor an IP address regex for readability](https://x.com/slevithan/status/1828112006353953055).
 
 > [!NOTE]
 > Subroutine definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
