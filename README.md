@@ -160,15 +160,15 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 
 Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, subroutine definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and intuitive.
 
-`regex` adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking, and it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Regex+ adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking, and it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags provided by `regex` add key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags provided by Regex+ add the key remaining pieces needed to stand alongside or surpass other major flavors.
 
 ### Atomic groups
 
-Atomic groups are noncapturing groups with special behavior, and are written as `(?>…)`. After matching the contents of an atomic group, the regex engine automatically throws away all backtracking positions remembered by any tokens within the group. Atomic groups are most commonly used to improve performance, and are a much needed feature that `regex` brings to native JavaScript regular expressions.
+Atomic groups are noncapturing groups with special behavior, and are written as `(?>…)`. After matching the contents of an atomic group, the regex engine automatically throws away all backtracking positions remembered by any tokens within the group. Atomic groups are most commonly used to improve performance, and are a much needed feature that Regex+ brings to native JavaScript regular expressions.
 
 Example:
 
@@ -178,7 +178,7 @@ regex`^(?>\w+\s?)+$`
 
 This matches strings that contain word characters separated by spaces, with the final space being optional. Thanks to the atomic group, it instantly fails to find a match if given a long list of words that end with something not allowed, like `'A target string that takes a long time or can even hang your browser!'`.
 
-Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it has taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). `regex` and atomic groups to the rescue!
+Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the exponential backtracking triggered by the many ways to divide the work of the inner and outer `+` quantifiers, it will either take a *very* long time, hang your browser/server, or throw an internal error after a delay. This is called *[catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html)* or *[ReDoS](https://en.wikipedia.org/wiki/ReDoS)*, and it has taken down major services like [Cloudflare](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019) and [Stack Overflow](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016). Regex+ and atomic groups to the rescue!
 
 <details>
   <summary>👉 <b>Learn more with examples</b></summary>
@@ -332,7 +332,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 </details>
 
 > [!NOTE]
-> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by `regex`, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that arguably make them less useful.
+> Subroutines are based on the feature in PCRE and Perl. PCRE allows several syntax options including the `\g<name>` used by Regex+, whereas Perl uses `(?&name)`. Ruby also supports subroutines (and uses the `\g<name>` syntax), but it has behavior differences related to capturing and backreferences that arguably make its subroutines less useful.
 
 ### Subroutine definition groups
 
@@ -365,7 +365,7 @@ console.log(match.groups);
 ```
 
 > [!NOTE]
-> Subroutine definition groups are based on the feature in PCRE and Perl. However, `regex` supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
+> Subroutine definition groups are based on the feature in PCRE and Perl. However, Regex+ supports a stricter version since it limits their placement, quantity, and the top-level syntax that can be used within them.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -379,7 +379,7 @@ console.log(match.groups);
 
 ### Recursion
 
-The `regex` plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth (2–100).
+The official Regex+ plugin [regex-recursion](https://github.com/slevithan/regex-recursion) enables the syntax `(?R)` and `\g<name>` to match recursive/balanced patterns up to a specified max depth (2–100).
 
 ## 🚩 Flags
 
@@ -395,7 +395,7 @@ regex('gm')`^.+`
 
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `regex`, giving your regexes a modern baseline syntax and avoiding the need to continually opt-in to their superior modes.
 
-> For special situations such as when using `regex` within other tools, implicit flags can be disabled. See: [*Options*](#-options).
+> For special situations such as when using Regex+ within other tools, implicit flags can be disabled. See: [*Options*](#-options).
 
 ### Flag `v`
 
@@ -437,7 +437,7 @@ const re = regex`
 ```
 
 > [!NOTE]
-> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so `regex` follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
+> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so Regex+ follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -494,7 +494,7 @@ This is also true for other flags that can change how an inner regex is matched:
 
 ### Interpolating escaped strings
 
-`regex` escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
+The `regex` tag escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
 
 > As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
@@ -736,7 +736,7 @@ regex({
 
 Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass: true` resolves this, since the subclass knows about added "emulation groups" and automatically adjusts match results in all contexts.
 
-> This option isn't enabled by default because it would prevent `regex`'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
+> This option isn't enabled by default because it would prevent Regex+'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
 
 **`plugins`** — An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
 
@@ -750,7 +750,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 **`unicodeSetsPlugin`** — A plugin function that's used when flag <kbd>v</kbd> isn't supported natively, or when implicit flag <kbd>v</kbd> is disabled. The default value is a built-in function that provides basic backward compatibility by applying flag <kbd>v</kbd>'s escaping rules and throwing on use of <kbd>v</kbd>-only syntax (nested character classes, set subtraction/intersection, etc.).
 
 - Setting `unicodeSetsPlugin` to `null` prevents `regex` from applying flag <kbd>v</kbd>'s escaping rules. This can be useful in combination with option `disable: {v: true}` for tools that want to use `regex`'s extended syntax and/or flags but need to accept input with flag <kbd>u</kbd>'s escaping rules.
-- `regex` is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
+- Regex+ is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
 - This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
 
 **`disable`** — A set of options that can be individually disabled by setting their values to `true`.
