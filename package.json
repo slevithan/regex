@@ -33,8 +33,8 @@
     "build": "npm run bundle:global && npm run bundle:esm && npm run bundle:cjs && npm run types",
     "postbuild": "node postbuild.js",
     "pretest": "npm run build",
-    "test": "jasmine && tsc --project spec/types/tsconfig.test.json",
-    "prepare": "npm test"
+    "test": "jasmine && tsc --project spec/types/tsconfig.test.json && attw --pack . --entrypoints .",
+    "prepublishOnly": "npm test"
   },
   "files": [
     "dist",
