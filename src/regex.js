@@ -243,12 +243,20 @@ class WrappedRegExp extends RegExp {
     if (!match || !this.#captureMap) {
       return match;
     }
-    const copy = [...match];
+    const matchCopy = [...match];
     // Empty all but the first value of the array while preserving its other properties
     match.length = 1;
-    for (let i = 1; i < copy.length; i++) {
+    let indicesCopy;
+    if (this.hasIndices) {
+      indicesCopy = [...match.indices];
+      match.indices.length = 1;
+    }
+    for (let i = 1; i < matchCopy.length; i++) {
       if (this.#captureMap[i]) {
-        match.push(copy[i]);
+        match.push(matchCopy[i]);
+        if (this.hasIndices) {
+          match.indices.push(indicesCopy[i]);
+        }
       }
     }
     return match;
