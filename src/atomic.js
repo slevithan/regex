@@ -1,4 +1,5 @@
-import {emulationGroupMarker, noncapturingDelim, spliceStr} from './utils.js';
+import {emulationGroupMarker} from './subclass.js';
+import {noncapturingDelim, spliceStr} from './utils.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
 
 const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');

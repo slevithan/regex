@@ -49,10 +49,6 @@ export const flagVSupported = (() => {
   return true;
 })();
 
-// This marker was chosen because it's impossible to match (so its extemely unlikely to be used in
-// a user-provided regex); it's not at risk of being optimized away, transformed, or flagged as an
-// error by a plugin; and it ends with an unquantifiable token
-export const emulationGroupMarker = '$E$';
 export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
 export const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;

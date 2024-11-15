@@ -1,5 +1,9 @@
-import {capturingDelim, emulationGroupMarker} from './utils.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
+
+// This marker was chosen because it's impossible to match (so its extemely unlikely to be used in
+// a user-provided regex); it's not at risk of being optimized away, transformed, or flagged as an
+// error by a plugin; and it ends with an unquantifiable token
+const emulationGroupMarker = '$E$';
 
 /**
 @class
@@ -8,6 +12,7 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 @param {{useEmulationGroups: boolean;}} [options]
 */
 class RegExpSubclass extends RegExp {
+  // Avoid #private to allow for subclassing
   _captureMap;
   constructor(expression, flags, options) {
     let captureMap;
@@ -20,7 +25,6 @@ class RegExpSubclass extends RegExp {
     // The third argument `options` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
     } else if (expression instanceof RegExpSubclass) {
-      // Can read private properties of the existing object since it was created by this class
       this._captureMap = expression._captureMap;
     }
   }
@@ -67,7 +71,7 @@ function unmarkEmulationGroups(expression) {
   const captureMap = [true];
   expression = replaceUnescaped(
     expression,
-    `(?:${capturingDelim})(?<mark>${marker})?`,
+    String.raw`\((?:(?!\?)|\?<(?![=!])[^>]+>)(?<mark>${marker})?`,
     ({0: m, groups: {mark}}) => {
       if (mark) {
         captureMap.push(false);
@@ -85,5 +89,6 @@ function unmarkEmulationGroups(expression) {
 }
 
 export {
+  emulationGroupMarker,
   RegExpSubclass,
 };
