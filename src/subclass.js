@@ -8,7 +8,7 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 @param {{useEmulationGroups: boolean;}} [options]
 */
 class RegExpSubclass extends RegExp {
-  #captureMap;
+  _captureMap;
   constructor(expression, flags, options) {
     let captureMap;
     if (options?.useEmulationGroups) {
@@ -16,12 +16,12 @@ class RegExpSubclass extends RegExp {
     }
     super(expression, flags);
     if (captureMap) {
-      this.#captureMap = captureMap;
+      this._captureMap = captureMap;
     // The third argument `options` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
     } else if (expression instanceof RegExpSubclass) {
       // Can read private properties of the existing object since it was created by this class
-      this.#captureMap = expression.#captureMap;
+      this._captureMap = expression._captureMap;
     }
   }
   /**
@@ -32,7 +32,7 @@ class RegExpSubclass extends RegExp {
   */
   exec(str) {
     const match = RegExp.prototype.exec.call(this, str);
-    if (!match || !this.#captureMap) {
+    if (!match || !this._captureMap) {
       return match;
     }
     const matchCopy = [...match];
@@ -44,7 +44,7 @@ class RegExpSubclass extends RegExp {
       match.indices.length = 1;
     }
     for (let i = 1; i < matchCopy.length; i++) {
-      if (this.#captureMap[i]) {
+      if (this._captureMap[i]) {
         match.push(matchCopy[i]);
         if (this.hasIndices) {
           match.indices.push(indicesCopy[i]);
