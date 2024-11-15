@@ -788,12 +788,12 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by Node.js 20 and 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)). When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead while enforcing <kbd>v</kbd>'s escaping rules, which extends support to Node.js 14 and 2020-era browsers.
+`regex` uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by Node.js 20 and 2023-era browsers ([compat table](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)). When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead while enforcing <kbd>v</kbd>'s escaping rules, which extends support to Node.js 14 and 2020-era browsers or earlier. The exception is Safari, which is supported starting with v16.4 (released 2023-03-27).
 
 The following edge cases rely on modern JavaScript features:
 
-- To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns or strings into character classes. There's also an easy workaround: put the whole character class in a `pattern` and interpolate a string into the pattern.
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), a bleeding-edge feature available in Node.js 23, Chrome/Edge 125, Firefox 132, and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+- To ensure atomization, `regex` uses nested character classes (which require flag <kbd>v</kbd>) when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns/strings into character classes. There's also an easy workaround: put the whole character class in a `pattern` and interpolate a string into the pattern.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on [pattern modifiers](https://github.com/tc39/proposal-regexp-modifiers), an ES2025 feature available in Node.js 23, Chrome/Edge 125, Firefox 132, and Opera 111. A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
 
