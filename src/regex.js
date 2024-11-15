@@ -102,13 +102,9 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   });
 
   expression = handlePlugins(expression, opts);
-  let captureMap;
-  if (opts.subclass) {
-    ({expression, captureMap} = unmarkEmulationGroups(expression));
-  }
   try {
     return opts.subclass ?
-      new WrappedRegExp(expression, opts.flags, {captureMap}) :
+      new WrappedRegExp(expression, opts.flags, {unmarkEmulationGroups: true}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -214,18 +210,23 @@ function handlePlugins(expression, options) {
   return expression;
 }
 
+/**
+@class
+@param {string | WrappedRegExp} expression
+@param {string} [flags]
+@param {{unmarkEmulationGroups: boolean;}} [options]
+*/
 class WrappedRegExp extends RegExp {
   #captureMap;
-  /**
-  @param {string | WrappedRegExp} expression
-  @param {string} [flags]
-  @param {{captureMap: Array<boolean>;}} [data]
-  */
-  constructor(expression, flags, data) {
+  constructor(expression, flags, options) {
+    let captureMap;
+    if (options?.unmarkEmulationGroups) {
+      ({expression, captureMap} = unmarkEmulationGroups(expression));
+    }
     super(expression, flags);
-    if (data) {
-      this.#captureMap = data.captureMap;
-    // The third argument `data` isn't provided when regexes are copied as part of the internal
+    if (captureMap) {
+      this.#captureMap = captureMap;
+    // The third argument `options` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
     } else if (expression instanceof WrappedRegExp) {
       // Can read private properties of the existing object since it was created by this class

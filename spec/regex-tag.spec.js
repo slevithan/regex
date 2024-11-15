@@ -159,6 +159,9 @@ describe('regex', () => {
       });
 
       it('should adjust indices with flag d for emulation groups', () => {
+        if (!flagDSupported) {
+          pending();
+        }
         expect(regex({flags: 'd', subclass: true})`(?>.)`.exec('a').indices).toHaveSize(1);
 
         // Documenting behavior when the option is not used
