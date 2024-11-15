@@ -105,7 +105,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   expression = handlePlugins(expression, opts);
   try {
     return opts.subclass ?
-      new RegExpSubclass(expression, opts.flags, {unmarkEmulationGroups: true}) :
+      new RegExpSubclass(expression, opts.flags, {useEmulationGroups: true}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers

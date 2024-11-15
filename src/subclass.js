@@ -5,13 +5,13 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 @class
 @param {string | RegExpSubclass} expression
 @param {string} [flags]
-@param {{unmarkEmulationGroups: boolean;}} [options]
+@param {{useEmulationGroups: boolean;}} [options]
 */
 class RegExpSubclass extends RegExp {
   #captureMap;
   constructor(expression, flags, options) {
     let captureMap;
-    if (options?.unmarkEmulationGroups) {
+    if (options?.useEmulationGroups) {
       ({expression, captureMap} = unmarkEmulationGroups(expression));
     }
     super(expression, flags);
