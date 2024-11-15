@@ -10,7 +10,10 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
-@typedef {{flags: string; useEmulationGroups: boolean;}} PluginData
+@typedef {{
+  flags?: string;
+  useEmulationGroups?: boolean;
+}} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
   flags?: string;
