@@ -3,13 +3,17 @@ import {backcompatPlugin} from './backcompat.js';
 import {flagNPreprocessor} from './flag-n.js';
 import {clean, flagXPreprocessor} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
+import {RegExpSubclass} from './subclass.js';
 import {subroutines} from './subroutines.js';
-import {adjustNumberedBackrefs, capturingDelim, CharClassContext, containsCharClassUnion, countCaptures, emulationGroupMarker, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {adjustNumberedBackrefs, CharClassContext, containsCharClassUnion, countCaptures, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
-@typedef {{flags: string; useEmulationGroups: boolean;}} PluginData
+@typedef {{
+  flags?: string;
+  useEmulationGroups?: boolean;
+}} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
   flags?: string;
@@ -35,7 +39,7 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
   (template: RawTemplate, ...substitutions: ReadonlyArray<InterpolatedValue>): T;
   (flags?: string): RegexTag<T>;
   (options: RegexTagOptions & {subclass?: false}): RegexTag<T>;
-  (options: RegexTagOptions & {subclass: true}): RegexTag<WrappedRegExp>;
+  (options: RegexTagOptions & {subclass: true}): RegexTag<RegExpSubclass>;
 }}
 */
 /**
@@ -102,13 +106,9 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   });
 
   expression = handlePlugins(expression, opts);
-  let captureMap;
-  if (opts.subclass) {
-    ({expression, captureMap} = unmarkEmulationGroups(expression));
-  }
   try {
     return opts.subclass ?
-      new WrappedRegExp(expression, opts.flags, {captureMap}) :
+      new RegExpSubclass(expression, opts.flags, {useEmulationGroups: true}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -212,47 +212,6 @@ function handlePlugins(expression, options) {
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
   ].forEach(p => expression = p(expression, {flags, useEmulationGroups: subclass}));
   return expression;
-}
-
-class WrappedRegExp extends RegExp {
-  #captureMap;
-  /**
-  @param {string | WrappedRegExp} expression
-  @param {string} [flags]
-  @param {{captureMap: Array<boolean>;}} [data]
-  */
-  constructor(expression, flags, data) {
-    super(expression, flags);
-    if (data) {
-      this.#captureMap = data.captureMap;
-    // The third argument `data` isn't provided when regexes are copied as part of the internal
-    // handling of string methods `matchAll` and `split`
-    } else if (expression instanceof WrappedRegExp) {
-      // Can read private properties of the existing object since it was created by this class
-      this.#captureMap = expression.#captureMap;
-    }
-  }
-  /**
-  Called internally by all String/RegExp methods that use regexes.
-  @override
-  @param {string} str
-  @returns {RegExpExecArray | null}
-  */
-  exec(str) {
-    const match = RegExp.prototype.exec.call(this, str);
-    if (!match || !this.#captureMap) {
-      return match;
-    }
-    const copy = [...match];
-    // Empty all but the first value of the array while preserving its other properties
-    match.length = 1;
-    for (let i = 1; i < copy.length; i++) {
-      if (this.#captureMap[i]) {
-        match.push(copy[i]);
-      }
-    }
-    return match;
-  }
 }
 
 /**
@@ -384,35 +343,6 @@ function transformForLocalFlags(re, outerFlags) {
     }
   }
   return {value};
-}
-
-/**
-Build the capturing group map (with emulation groups marked as `false` to indicate their submatches
-shouldn't appear in results), and remove the markers for anonymous captures which were added to
-emulate extended syntax.
-@param {string} expression
-@returns {{expression: string; captureMap: Array<boolean>;}}
-*/
-function unmarkEmulationGroups(expression) {
-  const marker = emulationGroupMarker.replace(/\$/g, '\\$');
-  const captureMap = [true];
-  expression = replaceUnescaped(
-    expression,
-    `(?:${capturingDelim})(?<mark>${marker})?`,
-    ({0: m, groups: {mark}}) => {
-      if (mark) {
-        captureMap.push(false);
-        return m.slice(0, -emulationGroupMarker.length);
-      }
-      captureMap.push(true);
-      return m;
-    },
-    Context.DEFAULT
-  );
-  return {
-    captureMap,
-    expression,
-  };
 }
 
 export {

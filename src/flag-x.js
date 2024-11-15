@@ -1,4 +1,5 @@
-import {CharClassContext, doublePunctuatorChars, emulationGroupMarker, getEndContextForIncompleteExpression, noncapturingDelim, RegexContext, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {emulationGroupMarker} from './subclass.js';
+import {CharClassContext, doublePunctuatorChars, getEndContextForIncompleteExpression, noncapturingDelim, RegexContext, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
 
 const ws = /^\s$/;

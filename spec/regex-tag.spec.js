@@ -157,6 +157,16 @@ describe('regex', () => {
         expect([...'ab'.matchAll(regex({flags: 'g', subclass: false})`(?>(?<a>.))(?<b>.)`)][0][2]).not.toBe('b');
         expect('ab'.split(regex({subclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
       });
+
+      it('should adjust indices with flag d for emulation groups', () => {
+        if (!flagDSupported) {
+          pending();
+        }
+        expect(regex({flags: 'd', subclass: true})`(?>.)`.exec('a').indices).toHaveSize(1);
+
+        // Documenting behavior when the option is not used
+        expect(regex({flags: 'd', subclass: false})`(?>.)`.exec('a').indices).toHaveSize(2);
+      });
     });
   });
 });
