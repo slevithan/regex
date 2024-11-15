@@ -7,32 +7,38 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./types/regex.d.ts",
-      "import": "./dist/regex.mjs",
-      "require": "./dist/regex.cjs"
+      "import": {
+        "types": "./dist/module/regex.d.ts",
+        "default": "./dist/module/regex.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/regex.d.ts",
+        "default": "./dist/commonjs/regex.js"
+      }
     },
     "./internals": {
-      "types": "./types/internals.d.ts",
+      "types": "./dist/module/internals.d.ts",
       "import": "./src/internals.js"
     }
   },
   "browser": "./dist/regex.min.js",
-  "types": "./types/regex.d.ts",
+  "main": "./dist/commonjs/regex.js",
+  "types": "./dist/commonjs/regex.d.ts",
   "scripts": {
     "bundle:global": "esbuild src/regex.js --global-name=Regex --bundle --minify --sourcemap --outfile=dist/regex.min.js",
-    "bundle:esm": "esbuild src/regex.js --format=esm --bundle --sourcemap --outfile=dist/regex.mjs",
-    "bundle:cjs": "esbuild src/regex.js --format=cjs --bundle --sourcemap --outfile=dist/regex.cjs",
+    "bundle:esm": "esbuild src/regex.js --format=esm --bundle --sourcemap --outfile=dist/module/regex.js",
+    "bundle:cjs": "esbuild src/regex.js --format=cjs --bundle --sourcemap --outfile=dist/commonjs/regex.js",
     "types": "tsc src/regex.js src/internals.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outDir types",
     "prebuild": "rm -rf dist/* types/*",
     "build": "npm run bundle:global && npm run bundle:esm && npm run bundle:cjs && npm run types",
+    "postbuild": "node postbuild.js",
     "pretest": "npm run build",
-    "test": "jasmine && tsc --project spec/types/tsconfig.test.json",
-    "prepare": "npm test"
+    "test": "jasmine && tsc --project spec/types/tsconfig.test.json && attw --pack . --entrypoints .",
+    "prepublishOnly": "npm test"
   },
   "files": [
     "dist",
-    "src",
-    "types"
+    "src"
   ],
   "repository": {
     "type": "git",
@@ -47,6 +53,7 @@
     "expect-type": "^1.1.0",
     "jasmine": "^5.4.0",
     "regex-utilities": "^2.3.0",
-    "typescript": "^5.6.3"
+    "typescript": "~5.6.3",
+    "@arethetypeswrong/cli": "~0.17.0"
   }
 }
