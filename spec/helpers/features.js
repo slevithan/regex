@@ -1,34 +1,34 @@
-globalThis.patternModsSupported = (() => {
-  try {
-    new RegExp('(?i:)');
-  } catch (e) {
-    return false;
-  }
-  return true;
-})();
-
-globalThis.duplicateCaptureNamesSupported = (() => {
+globalThis.envSupportsDuplicateNames = (() => {
   try {
     new RegExp('(?<n>)|(?<n>)');
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
 })();
 
-globalThis.flagVSupported = (() => {
+globalThis.envSupportsFlagGroups = (() => {
   try {
-    new RegExp('', 'v');
-  } catch (e) {
+    new RegExp('(?i:)');
+  } catch {
     return false;
   }
   return true;
 })();
 
-globalThis.flagDSupported = (() => {
+globalThis.envSupportsFlagD = (() => {
   try {
     new RegExp('', 'd');
-  } catch (e) {
+  } catch {
+    return false;
+  }
+  return true;
+})();
+
+globalThis.envSupportsFlagV = (() => {
+  try {
+    new RegExp('', 'v');
+  } catch {
     return false;
   }
   return true;

@@ -55,7 +55,7 @@ describe('interpolation: numbers', () => {
   describe('in character class context', () => {
     it('should coerce to string', () => {
       expect('5').toMatch(regex`^[1-${9}]$`);
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('99').toMatch(regex`^[\q{${99}}]$`);
       }
     });

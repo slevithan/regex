@@ -30,7 +30,7 @@ describe('rewrite', () => {
 
   describe('implicit flags', () => {
     it('should implicitly add flag v or u', () => {
-      expect(rewrite('').flags).toContain(flagVSupported ? 'v' : 'u');
+      expect(rewrite('').flags).toContain(envSupportsFlagV ? 'v' : 'u');
       expect(rewrite('', {disable: {v: true}}).flags).toContain('u');
     });
 

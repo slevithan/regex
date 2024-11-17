@@ -19,7 +19,7 @@ describe('regex', () => {
     expect(regex('m')``.multiline).toBeTrue();
     expect(regex('s')``.dotAll).toBeTrue();
     expect(regex('y')``.sticky).toBeTrue();
-    if (flagDSupported) {
+    if (envSupportsFlagD) {
       expect(regex('d')``.hasIndices).toBeTrue();
     }
   });
@@ -31,7 +31,7 @@ describe('regex', () => {
 
   it('should implicitly add flag v or u', () => {
     // See also `backcompat-spec.js`
-    if (flagVSupported) {
+    if (envSupportsFlagV) {
       expect(regex``.flags).toContain('v');
       expect(regex``.unicodeSets).toBeTrue();
       expect(regex('g')``.unicodeSets).toBeTrue();
@@ -87,7 +87,7 @@ describe('regex', () => {
     it('should allow swapping the built-in unicodeSetsPlugin', () => {
       const plugin = str => str.replace(/v/g, 'u');
       expect('u').toMatch(regex({unicodeSetsPlugin: plugin, disable: {v: true}})`^v$`);
-      if (!flagVSupported) {
+      if (!envSupportsFlagV) {
         expect('u').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
       }
     });
@@ -102,7 +102,7 @@ describe('regex', () => {
 
     it('should not use the unicodeSetsPlugin when flag v is used', () => {
       const plugin = str => str.replace(/v/g, 'u');
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('v').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
       } else {
         expect(() => regex({unicodeSetsPlugin: plugin, force: {v: true}})`^v$`).toThrow();
@@ -111,7 +111,7 @@ describe('regex', () => {
 
     it('should allow controlling implicit flag v via disable.v', () => {
       expect(regex({disable: {v: true}})``.unicodeSets).not.toBeTrue();
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect(regex({disable: {v: false}})``.unicodeSets).toBeTrue();
       } else {
         expect(regex({disable: {v: false}})``.unicodeSets).not.toBeTrue();
@@ -119,7 +119,7 @@ describe('regex', () => {
     });
 
     it('should allow controlling implicit flag v via force.v', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect(regex({force: {v: true}, disable: {v: true}})``.unicodeSets).toBeTrue();
       } else {
         expect(() => regex({force: {v: true}})``).toThrow();
@@ -140,8 +140,7 @@ describe('regex', () => {
         expect('ab'.replace(regex({subclass: true})`(?>(?<a>.))(?<b>.)`, '$2$1')).toBe('ba');
         // String#replace: replacement function
         expect('ab'.replace(regex({subclass: true})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).toBe('ba');
-
-        // Documenting behavior when the option is not used
+        // ## Documenting behavior when subclass is not used
         expect(regex({subclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
         expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
         expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
@@ -152,19 +151,17 @@ describe('regex', () => {
         expect([...'ab'.matchAll(regex({flags: 'g', subclass: true})`(?>(?<a>.))(?<b>.)`)][0][2]).toBe('b');
         // String#split
         expect('ab'.split(regex({subclass: true})`(?>(?<a>.))(?<b>.)`)).toEqual(['', 'a', 'b', '']);
-
-        // Documenting behavior when the option is not used
+        // ## Documenting behavior when subclass is not used
         expect([...'ab'.matchAll(regex({flags: 'g', subclass: false})`(?>(?<a>.))(?<b>.)`)][0][2]).not.toBe('b');
         expect('ab'.split(regex({subclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
       });
 
       it('should adjust indices with flag d for emulation groups', () => {
-        if (!flagDSupported) {
-          pending();
+        if (!envSupportsFlagD) {
+          pending('requires support for flag d (Node 16)');
         }
         expect(regex({flags: 'd', subclass: true})`(?>.)`.exec('a').indices).toHaveSize(1);
-
-        // Documenting behavior when the option is not used
+        // ## Documenting behavior when subclass is not used
         expect(regex({flags: 'd', subclass: false})`(?>.)`.exec('a').indices).toHaveSize(2);
       });
     });

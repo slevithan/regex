@@ -168,7 +168,7 @@ describe('interpolation: patterns', () => {
       expect(() => regex`[a${pattern`]`}b]`).toThrow();
       expect(']').toMatch(regex`[${pattern(String.raw`\]`)}]`);
       expect(() => regex`[a${pattern(String.raw`\\]`)}b]`).toThrow();
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect(']').toMatch(regex`[${pattern(String.raw`\\\]`)}]`);
       } else {
         expect(() => regex`[${pattern(String.raw`\\\]`)}]`).toThrow();
@@ -180,7 +180,7 @@ describe('interpolation: patterns', () => {
       expect(() => regex`[a${pattern`[`}b]`).toThrow();
       expect('[').toMatch(regex`[${pattern(String.raw`\[`)}]`);
       expect(() => regex`[a${pattern(String.raw`\\[`)}b]`).toThrow();
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('[').toMatch(regex`[${pattern(String.raw`\\\[`)}]`);
       } else {
         expect(() => regex`[${pattern(String.raw`\\\[`)}]`).toThrow();
@@ -203,7 +203,7 @@ describe('interpolation: patterns', () => {
       expect(() => regex`[\q{${pattern`a}`}]`).toThrow();
       expect(() => regex`[\q{${pattern`a}`}}]`).toThrow();
       expect(() => regex`[\q{${pattern`a\\}`}}]`).toThrow();
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('a}').toMatch(regex`[\q{${pattern`a\}`}}]`);
       } else {
         expect(() => regex`[\q{${pattern`a\}`}}]`).toThrow();
@@ -266,7 +266,7 @@ describe('interpolation: patterns', () => {
     });
 
     it('should allow a self-contained set operation', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('a').toMatch(regex`[${pattern`\w--_`}]`);
         expect('a').toMatch(regex`[${pattern`\w&&a`}]`);
         expect('a').toMatch(regex`[${pattern`\w&&[a-z]`}]`);
@@ -316,7 +316,7 @@ describe('interpolation: patterns', () => {
     });
 
     it('should not throw if a lone double-punctuator character in an implicit union is bordered by itself', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('&').toMatch(regex`[${pattern`a&`}&]`);
         expect('!').toMatch(regex`[${pattern`a!`}!]`);
         expect('#').toMatch(regex`[${pattern`a#`}#]`);

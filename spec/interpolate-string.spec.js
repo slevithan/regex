@@ -42,7 +42,7 @@ describe('interpolation: escaped strings', () => {
 
   describe('in character class context', () => {
     it('should coerce non-string/number/regex/pattern values', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('u').toMatch(regex`^[${undefined}]$`);
         expect('a').toMatch(regex`^[[a-z]--${null}]$`);
         expect('n').not.toMatch(regex`^[[a-z]--${null}]$`);

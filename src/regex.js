@@ -5,7 +5,7 @@ import {clean, flagXPreprocessor} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
 import {RegExpSubclass} from './subclass.js';
 import {subroutines} from './subroutines.js';
-import {adjustNumberedBackrefs, CharClassContext, containsCharClassUnion, countCaptures, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, escapeV, flagVSupported, getBreakoutChar, getEndContextForIncompleteExpression, patternModsSupported, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
+import {adjustNumberedBackrefs, CharClassContext, containsCharClassUnion, countCaptures, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, envSupportsFlagGroups, envSupportsFlagV, escapeV, getBreakoutChar, getEndContextForIncompleteExpression, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
@@ -159,7 +159,7 @@ function getOptions(options) {
   if (/[nuvx]/.test(opts.flags)) {
     throw new Error('Implicit flags v/u/x/n cannot be explicitly added');
   }
-  const useFlagV = opts.force.v || (opts.disable.v ? false : flagVSupported);
+  const useFlagV = opts.force.v || (opts.disable.v ? false : envSupportsFlagV);
   opts.flags += useFlagV ? 'v' : 'u';
   if (useFlagV) {
     opts.unicodeSetsPlugin = null;
@@ -307,28 +307,28 @@ function transformForLocalFlags(re, outerFlags) {
   const newlines = '\\n\\r\\u2028\\u2029';
   let value = re.source;
   if (re.ignoreCase !== outerFlags.includes('i')) {
-    if (patternModsSupported) {
+    if (envSupportsFlagGroups) {
       modFlagsObj.i = re.ignoreCase;
     } else {
       throw new Error('Pattern modifiers not supported, so flag i on the outer and interpolated regex must match');
     }
   }
   if (re.dotAll !== outerFlags.includes('s')) {
-    if (patternModsSupported) {
+    if (envSupportsFlagGroups) {
       modFlagsObj.s = re.dotAll;
     } else {
       value = replaceUnescaped(value, '\\.', (re.dotAll ? '[^]' : `[^${newlines}]`), Context.DEFAULT);
     }
   }
   if (re.multiline !== outerFlags.includes('m')) {
-    if (patternModsSupported) {
+    if (envSupportsFlagGroups) {
       modFlagsObj.m = re.multiline;
     } else {
       value = replaceUnescaped(value, '\\^', (re.multiline ? `(?<=^|[${newlines}])` : '(?<![^])'), Context.DEFAULT);
       value = replaceUnescaped(value, '\\$', (re.multiline ? `(?=$|[${newlines}])` : '(?![^])'), Context.DEFAULT);
     }
   }
-  if (patternModsSupported) {
+  if (envSupportsFlagGroups) {
     const keys = Object.keys(modFlagsObj);
     let modifier = keys.filter(k => modFlagsObj[k] === true).join('');
     const modOff = keys.filter(k => modFlagsObj[k] === false).join('');

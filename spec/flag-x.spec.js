@@ -286,7 +286,7 @@ describe('flag x', () => {
         '[\\0 -- b]',
       ];
       valid.forEach(v => {
-        if (flagVSupported) {
+        if (envSupportsFlagV) {
           expect(() => regex()({raw: [v]})).withContext(v).not.toThrow();
         }
         // Invalid set operator error from built-in `unicodeSetsPlugin`
@@ -297,7 +297,7 @@ describe('flag x', () => {
     });
 
     it('should allow set operators to be offset by whitespace', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('a').toMatch(regex`[\w -- _]`);
         expect('a').toMatch(regex`[\w-- _]`);
         expect('a').toMatch(regex`[\w --_]`);
@@ -322,7 +322,7 @@ describe('flag x', () => {
     it('should allow escaping whitespace to make it significant', () => {
       expect(' ').toMatch(regex`^[ \ ]$`);
       expect('t ').toMatch(regex`^[\ t]{2}$`);
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect(' ').toMatch(regex`^[\q{ \ }]$`);
       } else {
         expect(() => regex`^[\q{ \ }]$`).toThrow();
@@ -336,7 +336,7 @@ describe('flag x', () => {
     });
 
     it('should treat whitespace in [\\q{}] as insignificant', () => {
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect('ab').toMatch(regex`^[\q{ a b | c }]$`);
       } else {
         expect(() => regex`^[\q{ a b | c }]$`).toThrow();
@@ -346,7 +346,7 @@ describe('flag x', () => {
     it('should handle empty character classes with insignificant whitespace', () => {
       expect(/[]/.test('a')).toBe(regex`[ ]`.test('a'));
       expect(/[^]/.test('a')).toBe(regex`[^ ]`.test('a'));
-      if (flagVSupported) {
+      if (envSupportsFlagV) {
         expect(new RegExp('[\\q{}]', 'v').test('a')).toBe(regex`[ \q{ } ]`.test('a'));
       } else {
         expect(() => regex`[ \q{ } ]`).toThrow();

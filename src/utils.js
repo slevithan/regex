@@ -31,19 +31,19 @@ export const enclosedTokenCharClassContexts = new Set([
   CharClassContext.ENCLOSED_U,
 ]);
 
-export const patternModsSupported = (() => {
+export const envSupportsFlagGroups = (() => {
   try {
     new RegExp('(?i:)');
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
 })();
 
-export const flagVSupported = (() => {
+export const envSupportsFlagV = (() => {
   try {
     new RegExp('', 'v');
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;

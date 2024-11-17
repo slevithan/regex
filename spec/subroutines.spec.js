@@ -129,13 +129,14 @@ describe('subroutines', () => {
   });
 
   it('should refer to the first group with name when duplicate capture names exist', () => {
-    if (duplicateCaptureNamesSupported) {
-      expect('aa ba bb'.match(regex('g')`(?<n>a)|(?<n>b)\g<n>`)).toEqual(['a', 'a', 'ba']);
-      expect('aa ba bb'.match(regex('g')`(?<n>a)\g<n>|(?<n>b)`)).toEqual(['aa', 'b', 'b', 'b']);
-      expect('aa ba bb'.match(regex('g')`(?<n>a)\g<n>|(?<n>b)\g<n>`)).toEqual(['aa', 'ba']);
-      expect('b1 ab2ab1 ab2ab2'.match(regex('g')`(?<b>b1)|(?<n>a(?<b>b2))\g<n>`)).toEqual(['b1', 'b1', 'ab2ab2']);
-      expect('b1 ab2b2ab2b2 ab2b1ab2b1'.match(regex('g')`(?<b>b1)|(?<n>a(?<b>b2)\g<b>)\g<n>`)).toEqual(['b1', 'ab2b1ab2b1']);
+    if (!envSupportsDuplicateNames) {
+      pending('requires support for duplicate names (Node 23)');
     }
+    expect('aa ba bb'.match(regex('g')`(?<n>a)|(?<n>b)\g<n>`)).toEqual(['a', 'a', 'ba']);
+    expect('aa ba bb'.match(regex('g')`(?<n>a)\g<n>|(?<n>b)`)).toEqual(['aa', 'b', 'b', 'b']);
+    expect('aa ba bb'.match(regex('g')`(?<n>a)\g<n>|(?<n>b)\g<n>`)).toEqual(['aa', 'ba']);
+    expect('b1 ab2ab1 ab2ab2'.match(regex('g')`(?<b>b1)|(?<n>a(?<b>b2))\g<n>`)).toEqual(['b1', 'b1', 'ab2ab2']);
+    expect('b1 ab2b2ab2b2 ab2b1ab2b1'.match(regex('g')`(?<b>b1)|(?<n>a(?<b>b2)\g<b>)\g<n>`)).toEqual(['b1', 'ab2b1ab2b1']);
   });
 
   it('should support specifying the group to match via interpolation', () => {

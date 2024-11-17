@@ -89,7 +89,7 @@ describe('possessive quantifiers', () => {
     expect('aa1').toMatch(regex`^[a-z]++1$`);
     expect('abb').not.toMatch(regex`^[a][\x62]++.$`);
     expect('ab1').toMatch(regex`^[a][\x62]++1$`);
-    if (flagVSupported) {
+    if (envSupportsFlagV) {
       expect('aaa').not.toMatch(regex`^[[a-z]--y]++.$`);
       expect('aa1').toMatch(regex`^[[a-z]--y]++1$`);
     }

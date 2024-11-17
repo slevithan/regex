@@ -9,7 +9,7 @@ describe('interpolation: regexes', () => {
     });
 
     it('should preserve local flag i or its absense, or throw if support is unavailable', () => {
-      if (patternModsSupported) {
+      if (envSupportsFlagGroups) {
         expect('foo-BAR').    toMatch(regex     `foo-${/bar/i}`);
         expect('FOO-BAR').not.toMatch(regex     `foo-${/bar/i}`);
         expect('FOO-bar').    toMatch(regex('i')`foo-${/bar/}`);
@@ -35,12 +35,11 @@ describe('interpolation: regexes', () => {
     });
 
     it('should preserve multiple flag differences on outer/inner regex', () => {
-      if (patternModsSupported) {
+      if (envSupportsFlagGroups) {
         expect('AAa\n').     toMatch(regex('i')`a.${/a./s}`);
         expect('AAA\n'). not.toMatch(regex('i')`a.${/a./s}`);
         expect('A\na\n').not.toMatch(regex('i')`a.${/a./s}`);
       }
-
       expect('\nxa\n').      toMatch(regex('m')`^.${/a.$/s}`);
       expect('\n\na\n'). not.toMatch(regex('m')`^.${/a.$/s}`);
       expect('\nxa\n\n').not.toMatch(regex('m')`^.${/a.$/s}`);
@@ -64,11 +63,10 @@ describe('interpolation: regexes', () => {
     });
 
     it('should treat pattern modifiers as noncapturing when adjusting backreferences', () => {
-      if (patternModsSupported) {
-        expect('abb').toMatch(regex`^(?i:a)${/(b)\1/}$`);
-      } else {
-        // Will throw a SyntaxError either way in environments that don't support pattern modifiers
+      if (!envSupportsFlagGroups) {
+        pending('requires support for flag groups (Node 23)');
       }
+      expect('abb').toMatch(regex`^(?i:a)${/(b)\1/}$`);
     });
   });
 
