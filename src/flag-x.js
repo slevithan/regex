@@ -39,8 +39,13 @@ function flagXPreprocessor(value, runningContext, options) {
   let lastSignificantToken = '';
   let lastSignificantCharClassContext = '';
   let separatorNeeded = false;
-  const update = (str, {prefix = true, postfix = false} = {}) => {
-    str = (separatorNeeded && prefix ? '(?:)' : '') + str + (postfix ? '(?:)' : '');
+  const update = (str, options) => {
+    const opts = {
+      prefix: true,
+      postfix: false,
+      ...options,
+    };
+    str = (separatorNeeded && opts.prefix ? '(?:)' : '') + str + (opts.postfix ? '(?:)' : '');
     separatorNeeded = false;
     return str;
   };

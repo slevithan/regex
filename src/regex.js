@@ -125,7 +125,7 @@ Returns the processed expression and flags as strings.
 @param {RegexTagOptions} [options]
 @returns {{expression: string; flags: string;}}
 */
-function rewrite(expression = '', options = {}) {
+function rewrite(expression = '', options) {
   const opts = getOptions(options);
   if (opts.subclass) {
     // Don't allow including emulation group markers in output
@@ -143,7 +143,7 @@ function rewrite(expression = '', options = {}) {
 /**
 Returns a complete set of options, with default values set for options that weren't provided, and
 some options augmented for use.
-@param {RegexTagOptions} options
+@param {RegexTagOptions} [options]
 @returns {Required<RegexTagOptions>}
 */
 function getOptions(options) {

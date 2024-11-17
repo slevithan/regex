@@ -212,12 +212,14 @@ seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
 @param {Partial<RunningContext>} [runningContext]
 @returns {RunningContext}
 */
-function getEndContextForIncompleteExpression(incompleteExpression, {
-  regexContext = RegexContext.DEFAULT,
-  charClassContext = CharClassContext.DEFAULT,
-  charClassDepth = 0,
-  lastPos = 0,
-} = {}) {
+function getEndContextForIncompleteExpression(incompleteExpression, runningContext) {
+  let {regexContext, charClassContext, charClassDepth, lastPos} = {
+    regexContext: RegexContext.DEFAULT,
+    charClassContext: CharClassContext.DEFAULT,
+    charClassDepth: 0,
+    lastPos: 0,
+    ...runningContext,
+  };
   contextToken.lastIndex = lastPos;
   let match;
   while (match = contextToken.exec(incompleteExpression)) {

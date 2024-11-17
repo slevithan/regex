@@ -224,7 +224,7 @@ function processDefinitionGroup(expression, namedGroups) {
       if (!namedGroups.get(captureName).isUnique) {
         duplicateName = captureName;
       } else {
-        const nestedNamedGroups = getNamedCapturingGroups(group.contents);
+        const nestedNamedGroups = getNamedCapturingGroups(group.contents, {includeContents: false});
         for (const name of nestedNamedGroups.keys()) {
           if (!namedGroups.get(name).isUnique) {
             duplicateName = name;
@@ -294,10 +294,10 @@ function getGroup(expression, delimMatch) {
 
 /**
 @param {string} expression
-@param {{includeContents: boolean}} [options]
+@param {{includeContents: boolean}} options
 @returns {NamedCapturingGroupsMap}
 */
-function getNamedCapturingGroups(expression, {includeContents} = {}) {
+function getNamedCapturingGroups(expression, {includeContents}) {
   const namedGroups = new Map();
   forEachUnescaped(
     expression,
