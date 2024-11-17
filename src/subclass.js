@@ -6,16 +6,25 @@ import {Context, replaceUnescaped} from 'regex-utilities';
 const emulationGroupMarker = '$E$';
 
 /**
-@class
-@augments RegExp
-@param {string | RegExpSubclass} expression
-@param {string} [flags]
-@param {{useEmulationGroups: boolean;}} [options]
+Works the same as JavaScript's native `RegExp` constructor in all contexts, but automatically
+adjusts matches and subpattern indices (with flag `d`) to account for injected emulation groups.
 */
 class RegExpSubclass extends RegExp {
-  // Avoid #private to allow for subclassing
+  /**
+  Avoid `#private` to allow for subclassing.
+  @private
+  @type {Array<boolean> | undefined}
+  */
   _captureMap;
+  /**
+  @param {string | RegExpSubclass} expression
+  @param {string} [flags]
+  @param {{useEmulationGroups: boolean;}} [options]
+  */
   constructor(expression, flags, options) {
+    if (expression instanceof RegExp && options) {
+      throw new Error('Cannot provide options when copying regexp');
+    }
     let captureMap;
     if (options?.useEmulationGroups) {
       ({expression, captureMap} = unmarkEmulationGroups(expression));

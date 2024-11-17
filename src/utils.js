@@ -1,7 +1,7 @@
 import {Pattern, pattern} from './pattern.js';
 import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 
-export const RegexContext = {
+const RegexContext = {
   DEFAULT: 'DEFAULT',
   CHAR_CLASS: 'CHAR_CLASS',
   ENCLOSED_P: 'ENCLOSED_P',
@@ -11,7 +11,7 @@ export const RegexContext = {
   INVALID_INCOMPLETE_TOKEN: 'INVALID_INCOMPLETE_TOKEN',
 };
 
-export const CharClassContext = {
+const CharClassContext = {
   DEFAULT: 'DEFAULT',
   ENCLOSED_P: 'ENCLOSED_P',
   ENCLOSED_Q: 'ENCLOSED_Q',
@@ -20,18 +20,18 @@ export const CharClassContext = {
   RANGE: 'RANGE',
 };
 
-export const enclosedTokenRegexContexts = new Set([
+const enclosedTokenRegexContexts = new Set([
   RegexContext.ENCLOSED_P,
   RegexContext.ENCLOSED_U,
 ]);
 
-export const enclosedTokenCharClassContexts = new Set([
+const enclosedTokenCharClassContexts = new Set([
   CharClassContext.ENCLOSED_P,
   CharClassContext.ENCLOSED_Q,
   CharClassContext.ENCLOSED_U,
 ]);
 
-export const envSupportsFlagGroups = (() => {
+const envSupportsFlagGroups = (() => {
   try {
     new RegExp('(?i:)');
   } catch {
@@ -40,7 +40,7 @@ export const envSupportsFlagGroups = (() => {
   return true;
 })();
 
-export const envSupportsFlagV = (() => {
+const envSupportsFlagV = (() => {
   try {
     new RegExp('', 'v');
   } catch {
@@ -49,17 +49,17 @@ export const envSupportsFlagV = (() => {
   return true;
 })();
 
-export const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
-export const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
-export const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;
-export const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
+const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
+const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
+const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;
+const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
 @param {string} expression
 @param {number} precedingCaptures
 @returns {string}
 */
-export function adjustNumberedBackrefs(expression, precedingCaptures) {
+function adjustNumberedBackrefs(expression, precedingCaptures) {
   return replaceUnescaped(
     expression,
     String.raw`\\(?<num>[1-9]\d*)`,
@@ -93,7 +93,7 @@ const charClassUnionToken = new RegExp(String.raw`
 `.replace(/\s+/g, ''), 'gsu');
 
 // Assumes flag v and doesn't worry about syntax errors that are caught by it
-export function containsCharClassUnion(charClassPattern) {
+function containsCharClassUnion(charClassPattern) {
   // Return `true` if it contains:
   // - `\p` (lowercase only) and the name is a property of strings (case sensitive).
   // - `\q`.
@@ -130,7 +130,7 @@ export function containsCharClassUnion(charClassPattern) {
 @param {string} expression
 @returns {number}
 */
-export function countCaptures(expression) {
+function countCaptures(expression) {
   let num = 0;
   forEachUnescaped(expression, capturingDelim, () => num++, Context.DEFAULT);
   return num;
@@ -142,7 +142,7 @@ Escape special characters for the given context, assuming flag v.
 @param {'DEFAULT' | 'CHAR_CLASS'} context `Context` option from lib `regex-utilities`
 @returns {string} Escaped string
 */
-export function escapeV(str, context) {
+function escapeV(str, context) {
   if (context === Context.CHAR_CLASS) {
     // Escape all double punctuators (including ^, which is special on its own in the first
     // position) in case they're bordered by the same character in or outside of the escaped string
@@ -152,7 +152,7 @@ export function escapeV(str, context) {
 }
 
 // Look for characters that would change the meaning of subsequent tokens outside an interpolated value
-export function getBreakoutChar(expression, regexContext, charClassContext) {
+function getBreakoutChar(expression, regexContext, charClassContext) {
   const escapesRemoved = expression.replace(/\\./gsu, '');
   // Trailing unescaped `\`; checking `.includes('\\')` would also work
   if (escapesRemoved.endsWith('\\')) {
@@ -212,7 +212,7 @@ seen. Assumes flag v and doesn't worry about syntax errors that are caught by it
 @param {Partial<RunningContext>} [runningContext]
 @returns {RunningContext}
 */
-export function getEndContextForIncompleteExpression(incompleteExpression, {
+function getEndContextForIncompleteExpression(incompleteExpression, {
   regexContext = RegexContext.DEFAULT,
   charClassContext = CharClassContext.DEFAULT,
   charClassDepth = 0,
@@ -315,7 +315,7 @@ processes substitutions that are instanceof `Pattern`.
 @param {Required<RegexTagOptions>} options
 @returns {{template: RawTemplate; substitutions: ReadonlyArray<InterpolatedValue>;}}
 */
-export function preprocess(template, substitutions, preprocessor, options) {
+function preprocess(template, substitutions, preprocessor, options) {
   let /** @type {RawTemplate} */ newTemplate = {raw: []};
   let newSubstitutions = [];
   let runningContext;
@@ -342,7 +342,7 @@ export function preprocess(template, substitutions, preprocessor, options) {
 
 // Sandbox `^` if relevant, done so it can't change the meaning of the surrounding character class
 // if we happen to be at the first position. See `sandboxLoneDoublePunctuatorChar` for more details
-export function sandboxLoneCharClassCaret(str) {
+function sandboxLoneCharClassCaret(str) {
   return str.replace(/^\^/, '\\^^');
 }
 
@@ -355,7 +355,7 @@ export function sandboxLoneCharClassCaret(str) {
 // - Can't add a second unescaped symbol if a lone symbol is the entire string because it might be
 //   followed by the same unescaped symbol outside an interpolation, and since it won't be wrapped,
 //   the second symbol wouldn't be sandboxed from the one following it.
-export function sandboxLoneDoublePunctuatorChar(str) {
+function sandboxLoneDoublePunctuatorChar(str) {
   return str.replace(new RegExp(`^([${doublePunctuatorChars}])(?!\\1)`), (m, _, pos) => {
     return `\\${m}${pos + 1 === str.length ? '' : m}`;
   });
@@ -367,7 +367,7 @@ Converts `\0` tokens to `\x00` in the given context.
 @param {'DEFAULT' | 'CHAR_CLASS'} [context] `Context` option from lib `regex-utilities`
 @returns {string}
 */
-export function sandboxUnsafeNulls(str, context) {
+function sandboxUnsafeNulls(str, context) {
   // regex`[\0${0}]` and regex`[${pattern`\0`}0]` can't be guarded against via nested `[…]`
   // sandboxing in character classes if the interpolated value doesn't contain union (since it
   // might be placed on a range boundary). So escape `\0` in character classes as `\x00`
@@ -381,6 +381,30 @@ export function sandboxUnsafeNulls(str, context) {
 @param {string} newValue
 @returns {string}
 */
-export function spliceStr(str, pos, oldValue, newValue) {
+function spliceStr(str, pos, oldValue, newValue) {
   return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
 }
+
+export {
+  adjustNumberedBackrefs,
+  capturingDelim,
+  CharClassContext,
+  containsCharClassUnion,
+  countCaptures,
+  doublePunctuatorChars,
+  enclosedTokenCharClassContexts,
+  enclosedTokenRegexContexts,
+  envSupportsFlagGroups,
+  envSupportsFlagV,
+  escapeV,
+  getBreakoutChar,
+  getEndContextForIncompleteExpression,
+  namedCapturingDelim,
+  noncapturingDelim,
+  preprocess,
+  RegexContext,
+  sandboxLoneCharClassCaret,
+  sandboxLoneDoublePunctuatorChar,
+  sandboxUnsafeNulls,
+  spliceStr,
+};

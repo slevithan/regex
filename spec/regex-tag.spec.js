@@ -158,7 +158,7 @@ describe('regex', () => {
 
       it('should adjust indices with flag d for emulation groups', () => {
         if (!envSupportsFlagD) {
-          pending('requires support for flag d (Node 16)');
+          pending('requires support for flag d (Node.js 16)');
         }
         expect(regex({flags: 'd', subclass: true})`(?>.)`.exec('a').indices).toHaveSize(1);
         // ## Documenting behavior when subclass is not used

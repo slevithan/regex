@@ -14,7 +14,7 @@ Preprocessors are applied to the outer regex and interpolated patterns, but not 
 regexes or strings.
 @type {import('./utils.js').Preprocessor}
 */
-export function flagNPreprocessor(value, runningContext) {
+function flagNPreprocessor(value, runningContext) {
   value = String(value);
   let expression = '';
   let transformed = '';
@@ -39,3 +39,7 @@ export function flagNPreprocessor(value, runningContext) {
     runningContext,
   };
 }
+
+export {
+  flagNPreprocessor,
+};

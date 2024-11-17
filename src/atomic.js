@@ -10,7 +10,7 @@ Apply transformations for atomic groups: `(?>…)`.
 @param {import('./regex.js').PluginData} [data]
 @returns {string}
 */
-export function atomic(expression, data) {
+function atomic(expression, data) {
   if (!/\(\?>/.test(expression)) {
     return expression;
   }
@@ -116,7 +116,7 @@ Possessive quantifiers in Oniguruma and Onigmo are only: `?+`, `*+`, `++`.
 @param {string} expression
 @returns {string}
 */
-export function possessive(expression) {
+function possessive(expression) {
   if (!(new RegExp(`${baseQuantifier}\\+`).test(expression))) {
     return expression;
   }
@@ -180,3 +180,8 @@ export function possessive(expression) {
   }
   return expression;
 }
+
+export {
+  atomic,
+  possessive,
+};

@@ -1,4 +1,4 @@
-export class Pattern {
+class Pattern {
   #value;
   /** @param {string} value */
   constructor(value) {
@@ -27,7 +27,7 @@ Can be called as a function or template tag:
 @param {...string} substitutions
 @returns {Pattern}
 */
-export function pattern(first, ...substitutions) {
+function pattern(first, ...substitutions) {
   if (Array.isArray(first?.raw)) {
     return new Pattern(
       // Intersperse raw template strings and substitutions
@@ -38,3 +38,8 @@ export function pattern(first, ...substitutions) {
   }
   throw new Error(`Unexpected arguments: ${JSON.stringify([first, ...substitutions])}`);
 }
+
+export {
+  Pattern,
+  pattern,
+};

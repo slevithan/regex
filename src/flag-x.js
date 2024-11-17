@@ -29,7 +29,7 @@ Preprocessors are applied to the outer regex and interpolated patterns, but not 
 regexes or strings.
 @type {import('./utils.js').Preprocessor}
 */
-export function flagXPreprocessor(value, runningContext, options) {
+function flagXPreprocessor(value, runningContext, options) {
   value = String(value);
   let ignoringWs = false;
   let ignoringCharClassWs = false;
@@ -153,7 +153,7 @@ Remove `(?:)` token separators (most likely added by flag x) in cases where it's
 @param {string} expression
 @returns {string}
 */
-export function clean(expression) {
+function clean(expression) {
   const sep = String.raw`\(\?:\)`;
   // No need for repeated separators
   expression = replaceUnescaped(expression, `(?:${sep}){2,}`, '(?:)', Context.DEFAULT);
@@ -182,3 +182,8 @@ export function clean(expression) {
   );
   return expression;
 }
+
+export {
+  clean,
+  flagXPreprocessor,
+};

@@ -130,7 +130,7 @@ describe('subroutines', () => {
 
   it('should refer to the first group with name when duplicate capture names exist', () => {
     if (!envSupportsDuplicateNames) {
-      pending('requires support for duplicate names (Node 23)');
+      pending('requires support for duplicate names (Node.js 23)');
     }
     expect('aa ba bb'.match(regex('g')`(?<n>a)|(?<n>b)\g<n>`)).toEqual(['a', 'a', 'ba']);
     expect('aa ba bb'.match(regex('g')`(?<n>a)\g<n>|(?<n>b)`)).toEqual(['aa', 'b', 'b', 'b']);

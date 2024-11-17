@@ -7,7 +7,7 @@ import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped
 @param {import('./regex.js').PluginData} [data]
 @returns {string}
 */
-export function subroutines(expression, data) {
+function subroutines(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
@@ -334,3 +334,7 @@ function lastOf(arr) {
   // <https://caniuse.com/mdn-javascript_builtins_array_at>
   return arr[arr.length - 1];
 }
+
+export {
+  subroutines,
+};

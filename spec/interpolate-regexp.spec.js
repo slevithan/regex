@@ -64,7 +64,7 @@ describe('interpolation: regexes', () => {
 
     it('should treat pattern modifiers as noncapturing when adjusting backreferences', () => {
       if (!envSupportsFlagGroups) {
-        pending('requires support for flag groups (Node 23)');
+        pending('requires support for flag groups (Node.js 23)');
       }
       expect('abb').toMatch(regex`^(?i:a)${/(b)\1/}$`);
     });
