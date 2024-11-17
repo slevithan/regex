@@ -7,6 +7,7 @@ const emulationGroupMarker = '$E$';
 
 /**
 @class
+@augments RegExp
 @param {string | RegExpSubclass} expression
 @param {string} [flags]
 @param {{useEmulationGroups: boolean;}} [options]
