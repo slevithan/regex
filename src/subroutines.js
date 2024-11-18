@@ -1,5 +1,6 @@
 import {emulationGroupMarker} from './subclass.js';
-import {capturingDelim, countCaptures, namedCapturingDelim, spliceStr} from './utils.js';
+import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
+import {spliceStr} from './utils-internals.js';
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**

@@ -52,7 +52,6 @@ const envSupportsFlagV = (() => {
 const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~';
 const namedCapturingDelim = String.raw`\(\?<(?![=!])(?<captureName>[^>]+)>`;
 const capturingDelim = String.raw`\((?!\?)(?!(?<=\(\?\()DEFINE\))|${namedCapturingDelim}`;
-const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
 @param {string} expression
@@ -376,17 +375,6 @@ function sandboxUnsafeNulls(str, context) {
   return replaceUnescaped(str, String.raw`\\0(?!\d)`, '\\x00', context);
 }
 
-/**
-@param {string} str
-@param {number} pos
-@param {string} oldValue
-@param {string} newValue
-@returns {string}
-*/
-function spliceStr(str, pos, oldValue, newValue) {
-  return str.slice(0, pos) + newValue + str.slice(pos + oldValue.length);
-}
-
 export {
   adjustNumberedBackrefs,
   capturingDelim,
@@ -402,11 +390,9 @@ export {
   getBreakoutChar,
   getEndContextForIncompleteExpression,
   namedCapturingDelim,
-  noncapturingDelim,
   preprocess,
   RegexContext,
   sandboxLoneCharClassCaret,
   sandboxLoneDoublePunctuatorChar,
   sandboxUnsafeNulls,
-  spliceStr,
 };
