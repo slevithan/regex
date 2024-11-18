@@ -12,7 +12,7 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, has no dependencies, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
+Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
 
 Highlights include support for insignificant whitespace, comments, atomic groups and possessive quantifiers that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines and subroutine definition groups that enable powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 

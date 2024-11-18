@@ -30,11 +30,11 @@
     "bundle:cjs": "esbuild src/regex.js --format=cjs --bundle --sourcemap --outfile=dist/cjs/regex.js",
     "types": "tsc src/regex.js src/internals.js --rootDir src --declaration --allowJs --emitDeclarationOnly --outDir types",
     "prebuild": "rm -rf dist/* types/*",
-    "build": "npm run bundle:global && npm run bundle:esm && npm run bundle:cjs && npm run types",
+    "build": "pnpm run bundle:global && pnpm run bundle:esm && pnpm run bundle:cjs && pnpm run types",
     "postbuild": "node scripts/postbuild.js",
-    "pretest": "npm run build",
+    "pretest": "pnpm run build",
     "test": "jasmine && tsc --project spec/types/tsconfig.test.json && attw --pack . --entrypoints .",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "pnpm test"
   },
   "files": [
     "dist",
@@ -48,12 +48,14 @@
     "regex",
     "regexp"
   ],
+  "dependencies": {
+    "regex-utilities": "^2.3.0"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "~0.17.0",
     "esbuild": "^0.24.0",
     "expect-type": "^1.1.0",
     "jasmine": "^5.4.0",
-    "regex-utilities": "^2.3.0",
     "typescript": "~5.6.3"
   }
 }
