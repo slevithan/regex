@@ -51,19 +51,24 @@ With the Regex+ library, JavaScript steps up as one of the best regex flavors al
 
 ## 💎 Features
 
-- **A modern regex baseline** so you don't need to continually opt-in to best practices.
-  - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
-  - New flags:
-    - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-    - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
-  - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-- **Extended regex syntax**.
-  - Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
-  - Subroutines and definition groups enable powerful composition, improving readability and maintainability.
-  - Recursive matching is enabled by a plugin.
-- **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
-  - Interpolated strings have their special characters escaped.
-  - Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
+**A modern regex baseline** so you don't need to continually opt-in to best practices.
+
+- Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
+- New flags:
+  - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+  - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
+- No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
+
+**Extended regex syntax**.
+
+- Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
+- Subroutines and definition groups enable powerful composition, improving readability and maintainability.
+- Recursive matching via an official plugin.
+
+**Context-aware and safe interpolation** of regexes, strings, and partial patterns.
+
+- Interpolated strings have their special characters escaped.
+- Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
 
 ## 🕹️ Install and use
 
@@ -183,7 +188,7 @@ Try running this without the atomic group (as `/^(?:\w+\s?)+$/`) and, due to the
 <details>
   <summary>👉 <b>Learn more with examples</b></summary>
 
-Consider `` regex`(?>a+)ab` `` vs `` regex`(a+)ab` ``. The former (with an atomic group) doesn't match `'aaaab'`, but the latter does. The former doesn't match because:
+Consider `` regex`(?>a+)ab` `` vs `` regex`(?:a+)ab` ``. The former (with an atomic group) doesn't match `'aaaab'`, but the latter does. The former doesn't match because:
 
 - The regex engine starts by using the greedy `a+` within the atomic group to match all the `a`s in the target string.
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
@@ -222,7 +227,7 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 ### Possessive quantifiers
 
-Possessive quantifiers are created by adding `+` to any quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
+Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
 
 > Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (which could be a token, character class, or group).
 
