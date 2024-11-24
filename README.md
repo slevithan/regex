@@ -470,7 +470,7 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In `regex`, flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups in the outer regex, which follows the behavior of C++ (Ruby also always prevents this, despite not having flag <kbd>n</kbd>). Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, PCRE, Perl, and XRegExp, which share the <kbd>n</kbd> flag letter but call it *explicit capture*, *no auto capture*, or *nosubs*. In Regex+, flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups, which follows the behavior of C++. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors. Note that Ruby regexes, despite not having flag <kbd>n</kbd>, also prevent referring to named groups by number and make `(…)` noncapturing if named groups are present.
 
 ## 🧩 Interpolation
 
@@ -773,7 +773,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 ### Returning a string
 
-Function `rewrite` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful for tools that want to process the output.
+Function `rewrite` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful when you want to apply postprocessing to the output.
 
 ```js
 import {rewrite} from 'regex';
