@@ -65,6 +65,7 @@ class RegExpSubclass extends RegExp {
         }
       }
     }
+    // Note: `match.groups` and `match.indices.groups` not currently modified
     return match;
   }
 }

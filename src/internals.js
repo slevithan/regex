@@ -1,2 +1,2 @@
 export {atomic, possessive} from './atomic.js';
-export {RegExpSubclass} from './subclass.js';
+export {emulationGroupMarker, RegExpSubclass} from './subclass.js';
