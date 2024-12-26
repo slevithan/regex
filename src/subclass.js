@@ -111,21 +111,21 @@ function unmarkEmulationGroups(expression) {
   const marker = emulationGroupMarker.replace(/\$/g, '\\$');
   const _captureMap = [{exclude: false}];
   const _namesByIndex = {0: ''};
-  let captureNum = 0;
+  let realCaptureNum = 0;
   expression = replaceUnescaped(
     expression,
     String.raw`\((?:(?!\?)|\?<(?![=!])(?<name>[^>]+)>)(?<mark>(?:\$(?<transfer>[1-9]\d*))?${marker})?`,
     ({0: m, groups: {name, mark, transfer}}) => {
-      captureNum++;
-      if (name) {
-        _namesByIndex[captureNum] = name;
-      }
       if (mark) {
         _captureMap.push({
           exclude: true,
           transfer: transfer && +transfer,
         });
         return m.slice(0, -mark.length);
+      }
+      realCaptureNum++;
+      if (name) {
+        _namesByIndex[realCaptureNum] = name;
       }
       _captureMap.push({
         exclude: false,
