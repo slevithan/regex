@@ -1,5 +1,3 @@
-import {emulationGroupMarker} from '../src/subclass.js';
-
 describe('regex', () => {
   it('should accept a template', () => {
     expect(regex``).toBeInstanceOf(RegExp);

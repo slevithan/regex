@@ -1,4 +1,9 @@
 if (globalThis.Regex) {
   const {regex, pattern, rewrite} = Regex;
-  Object.assign(globalThis, {regex, pattern, rewrite});
+  Object.assign(globalThis, {
+    emulationGroupMarker: '$E$',
+    pattern,
+    regex,
+    rewrite,
+  });
 }
