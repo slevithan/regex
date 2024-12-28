@@ -470,7 +470,7 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, Oniguruma, PCRE, Perl, and XRegExp. It's not always specified by a flag, but where it can be (.NET, PCRE, Perl, XRegExp) it's always <kbd>n</kbd>. The option is variously called *explicit capture*, *no auto capture*, *don't capture group*, or *nosubs*. In Regex+, flag <kbd>n</kbd> also prevents using numbered backreferences to refer to named groups, which follows the behavior of C++ and the default handling of Oniguruma and Ruby. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, Oniguruma, PCRE, Perl, and XRegExp. Most of these share the flag letter <kbd>n</kbd>, but the option is variously called *explicit capture*, *no auto capture*, *don't capture group*, or *nosubs*. In Regex+, flag <kbd>n</kbd> also prevents using numbered backreferences to named groups, which follows the behavior of C++ and the default handling of Oniguruma and Ruby. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
 
 ## 🧩 Interpolation
 
