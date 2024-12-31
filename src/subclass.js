@@ -1,8 +1,9 @@
 import {Context, replaceUnescaped} from 'regex-utilities';
 
-// This marker was chosen because it's impossible to match (so its extemely unlikely to be used in
-// a user-provided regex); it's not at risk of being optimized away, transformed, or flagged as an
-// error by a plugin; and it ends with an unquantifiable token
+// This marker was chosen because it's valid native regex syntax (necessary for how it's used)
+// while being impossible to match (so its extemely unlikely to be used in a user-provided regex).
+// It's also at very low risk of being optimized away, transformed, or flagged as an error by a
+// plugin, and it ends with an unquantifiable token
 const emulationGroupMarker = '$E$';
 // Note: Emulation groups with transfer are also supported. They look like `($N$E$…)` where `N` is
 // an integer 1 or greater. They're not used directly by Regex+ but can be used by plugins and

@@ -64,6 +64,7 @@ With the Regex+ library, JavaScript steps up as one of the best regex flavors al
 - Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
 - Subroutines and definition groups enable powerful composition, improving readability and maintainability.
 - Recursive matching via an official plugin.
+- Custom syntax plugins supported.
 
 **Context-aware and safe interpolation** of regexes, strings, and partial patterns.
 
