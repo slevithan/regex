@@ -319,7 +319,7 @@ Above, the `{0}` quantifier at the end of the `(?<byte>…)` group allows *defin
 This next regex matches a record with multiple date fields, and captures each value:
 
 ```js
-const record = regex`
+const re = regex`
   ^ Admitted:\ (?<admitted> \g<date>) \n
     Released:\ (?<released> \g<date>) $
 
@@ -360,9 +360,8 @@ const re = regex`
     (?<day>   \d{2})
   )
 `;
-
 const record = 'Admitted: 2024-01-01\nReleased: 2024-01-03';
-const match = record.match(re);
+const match = re.exec(record);
 console.log(match.groups);
 /* → {
   admitted: '2024-01-01',
