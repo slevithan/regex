@@ -149,7 +149,10 @@ regex`^ (?<first>.) ${double} ${double} $`;
 // → /^(?<first>.)(.)\2(.)\3$/v
 ```
 
-See also this example of using a subroutine definition group to [refactor an IP address regex for readability](https://x.com/slevithan/status/1828112006353953055).
+See also the following examples of using subroutine definition groups to refactor regexes for readability and maintainability:
+
+- [IP address regex](https://x.com/slevithan/status/1828112006353953055).
+- [Date time regex](https://bsky.app/profile/slev.life/post/3lgc6ullyvk2x).
 
 ## ❓ Context
 
