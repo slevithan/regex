@@ -57,5 +57,6 @@
     "expect-type": "^1.1.0",
     "jasmine": "^5.5.0",
     "typescript": "~5.7.2"
-  }
+  },
+  "packageManager": "pnpm@9.15.4"
 }
