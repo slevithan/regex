@@ -12,7 +12,7 @@ class RegExpSubclass extends RegExp {
   /**
   @param {string | RegExpSubclass} expression
   @param {string} [flags]
-  @param {{emulationGroupNums?: Array<number> | null;}} [options]
+  @param {{hiddenCaptureNums?: Array<number> | null;}} [options]
   */
   constructor(expression, flags, options) {
     if (expression instanceof RegExp && options) {
@@ -21,9 +21,9 @@ class RegExpSubclass extends RegExp {
     super(expression, flags);
     // The third argument `options` isn't provided when regexes are copied as part of the internal
     // handling of string methods `matchAll` and `split`
-    const emulationGroupNums = options?.emulationGroupNums;
-    if (emulationGroupNums) {
-      this._captureMap = createCaptureMap(emulationGroupNums);
+    const hiddenCaptureNums = options?.hiddenCaptureNums;
+    if (hiddenCaptureNums) {
+      this._captureMap = createCaptureMap(hiddenCaptureNums);
     } else if (expression instanceof RegExpSubclass) {
       this._captureMap = expression._captureMap;
     }
@@ -62,12 +62,12 @@ class RegExpSubclass extends RegExp {
 /**
 Build the capturing group map (with emulation groups marked to indicate their submatches shouldn't
 appear in results), and remove the markers for captures that were added to emulate extended syntax.
-@param {Array<number>} emulationGroupNums
+@param {Array<number>} hiddenCaptureNums
 @returns {Map<number, {exclude: true;}>}
 */
-function createCaptureMap(emulationGroupNums) {
+function createCaptureMap(hiddenCaptureNums) {
   const captureMap = new Map();
-  for (const num of emulationGroupNums) {
+  for (const num of hiddenCaptureNums) {
     captureMap.set(num, {
       exclude: true,
     });

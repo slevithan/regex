@@ -16,7 +16,7 @@ function atomic(expression, data) {
   const aGDelim = '(?>';
   const emulatedAGDelim = '(?:(?=(';
   const captureNumMap = [0];
-  const addedEmulationGroupNums = [];
+  const addedHiddenCaptureNums = [];
   let numCapturesBeforeAG = 0;
   let numAGs = 0;
   let aGPos = NaN;
@@ -58,9 +58,9 @@ function atomic(expression, data) {
                 expression.slice(aGPos + aGDelim.length, index)
               }))<$$${addedCaptureNum}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
-            if (data?.emulationGroupNums) {
-              addedEmulationGroupNums.push(addedCaptureNum);
-              incrementIfAtLeast(data.emulationGroupNums, addedCaptureNum);
+            if (data?.hiddenCaptureNums) {
+              addedHiddenCaptureNums.push(addedCaptureNum);
+              incrementIfAtLeast(data.hiddenCaptureNums, addedCaptureNum);
             }
             break;
           }
@@ -75,8 +75,8 @@ function atomic(expression, data) {
   // contains additional atomic groups
   } while (hasProcessedAG);
 
-  if (data?.emulationGroupNums) {
-    data.emulationGroupNums.push(...addedEmulationGroupNums);
+  if (data?.hiddenCaptureNums) {
+    data.hiddenCaptureNums.push(...addedHiddenCaptureNums);
   }
 
   // Second pass to adjust numbered backrefs

@@ -12,7 +12,7 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
-  emulationGroupNums?: Array<number> | null;
+  hiddenCaptureNums?: Array<number> | null;
 }} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
@@ -109,7 +109,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   expression = plugged.expression;
   try {
     return opts.subclass ?
-      new RegExpSubclass(expression, opts.flags, {emulationGroupNums: plugged.emulationGroupNums}) :
+      new RegExpSubclass(expression, opts.flags, {hiddenCaptureNums: plugged.hiddenCaptureNums}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -204,17 +204,17 @@ function handlePreprocessors(template, substitutions, options) {
 */
 function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
-  // Plugins that deal with emulation groups modify `emulationGroupNums` in place
-  const emulationGroupNums = subclass ? [] : null;
+  // Plugins that deal with emulation groups modify `hiddenCaptureNums` in place
+  const hiddenCaptureNums = subclass ? [] : null;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
     ...(disable.x           ? [] : [clean]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags, emulationGroupNums}));
+  ].forEach(p => expression = p(expression, {flags, hiddenCaptureNums}));
   return {
-    emulationGroupNums,
+    hiddenCaptureNums,
     expression,
   };
 }

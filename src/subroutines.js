@@ -12,7 +12,7 @@ function subroutines(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, data?.emulationGroupNums ?? null);
+  const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? null);
   return processDefinitionGroup(transformed, namedGroups);
 }
 
@@ -40,10 +40,10 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {Array<number> | null} [emulationGroupNums]
+@param {Array<number> | null} [hiddenCaptureNums]
 @returns {string}
 */
-function processSubroutines(expression, namedGroups, emulationGroupNums) {
+function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   if (!/\\g</.test(expression)) {
     return expression;
   }
@@ -53,7 +53,7 @@ function processSubroutines(expression, namedGroups, emulationGroupNums) {
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
   const captureNumMap = [0];
-  const addedEmulationGroupNums = [];
+  const addedHiddenCaptureNums = [];
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let numCapturesPassedInsideThisSubroutine = 0;
@@ -86,8 +86,8 @@ function processSubroutines(expression, namedGroups, emulationGroupNums) {
           numCapturesPassedInsideThisSubroutine = 0;
           numCapturesPassedInsideSubroutines++;
           updateEmulationGroupTracking(
-            emulationGroupNums,
-            addedEmulationGroupNums,
+            hiddenCaptureNums,
+            addedHiddenCaptureNums,
             numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
           );
         }
@@ -106,8 +106,8 @@ function processSubroutines(expression, namedGroups, emulationGroupNums) {
             numCapturesPassedInsideThisSubroutine++;
             numCapturesPassedInsideSubroutines++;
             updateEmulationGroupTracking(
-              emulationGroupNums,
-              addedEmulationGroupNums,
+              hiddenCaptureNums,
+              addedHiddenCaptureNums,
               numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
             );
           }
@@ -172,8 +172,8 @@ function processSubroutines(expression, namedGroups, emulationGroupNums) {
     }
   }
 
-  if (emulationGroupNums) {
-    emulationGroupNums.push(...addedEmulationGroupNums);
+  if (hiddenCaptureNums) {
+    hiddenCaptureNums.push(...addedHiddenCaptureNums);
   }
 
   if (hasBackrefs) {
@@ -351,14 +351,14 @@ function lastOf(arr) {
 }
 
 /**
-@param {Array<number> | null} emulationGroupNums
-@param {Array<number>} addedEmulationGroupNums
+@param {Array<number> | null} hiddenCaptureNums
+@param {Array<number>} addedHiddenCaptureNums
 @param {number} addedCaptureNum
 */
-function updateEmulationGroupTracking(emulationGroupNums, addedEmulationGroupNums, addedCaptureNum) {
-  if (emulationGroupNums) {
-    addedEmulationGroupNums.push(addedCaptureNum);
-    incrementIfAtLeast(emulationGroupNums, addedCaptureNum);
+function updateEmulationGroupTracking(hiddenCaptureNums, addedHiddenCaptureNums, addedCaptureNum) {
+  if (hiddenCaptureNums) {
+    addedHiddenCaptureNums.push(addedCaptureNum);
+    incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
   }
 }
 
