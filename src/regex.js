@@ -12,7 +12,7 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
-  useEmulationGroups?: boolean;
+  emulationGroupNums?: Array<number>;
 }} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
@@ -105,10 +105,11 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     }
   });
 
-  expression = handlePlugins(expression, opts);
+  const plugged = handlePlugins(expression, opts);
+  expression = plugged.expression;
   try {
     return opts.subclass ?
-      new RegExpSubclass(expression, opts.flags, {useEmulationGroups: true}) :
+      new RegExpSubclass(expression, opts.flags, {emulationGroupNums: plugged.emulationGroupNums}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -128,14 +129,13 @@ Returns the processed expression and flags as strings.
 function rewrite(expression = '', options) {
   const opts = getOptions(options);
   if (opts.subclass) {
-    // Don't allow including emulation group markers in output
     throw new Error('Cannot use option subclass');
   }
   return {
     expression: handlePlugins(
       handlePreprocessors({raw: [expression]}, [], opts).template.raw[0],
       opts
-    ),
+    ).expression,
     flags: opts.flags,
   };
 }
@@ -204,14 +204,19 @@ function handlePreprocessors(template, substitutions, options) {
 */
 function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
+  // Plugins that deal with emulation groups modify `emulationGroupNums` in place
+  const emulationGroupNums = subclass ? [] : null;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
     ...(disable.x           ? [] : [clean]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags, useEmulationGroups: subclass}));
-  return expression;
+  ].forEach(p => expression = p(expression, {flags, emulationGroupNums}));
+  return {
+    emulationGroupNums,
+    expression,
+  };
 }
 
 /**

@@ -1,4 +1,3 @@
-import {emulationGroupMarker} from './subclass.js';
 import {CharClassContext, doublePunctuatorChars, getEndContextForIncompleteExpression, RegexContext, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {noncapturingDelim} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
@@ -173,16 +172,14 @@ function clean(expression) {
   //       so we already get an error from that.
   //   - If preceded by one of `()|.]^>`, `\\[bBdDfnrsStvwW]`, `(?:`, or a lookaround opening.
   //     - So long as the separator is not followed by a quantifier.
-  //   - And, not followed by an emulation group marker.
   // Examples of things that are not safe to remove `(?:)` at the boundaries of:
   // - Anywhere: Letters, numbers, or any of `-=_,<?*+{}`.
   // - If followed by any of `:!>`.
   // - If preceded by any of `\\[cgkpPux]`.
   // - Anything inside character classes.
-  const marker = emulationGroupMarker.replace(/\$/g, '\\$');
   expression = replaceUnescaped(
     expression,
-    String.raw`(?:${sep}(?=[)|.[$\\]|\((?!DEFINE)|$)|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!])|^)${sep}(?![?*+{]))(?!${marker})`,
+    String.raw`${sep}(?=[)|.[$\\]|\((?!DEFINE)|$)|(?<=[()|.\]^>]|\\[bBdDfnrsStvwW]|\(\?(?:[:=!]|<[=!])|^)${sep}(?![?*+{])`,
     '',
     Context.DEFAULT
   );

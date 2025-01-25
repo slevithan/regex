@@ -1,5 +1,4 @@
-import {emulationGroupMarker} from './subclass.js';
-import {noncapturingDelim, spliceStr} from './utils-internals.js';
+import {incrementIfAtLeast, noncapturingDelim, spliceStr} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
 
 const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
@@ -15,8 +14,9 @@ function atomic(expression, data) {
     return expression;
   }
   const aGDelim = '(?>';
-  const emulatedAGDelim = `(?:(?=(${data?.useEmulationGroups ? emulationGroupMarker : ''}`;
+  const emulatedAGDelim = '(?:(?=(';
   const captureNumMap = [0];
+  const addedEmulationGroupNums = [];
   let numCapturesBeforeAG = 0;
   let numAGs = 0;
   let aGPos = NaN;
@@ -49,14 +49,19 @@ function atomic(expression, data) {
         } else if (m === ')' && inAG) {
           if (!numGroupsOpenInAG) {
             numAGs++;
+            const addedCaptureNum = numCapturesBeforeAG + numAGs;
             // Replace `expression` and use `<$$N>` as a temporary wrapper for the backref so it
-            // can avoid backref renumbering afterward. Need to wrap the whole substitution
-            // (including the lookahead and following backref) in a noncapturing group to handle
-            // following quantifiers and literal digits
+            // can avoid backref renumbering afterward. Wrap the whole substitution (including the
+            // lookahead and following backref) in a noncapturing group to handle following
+            // quantifiers and literal digits
             expression = `${expression.slice(0, aGPos)}${emulatedAGDelim}${
                 expression.slice(aGPos + aGDelim.length, index)
-              }))<$$${numAGs + numCapturesBeforeAG}>)${expression.slice(index + 1)}`;
+              }))<$$${addedCaptureNum}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
+            if (data?.emulationGroupNums) {
+              addedEmulationGroupNums.push(addedCaptureNum);
+              incrementIfAtLeast(data.emulationGroupNums, addedCaptureNum);
+            }
             break;
           }
           numGroupsOpenInAG--;
@@ -66,9 +71,13 @@ function atomic(expression, data) {
         numCharClassesOpen--;
       }
     }
-  // Start over from the beginning of the last atomic group's contents, in case the processed group
+  // Start over from the beginning of the atomic group's contents, in case the processed group
   // contains additional atomic groups
   } while (hasProcessedAG);
+
+  if (data?.emulationGroupNums) {
+    data.emulationGroupNums.push(...addedEmulationGroupNums);
+  }
 
   // Second pass to adjust numbered backrefs
   expression = replaceUnescaped(

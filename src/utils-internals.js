@@ -3,6 +3,19 @@
 const noncapturingDelim = String.raw`\(\?(?:[:=!>A-Za-z\-]|<[=!]|\(DEFINE\))`;
 
 /**
+Updates the array in place by incrementing each value greater than or equal to the threshold.
+@param {Array<number>} arr
+@param {number} threshold
+*/
+function incrementIfAtLeast(arr, threshold) {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] >= threshold) {
+      arr[i]++;
+    }
+  }
+}
+
+/**
 @param {string} str
 @param {number} pos
 @param {string} oldValue
@@ -14,6 +27,7 @@ function spliceStr(str, pos, oldValue, newValue) {
 }
 
 export {
+  incrementIfAtLeast,
   noncapturingDelim,
   spliceStr,
 };

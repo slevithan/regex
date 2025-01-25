@@ -144,6 +144,12 @@ describe('regex', () => {
         expect(regex({subclass: false})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).not.toBe('b');
         expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, '$2$1')).not.toBe('ba');
         expect('ab'.replace(regex({subclass: false})`(?>(?<a>.))(?<b>.)`, (_, $1, $2) => $2 + $1)).not.toBe('ba');
+        // ## With subroutines
+        expect(regex({subclass: true})`(?<a>.)\k<a>\g<a>(?<b>.)`.exec('aaab')[2]).toBe('b');
+        // ## With subroutines and atomic groups
+        expect(regex({subclass: true})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab')[2]).toBe('b');
+        expect(regex({subclass: true})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab').length).toBe(3);
+        expect(regex({subclass: false})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab').length).toBe(6);
       });
 
       it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {
@@ -163,71 +169,6 @@ describe('regex', () => {
         expect(regex({flags: 'd', subclass: true})`(?>.)`.exec('a').indices).toHaveSize(1);
         // ## Documenting behavior when subclass is not used
         expect(regex({flags: 'd', subclass: false})`(?>.)`.exec('a').indices).toHaveSize(2);
-      });
-
-      it('should adjust for emulation groups with transfer', () => {
-        const transferTo1 = `$1${emulationGroupMarker}`;
-        expect(regex({subclass: true, disable: {n: true}})({raw: [
-          `^(a)(${transferTo1}b)$`
-        ]}).exec('ab')[1]).toBe('b');
-        expect(regex({subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${transferTo1}b)$`
-        ]}).exec('ab').groups.a).toBe('b');
-        expect(regex({subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${transferTo1}b)(${transferTo1}c)$`
-        ]}).exec('abc').groups.a).toBe('c');
-        // ## Documenting behavior without transfer
-        expect(regex({subclass: true, disable: {n: true}})({raw: [
-          `^(a)(${emulationGroupMarker}b)$`
-        ]}).exec('ab')[1]).toBe('a');
-        expect(regex({subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${emulationGroupMarker}b)$`
-        ]}).exec('ab').groups.a).toBe('a');
-      });
-
-      it('should adjust indices with flag d for emulation groups with transfer', () => {
-        if (!envSupportsFlagD) {
-          pending('requires support for flag d (Node.js 16)');
-        }
-        const transferTo1 = `$1${emulationGroupMarker}`;
-        expect(regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(a)(${transferTo1}b)$`
-        ]}).exec('ab').indices[1]).toEqual([1, 2]);
-        expect(regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${transferTo1}b)$`
-        ]}).exec('ab').indices.groups.a).toEqual([1, 2]);
-        expect(regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${transferTo1}b)(${transferTo1}c)$`
-        ]}).exec('abc').indices.groups.a).toEqual([2, 3]);
-        // ## Documenting behavior without transfer
-        expect(regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(a)(${emulationGroupMarker}b)$`
-        ]}).exec('ab').indices[1]).toEqual([0, 1]);
-        expect(regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(?<a>a)(${emulationGroupMarker}b)$`
-        ]}).exec('ab').indices.groups.a).toEqual([0, 1]);
-      });
-
-      it('should adjust for emulation groups with transfer given emulation groups that adjust capture indices', () => {
-        if (!envSupportsFlagD) {
-          pending('requires support for flag d (Node.js 16)');
-        }
-        const egm = emulationGroupMarker;
-        const transferTo1 = `$1${egm}`;
-        const transferTo2 = `$2${egm}`;
-        const match = regex({flags: 'd', subclass: true, disable: {n: true}})({raw: [
-          `^(${egm}(${egm}.))(?<a>(${transferTo2}.))(${transferTo1}(${transferTo2}.))(?<b>.)$`
-        ]}).exec('abcd');
-        expect(match[1]).toBe('c');
-        expect(match[2]).toBe('d');
-        expect(match).toHaveSize(3);
-        expect(match.indices[1]).toEqual([2, 3]);
-        expect(match.indices[2]).toEqual([3, 4]);
-        expect(match.indices).toHaveSize(3);
-        expect(match.groups.a).toBe('c');
-        expect(match.groups.b).toBe('d');
-        expect(match.indices.groups.a).toEqual([2, 3]);
-        expect(match.indices.groups.b).toEqual([3, 4]);
       });
     });
   });

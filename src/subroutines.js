@@ -1,6 +1,5 @@
-import {emulationGroupMarker} from './subclass.js';
 import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
-import {spliceStr} from './utils-internals.js';
+import {incrementIfAtLeast, spliceStr} from './utils-internals.js';
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
@@ -13,7 +12,7 @@ function subroutines(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, !!data?.useEmulationGroups);
+  const transformed = processSubroutines(expression, namedGroups, data?.emulationGroupNums);
   return processDefinitionGroup(transformed, namedGroups);
 }
 
@@ -41,19 +40,20 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {boolean} useEmulationGroups
+@param {Array<number>} [emulationGroupNums]
 @returns {string}
 */
-function processSubroutines(expression, namedGroups, useEmulationGroups) {
+function processSubroutines(expression, namedGroups, emulationGroupNums) {
   if (!/\\g</.test(expression)) {
     return expression;
   }
   // Can skip a lot of processing and avoid adding captures if there are no backrefs
   const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
-  const subroutineWrapper = hasBackrefs ? `(${useEmulationGroups ? emulationGroupMarker : ''}` : '(?:';
+  const subroutineWrapper = hasBackrefs ? '(' : '(?:';
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
   const captureNumMap = [0];
+  const addedEmulationGroupNums = [];
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let numCapturesPassedInsideThisSubroutine = 0;
@@ -85,6 +85,11 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
         if (hasBackrefs) {
           numCapturesPassedInsideThisSubroutine = 0;
           numCapturesPassedInsideSubroutines++;
+          updateEmulationGroupTracking(
+            emulationGroupNums,
+            addedEmulationGroupNums,
+            numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
+          );
         }
         openSubroutines.set(subroutineName, {
           // Incrementally decremented to track when we've left the group
@@ -100,6 +105,11 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
           if (hasBackrefs) {
             numCapturesPassedInsideThisSubroutine++;
             numCapturesPassedInsideSubroutines++;
+            updateEmulationGroupTracking(
+              emulationGroupNums,
+              addedEmulationGroupNums,
+              numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
+            );
           }
           // Named capturing group
           if (m !== '(') {
@@ -160,6 +170,10 @@ function processSubroutines(expression, namedGroups, useEmulationGroups) {
     } else if (m === ']') {
       numCharClassesOpen--;
     }
+  }
+
+  if (emulationGroupNums) {
+    emulationGroupNums.push(...addedEmulationGroupNums);
   }
 
   if (hasBackrefs) {
@@ -334,6 +348,13 @@ function lastOf(arr) {
   // Remove when support for ES2022 array method `at` (Node.js 16.6) is no longer an issue:
   // <https://caniuse.com/mdn-javascript_builtins_array_at>
   return arr[arr.length - 1];
+}
+
+function updateEmulationGroupTracking(emulationGroupNums, addedEmulationGroupNums, addedCaptureNum) {
+  if (emulationGroupNums) {
+    addedEmulationGroupNums.push(addedCaptureNum);
+    incrementIfAtLeast(emulationGroupNums, addedCaptureNum);
+  }
 }
 
 export {
