@@ -5,7 +5,7 @@ import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped
 /**
 @param {string} expression
 @param {import('./regex.js').PluginData} [data]
-@returns {string}
+@returns {Required<import('./regex.js').PluginResult>}
 */
 function subroutines(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
@@ -13,7 +13,10 @@ function subroutines(expression, data) {
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
   const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? null);
-  return processDefinitionGroup(transformed, namedGroups);
+  return {
+    hiddenCaptureNums: transformed.hiddenCaptureNums,
+    pattern: processDefinitionGroup(transformed.pattern, namedGroups),
+  };
 }
 
 // Explicitly exclude `&` from subroutine name chars because it's used by extension
@@ -40,13 +43,17 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {Array<number> | null} [hiddenCaptureNums]
-@returns {string}
+@param {Array<number> | null} hiddenCaptureNums
+@returns {Required<import('./regex.js').PluginResult>}
 */
 function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   if (!/\\g</.test(expression)) {
-    return expression;
+    return {
+      hiddenCaptureNums,
+      pattern: expression,
+    };
   }
+
   // Can skip a lot of processing and avoid adding captures if there are no backrefs
   const hasBackrefs = hasUnescaped(expression, '\\\\(?:[1-9]|k<[^>]+>)', Context.DEFAULT);
   const subroutineWrapper = hasBackrefs ? '(' : '(?:';
@@ -59,10 +66,9 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   let numCapturesPassedInsideThisSubroutine = 0;
   let numSubroutineCapturesTrackedInRemap = 0;
   let numCharClassesOpen = 0;
-  let result = expression;
   let match;
   token.lastIndex = 0;
-  while (match = token.exec(result)) {
+  while (match = token.exec(expression)) {
     const {0: m, index, groups: {subroutineName, capturingStart, backrefNum, backrefName}} = match;
     if (m === '[') {
       numCharClassesOpen++;
@@ -97,7 +103,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
         });
         openSubroutinesStack.push(subroutineName);
         // Expand the subroutine's contents into the pattern we're looping over
-        result = spliceStr(result, index, m, subroutineValue);
+        expression = spliceStr(expression, index, m, subroutineValue);
         token.lastIndex -= m.length - subroutineWrapper.length;
       } else if (capturingStart) {
         // Somewhere within an expanded subroutine
@@ -118,7 +124,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
             // Given that flag n prevents unnamed capture and thereby requires you to rely on named
             // backrefs and `groups`, switching to unnamed essentially accomplishes not creating a
             // capture. Can fully avoid capturing if there are no backrefs in the expression
-            result = spliceStr(result, index, m, subroutineWrapper);
+            expression = spliceStr(expression, index, m, subroutineWrapper);
             token.lastIndex -= m.length - subroutineWrapper.length;
           }
         } else if (hasBackrefs) {
@@ -154,7 +160,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
           // - c: The number of captures within `r`, not counting the effects of subroutines
           const subroutineNum = numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines - numCapturesPassedInsideThisSubroutine;
           const metadata = `\\k<$$b${num}s${subroutineNum}r${group.groupNum}c${group.numCaptures}>`;
-          result = spliceStr(result, index, m, metadata);
+          expression = spliceStr(expression, index, m, metadata);
           token.lastIndex += metadata.length - m.length;
         }
       } else if (m === ')') {
@@ -178,8 +184,8 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
 
   if (hasBackrefs) {
     // Second pass to adjust backrefs
-    result = replaceUnescaped(
-      result,
+    expression = replaceUnescaped(
+      expression,
       String.raw`\\(?:(?<bNum>[1-9]\d*)|k<\$\$b(?<bNumSub>\d+)s(?<subNum>\d+)r(?<refNum>\d+)c(?<refCaps>\d+)>)`,
       ({0: m, groups: {bNum, bNumSub, subNum, refNum, refCaps}}) => {
         if (bNum) {
@@ -202,7 +208,10 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
     );
   }
 
-  return result;
+  return {
+    hiddenCaptureNums,
+    pattern: expression,
+  };
 }
 
 // `(?:)` allowed because it can be added by flag x's preprocessing of whitespace and comments

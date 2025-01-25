@@ -57,7 +57,7 @@ describe('atomic groups', () => {
   });
 
   it('should handle atomic groups added by plugins', () => {
-    const plugin = str => str.replace(/\$$/, '(?>b+)$');
+    const plugin = str => ({pattern: str.replace(/\$$/, '(?>b+)$')});
     expect('aabb').toMatch(regex({plugins: [plugin]})`^(?>a+)$`);
   });
 
@@ -159,7 +159,7 @@ describe('possessive quantifiers', () => {
   });
 
   it('should handle possessive quantifiers added by plugins', () => {
-    const plugin = str => str.replace(/\$$/, 'b++$');
+    const plugin = str => ({pattern: str.replace(/\$$/, 'b++$')});
     expect('aabb').toMatch(regex({plugins: [plugin]})`^a+$`);
   });
 

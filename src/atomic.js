@@ -7,12 +7,17 @@ const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncaptur
 Apply transformations for atomic groups: `(?>…)`.
 @param {string} expression
 @param {import('./regex.js').PluginData} [data]
-@returns {string}
+@returns {Required<import('./regex.js').PluginResult>}
 */
 function atomic(expression, data) {
+  const hiddenCaptureNums = data?.hiddenCaptureNums;
   if (!/\(\?>/.test(expression)) {
-    return expression;
+    return {
+      hiddenCaptureNums,
+      pattern: expression,
+    };
   }
+
   const aGDelim = '(?>';
   const emulatedAGDelim = '(?:(?=(';
   const captureNumMap = [0];
@@ -58,9 +63,9 @@ function atomic(expression, data) {
                 expression.slice(aGPos + aGDelim.length, index)
               }))<$$${addedCaptureNum}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
-            if (data?.hiddenCaptureNums) {
+            if (hiddenCaptureNums) {
               addedHiddenCaptureNums.push(addedCaptureNum);
-              incrementIfAtLeast(data.hiddenCaptureNums, addedCaptureNum);
+              incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
             }
             break;
           }
@@ -75,8 +80,8 @@ function atomic(expression, data) {
   // contains additional atomic groups
   } while (hasProcessedAG);
 
-  if (data?.hiddenCaptureNums) {
-    data.hiddenCaptureNums.push(...addedHiddenCaptureNums);
+  if (hiddenCaptureNums) {
+    hiddenCaptureNums.push(...addedHiddenCaptureNums);
   }
 
   // Second pass to adjust numbered backrefs
@@ -95,7 +100,11 @@ function atomic(expression, data) {
     },
     Context.DEFAULT
   );
-  return expression;
+
+  return {
+    hiddenCaptureNums,
+    pattern: expression,
+  };
 }
 
 const baseQuantifier = String.raw`(?:[?*+]|\{\d+(?:,\d*)?\})`;
@@ -123,12 +132,15 @@ Transform posessive quantifiers into atomic groups. The posessessive quantifiers
 This follows Java, PCRE, Perl, and Python.
 Possessive quantifiers in Oniguruma and Onigmo are only: `?+`, `*+`, `++`.
 @param {string} expression
-@returns {string}
+@returns {import('./regex.js').PluginResult}
 */
 function possessive(expression) {
   if (!(new RegExp(`${baseQuantifier}\\+`).test(expression))) {
-    return expression;
+    return {
+      pattern: expression,
+    };
   }
+
   const openGroupIndices = [];
   let lastGroupIndex = null;
   let lastCharClassIndex = null;
@@ -187,7 +199,10 @@ function possessive(expression) {
     }
     lastToken = m;
   }
-  return expression;
+
+  return {
+    pattern: expression,
+  };
 }
 
 export {

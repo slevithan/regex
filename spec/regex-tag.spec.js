@@ -79,13 +79,13 @@ describe('regex', () => {
     });
 
     it('should allow adding plugins', () => {
-      const wiggle = str => str.replace(/~/g, 'wiggle');
-      const removeRepeatedChars = str => str.replace(/(\w)\1+/g, '$1');
+      const wiggle = str => ({pattern: str.replace(/~/g, 'wiggle')});
+      const removeRepeatedChars = str => ({pattern: str.replace(/(\w)\1+/g, '$1')});
       expect('wigle').toMatch(regex({plugins: [wiggle, removeRepeatedChars]})`^~$`);
     });
 
     it('should allow swapping the built-in unicodeSetsPlugin', () => {
-      const plugin = str => str.replace(/v/g, 'u');
+      const plugin = str => ({pattern: str.replace(/v/g, 'u')});
       expect('u').toMatch(regex({unicodeSetsPlugin: plugin, disable: {v: true}})`^v$`);
       if (!envSupportsFlagV) {
         expect('u').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
@@ -101,7 +101,7 @@ describe('regex', () => {
     });
 
     it('should not use the unicodeSetsPlugin when flag v is used', () => {
-      const plugin = str => str.replace(/v/g, 'u');
+      const plugin = str => ({pattern: str.replace(/v/g, 'u')});
       if (envSupportsFlagV) {
         expect('v').toMatch(regex({unicodeSetsPlugin: plugin})`^v$`);
       } else {

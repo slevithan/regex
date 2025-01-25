@@ -156,7 +156,7 @@ function flagXPreprocessor(value, runningContext, options) {
 /**
 Remove `(?:)` token separators (most likely added by flag x) in cases where it's safe to do so.
 @param {string} expression
-@returns {string}
+@returns {import('./regex.js').PluginResult}
 */
 function clean(expression) {
   const sep = String.raw`\(\?:\)`;
@@ -183,7 +183,9 @@ function clean(expression) {
     '',
     Context.DEFAULT
   );
-  return expression;
+  return {
+    pattern: expression,
+  };
 }
 
 export {

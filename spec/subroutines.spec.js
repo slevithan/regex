@@ -166,7 +166,7 @@ describe('subroutines', () => {
   });
 
   it('should handle subroutines added by plugins', () => {
-    const plugin = str => str.replace(/\$$/, '\\g<n>$');
+    const plugin = str => ({pattern: str.replace(/\$$/, '\\g<n>$')});
     expect('aa').toMatch(regex({plugins: [plugin]})`^(?<n>a)$`);
   });
 

@@ -14,12 +14,16 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
   flags?: string;
   hiddenCaptureNums?: Array<number> | null;
 }} PluginData
+@typedef {{
+  hiddenCaptureNums?: Array<number> | null;
+  pattern: string;
+}} PluginResult
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
   flags?: string;
   subclass?: boolean;
-  plugins?: Array<(expression: string, data: PluginData) => string>;
-  unicodeSetsPlugin?: ((expression: string, data: PluginData) => string) | null;
+  plugins?: Array<(expression: string, data: PluginData) => PluginResult>;
+  unicodeSetsPlugin?: ((expression: string, data: PluginData) => PluginResult) | null;
   disable?: {
     x?: boolean;
     n?: boolean;
@@ -106,7 +110,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   });
 
   const plugged = handlePlugins(expression, opts);
-  expression = plugged.expression;
+  expression = plugged.pattern;
   try {
     return opts.subclass ?
       new RegExpSubclass(expression, opts.flags, {hiddenCaptureNums: plugged.hiddenCaptureNums}) :
@@ -135,7 +139,7 @@ function rewrite(expression = '', options) {
     expression: handlePlugins(
       handlePreprocessors({raw: [expression]}, [], opts).template.raw[0],
       opts
-    ).expression,
+    ).pattern,
     flags: opts.flags,
   };
 }
@@ -200,22 +204,30 @@ function handlePreprocessors(template, substitutions, options) {
 /**
 @param {string} expression
 @param {Required<RegexTagOptions>} options
-@returns {string}
+@returns {Required<PluginResult>}
 */
 function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
-  // Plugins that deal with emulation groups modify `hiddenCaptureNums` in place
-  const hiddenCaptureNums = subclass ? [] : null;
+  let hiddenCaptureNums = subclass ? [] : null;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
     ...(disable.x           ? [] : [clean]),
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
-  ].forEach(p => expression = p(expression, {flags, hiddenCaptureNums}));
+  ].forEach(plugin => {
+    const result = plugin(expression, {flags, hiddenCaptureNums});
+    if (typeof result?.pattern !== 'string') {
+      throw new Error('Plugin must return an object with a string property "pattern"');
+    }
+    expression = result.pattern;
+    if (subclass && result.hiddenCaptureNums) {
+      hiddenCaptureNums = result.hiddenCaptureNums;
+    }
+  });
   return {
     hiddenCaptureNums,
-    expression,
+    pattern: expression,
   };
 }
 
