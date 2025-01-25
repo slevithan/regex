@@ -1,31 +1,31 @@
 describe('rewrite', () => {
   function toRegExp(expression, options) {
     const result = rewrite(expression, options);
-    return new RegExp(result.expression, result.flags);
+    return new RegExp(result.pattern, result.flags);
   }
 
   it('should accept empty arguments', () => {
-    expect(rewrite().expression).toBe('');
-    expect(rewrite(undefined).expression).toBe('');
-    expect(rewrite(undefined, undefined).expression).toBe('');
+    expect(rewrite().pattern).toBe('');
+    expect(rewrite(undefined).pattern).toBe('');
+    expect(rewrite(undefined, undefined).pattern).toBe('');
   });
 
   it('should coerce first argument to string', () => {
-    expect(rewrite(null).expression).toBe('null');
-    expect(rewrite(0).expression).toBe('0');
-    expect(rewrite(99).expression).toBe('99');
-    expect(rewrite(NaN).expression).toBe('NaN');
-    expect(rewrite(true).expression).toBe('true');
-    expect(rewrite(false).expression).toBe('false');
-    expect(rewrite(/\./).expression).toBe('/\\./');
-    expect(rewrite([]).expression).toBe('');
-    expect(rewrite(['^']).expression).toBe('^');
-    expect(rewrite({}, {disable: {x: true}}).expression).toBe('[object Object]');
+    expect(rewrite(null).pattern).toBe('null');
+    expect(rewrite(0).pattern).toBe('0');
+    expect(rewrite(99).pattern).toBe('99');
+    expect(rewrite(NaN).pattern).toBe('NaN');
+    expect(rewrite(true).pattern).toBe('true');
+    expect(rewrite(false).pattern).toBe('false');
+    expect(rewrite(/\./).pattern).toBe('/\\./');
+    expect(rewrite([]).pattern).toBe('');
+    expect(rewrite(['^']).pattern).toBe('^');
+    expect(rewrite({}, {disable: {x: true}}).pattern).toBe('[object Object]');
   });
 
   it('should accept a string without options', () => {
-    expect(rewrite('').expression).toBe('');
-    expect(rewrite('.').expression).toBe('.');
+    expect(rewrite('').pattern).toBe('');
+    expect(rewrite('.').pattern).toBe('.');
   });
 
   describe('implicit flags', () => {

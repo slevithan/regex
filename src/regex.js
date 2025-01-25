@@ -128,7 +128,10 @@ const regexFromTemplate = (options, template, ...substitutions) => {
 Returns the processed expression and flags as strings.
 @param {string} expression
 @param {RegexTagOptions} [options]
-@returns {{expression: string; flags: string;}}
+@returns {{
+  pattern: string;
+  flags: string;
+}}
 */
 function rewrite(expression = '', options) {
   const opts = getOptions(options);
@@ -136,7 +139,9 @@ function rewrite(expression = '', options) {
     throw new Error('Cannot use option subclass');
   }
   return {
-    expression: handlePlugins(
+    // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
+    // in code to refer to regex source strings, except in the public API
+    pattern: handlePlugins(
       handlePreprocessors({raw: [expression]}, [], opts).template.raw[0],
       opts
     ).pattern,
@@ -227,6 +232,8 @@ function handlePlugins(expression, options) {
   });
   return {
     hiddenCaptureNums,
+    // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
+    // in code to refer to regex source strings, except in the public API
     pattern: expression,
   };
 }
