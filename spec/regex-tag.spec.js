@@ -148,8 +148,8 @@ describe('regex', () => {
         expect(regex({subclass: true})`(?<a>.)\k<a>\g<a>(?<b>.)`.exec('aaab')[2]).toBe('b');
         // ## With subroutines and atomic groups
         expect(regex({subclass: true})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab')[2]).toBe('b');
-        expect(regex({subclass: true})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab').length).toBe(3);
-        expect(regex({subclass: false})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab').length).toBe(6);
+        expect(regex({subclass: true})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab')).toHaveSize(3);
+        expect(regex({subclass: false})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab')).toHaveSize(6);
       });
 
       it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {

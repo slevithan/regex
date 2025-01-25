@@ -12,7 +12,7 @@ function subroutines(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, data?.emulationGroupNums);
+  const transformed = processSubroutines(expression, namedGroups, data?.emulationGroupNums ?? null);
   return processDefinitionGroup(transformed, namedGroups);
 }
 
@@ -40,7 +40,7 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {Array<number>} [emulationGroupNums]
+@param {Array<number> | null} [emulationGroupNums]
 @returns {string}
 */
 function processSubroutines(expression, namedGroups, emulationGroupNums) {
@@ -350,6 +350,11 @@ function lastOf(arr) {
   return arr[arr.length - 1];
 }
 
+/**
+@param {Array<number> | null} emulationGroupNums
+@param {Array<number>} addedEmulationGroupNums
+@param {number} addedCaptureNum
+*/
 function updateEmulationGroupTracking(emulationGroupNums, addedEmulationGroupNums, addedCaptureNum) {
   if (emulationGroupNums) {
     addedEmulationGroupNums.push(addedCaptureNum);

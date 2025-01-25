@@ -12,7 +12,7 @@ class RegExpSubclass extends RegExp {
   /**
   @param {string | RegExpSubclass} expression
   @param {string} [flags]
-  @param {{emulationGroupNums: Array<number>;}} [options]
+  @param {{emulationGroupNums?: Array<number> | null;}} [options]
   */
   constructor(expression, flags, options) {
     if (expression instanceof RegExp && options) {

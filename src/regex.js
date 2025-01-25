@@ -12,7 +12,7 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
-  emulationGroupNums?: Array<number>;
+  emulationGroupNums?: Array<number> | null;
 }} PluginData
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{

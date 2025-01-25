@@ -1,15 +1,15 @@
 describe('flag n', () => {
   it('should cause () to be noncapturing', () => {
-    expect(regex`()`.exec('').length).toBe(1);
+    expect(regex`()`.exec('')).toHaveSize(1);
   });
 
   it('should continue to treat (?:) as noncapturing', () => {
-    expect(regex`(?:)`.exec('').length).toBe(1);
+    expect(regex`(?:)`.exec('')).toHaveSize(1);
   });
 
   it('should continue to allow (?<name>) for capturing', () => {
-    expect(regex`(?<name>)`.exec('').length).toBe(2);
-    expect(regex`(?<name>)()`.exec('').length).toBe(2);
+    expect(regex`(?<name>)`.exec('')).toHaveSize(2);
+    expect(regex`(?<name>)()`.exec('')).toHaveSize(2);
   });
 
   it('should not allow numbered backreferences', () => {
