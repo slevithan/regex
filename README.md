@@ -746,7 +746,7 @@ Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means 
 
 > This option isn't enabled by default because it would prevent Regex+'s Babel plugin from emitting regex literals. It also has a small performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
 
-**`plugins`** — An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an updated pattern string, and are called with two arguments:
+**`plugins`** — An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an object with a string property `pattern`, and are called with two arguments:
 
 1. The pattern, as processed so far by preceding plugins, etc.
 2. An object with a `flags` property that includes the native (non-emulated) flags that will be used by the regex.
@@ -776,15 +776,15 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 ### Returning a string
 
-Function `rewrite` returns an object with properties `expression` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful when you want to apply postprocessing to the output.
+Function `rewrite` returns an object with properties `pattern` and `flags` as strings, rather than returning a `RegExp` instance. This can be useful when you want to apply postprocessing to the output.
 
 ```js
 import {rewrite} from 'regex';
 rewrite('^ (ab | cd)', {flags: 'm'});
-// → {expression: '^(?:ab|cd)', flags: 'mv'}
+// → {pattern: '^(?:ab|cd)', flags: 'mv'}
 ```
 
-`rewrite` shares all of `regex`'s options (described above) except `subclass`. Providing the resulting `expression` and `flags` to the `RegExp` constructor produces the same result as using the `regex` tag.
+`rewrite` shares all of `regex`'s options (described above) except `subclass`. Providing the resulting `pattern` and `flags` to the `RegExp` constructor produces the same result as using the `regex` tag.
 
 > Since `rewrite` isn't a template tag, it doesn't provide context-aware interpolation and doesn't automatically handle input as a raw string (you need to escape your backslashes).
 
