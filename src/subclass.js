@@ -12,7 +12,9 @@ class RegExpSubclass extends RegExp {
   /**
   @param {string | RegExpSubclass} expression
   @param {string} [flags]
-  @param {{hiddenCaptureNums?: Array<number> | null;}} [options]
+  @param {{
+    hiddenCaptureNums?: Array<number>;
+  }} [options]
   */
   constructor(expression, flags, options) {
     if (expression instanceof RegExp && options) {
@@ -60,8 +62,8 @@ class RegExpSubclass extends RegExp {
 }
 
 /**
-Build the capturing group map (with emulation groups marked to indicate their submatches shouldn't
-appear in results), and remove the markers for captures that were added to emulate extended syntax.
+Build the capturing group map, with emulation groups marked to indicate their submatches shouldn't
+appear in results.
 @param {Array<number>} hiddenCaptureNums
 @returns {Map<number, {exclude: true;}>}
 */

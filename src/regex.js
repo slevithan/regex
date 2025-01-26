@@ -12,10 +12,10 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
-  hiddenCaptureNums?: Array<number> | null;
+  hiddenCaptureNums?: Array<number>;
 }} PluginData
 @typedef {{
-  hiddenCaptureNums?: Array<number> | null;
+  hiddenCaptureNums?: Array<number>;
   pattern: string;
 }} PluginResult
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
@@ -212,8 +212,8 @@ function handlePreprocessors(template, substitutions, options) {
 @returns {Required<PluginResult>}
 */
 function handlePlugins(expression, options) {
-  const {flags, plugins, unicodeSetsPlugin, disable, subclass} = options;
-  let hiddenCaptureNums = subclass ? [] : null;
+  const {flags, plugins, unicodeSetsPlugin, disable} = options;
+  let hiddenCaptureNums = [];
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
@@ -226,7 +226,7 @@ function handlePlugins(expression, options) {
       throw new Error('Plugin must return an object with a string property "pattern"');
     }
     expression = result.pattern;
-    if (subclass && result.hiddenCaptureNums) {
+    if (result.hiddenCaptureNums) {
       hiddenCaptureNums = result.hiddenCaptureNums;
     }
   });

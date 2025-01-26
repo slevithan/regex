@@ -10,7 +10,7 @@ Apply transformations for atomic groups: `(?>…)`.
 @returns {Required<import('./regex.js').PluginResult>}
 */
 function atomic(expression, data) {
-  const hiddenCaptureNums = data?.hiddenCaptureNums;
+  const hiddenCaptureNums = data?.hiddenCaptureNums ?? [];
   if (!/\(\?>/.test(expression)) {
     return {
       hiddenCaptureNums,
@@ -63,10 +63,8 @@ function atomic(expression, data) {
                 expression.slice(aGPos + aGDelim.length, index)
               }))<$$${addedCaptureNum}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
-            if (hiddenCaptureNums) {
-              addedHiddenCaptureNums.push(addedCaptureNum);
-              incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
-            }
+            addedHiddenCaptureNums.push(addedCaptureNum);
+            incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
             break;
           }
           numGroupsOpenInAG--;
@@ -80,9 +78,7 @@ function atomic(expression, data) {
   // contains additional atomic groups
   } while (hasProcessedAG);
 
-  if (hiddenCaptureNums) {
-    hiddenCaptureNums.push(...addedHiddenCaptureNums);
-  }
+  hiddenCaptureNums.push(...addedHiddenCaptureNums);
 
   // Second pass to adjust numbered backrefs
   expression = replaceUnescaped(

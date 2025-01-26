@@ -12,7 +12,7 @@ function subroutines(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? null);
+  const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? []);
   return {
     hiddenCaptureNums: transformed.hiddenCaptureNums,
     pattern: processDefinitionGroup(transformed.pattern, namedGroups),
@@ -43,7 +43,7 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {Array<number> | null} hiddenCaptureNums
+@param {Array<number>} hiddenCaptureNums
 @returns {Required<import('./regex.js').PluginResult>}
 */
 function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
@@ -178,9 +178,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
     }
   }
 
-  if (hiddenCaptureNums) {
-    hiddenCaptureNums.push(...addedHiddenCaptureNums);
-  }
+  hiddenCaptureNums.push(...addedHiddenCaptureNums);
 
   if (hasBackrefs) {
     // Second pass to adjust backrefs
@@ -360,15 +358,13 @@ function lastOf(arr) {
 }
 
 /**
-@param {Array<number> | null} hiddenCaptureNums
+@param {Array<number>} hiddenCaptureNums
 @param {Array<number>} addedHiddenCaptureNums
 @param {number} addedCaptureNum
 */
 function updateEmulationGroupTracking(hiddenCaptureNums, addedHiddenCaptureNums, addedCaptureNum) {
-  if (hiddenCaptureNums) {
-    addedHiddenCaptureNums.push(addedCaptureNum);
-    incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
-  }
+  addedHiddenCaptureNums.push(addedCaptureNum);
+  incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
 }
 
 export {
