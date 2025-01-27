@@ -72,7 +72,7 @@ function atomic(expression, data) {
               const newCaptureTransfers = new Map();
               captureTransfers.forEach((value, key) => {
                 // `key` can be a group name or number
-                let newKey = key + (key >= addedCaptureNum ? 1 : 0);
+                let newKey = key >= addedCaptureNum ? key + 1 : key;
                 let newValue = value + (value >= addedCaptureNum ? 1 : 0);
                 newCaptureTransfers.set(newKey, newValue);
               });
