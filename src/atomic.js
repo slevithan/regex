@@ -11,10 +11,13 @@ Apply transformations for atomic groups: `(?>…)`.
 */
 function atomic(expression, data) {
   const hiddenCaptureNums = data?.hiddenCaptureNums ?? [];
+  // Capture transfer is used by <github.com/slevithan/oniguruma-to-es>
+  let captureTransfers = data?.captureTransfers ?? new Map();
   if (!/\(\?>/.test(expression)) {
     return {
-      hiddenCaptureNums,
       pattern: expression,
+      captureTransfers,
+      hiddenCaptureNums,
     };
   }
 
@@ -65,6 +68,16 @@ function atomic(expression, data) {
             hasProcessedAG = true;
             addedHiddenCaptureNums.push(addedCaptureNum);
             incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
+            if (captureTransfers.size) {
+              const newCaptureTransfers = new Map();
+              captureTransfers.forEach((value, key) => {
+                // `key` can be a group name or number
+                let newKey = key + (key >= addedCaptureNum ? 1 : 0);
+                let newValue = value + (value >= addedCaptureNum ? 1 : 0);
+                newCaptureTransfers.set(newKey, newValue);
+              });
+              captureTransfers = newCaptureTransfers;
+            }
             break;
           }
           numGroupsOpenInAG--;
@@ -98,8 +111,9 @@ function atomic(expression, data) {
   );
 
   return {
-    hiddenCaptureNums,
     pattern: expression,
+    captureTransfers,
+    hiddenCaptureNums,
   };
 }
 

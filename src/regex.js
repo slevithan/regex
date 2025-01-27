@@ -12,11 +12,13 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
+  captureTransfers?: Map<number | string, number>;
   hiddenCaptureNums?: Array<number>;
 }} PluginData
 @typedef {{
-  hiddenCaptureNums?: Array<number>;
   pattern: string;
+  captureTransfers?: Map<number | string, number>;
+  hiddenCaptureNums?: Array<number>;
 }} PluginResult
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
@@ -113,7 +115,9 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   expression = plugged.pattern;
   try {
     return opts.subclass ?
-      new RegExpSubclass(expression, opts.flags, {hiddenCaptureNums: plugged.hiddenCaptureNums}) :
+      new RegExpSubclass(expression, opts.flags, {
+        hiddenCaptureNums: plugged.hiddenCaptureNums,
+      }) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -231,10 +235,10 @@ function handlePlugins(expression, options) {
     }
   });
   return {
-    hiddenCaptureNums,
     // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
     // in code to refer to regex source strings, except in the public API
     pattern: expression,
+    hiddenCaptureNums,
   };
 }
 

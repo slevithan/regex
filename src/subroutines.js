@@ -5,7 +5,7 @@ import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped
 /**
 @param {string} expression
 @param {import('./regex.js').PluginData} [data]
-@returns {Required<import('./regex.js').PluginResult>}
+@returns {import('./regex.js').PluginResult}
 */
 function subroutines(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
@@ -14,8 +14,8 @@ function subroutines(expression, data) {
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
   const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? []);
   return {
-    hiddenCaptureNums: transformed.hiddenCaptureNums,
     pattern: processDefinitionGroup(transformed.pattern, namedGroups),
+    hiddenCaptureNums: transformed.hiddenCaptureNums,
   };
 }
 
@@ -44,13 +44,13 @@ Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @param {Array<number>} hiddenCaptureNums
-@returns {Required<import('./regex.js').PluginResult>}
+@returns {import('./regex.js').PluginResult}
 */
 function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   if (!/\\g</.test(expression)) {
     return {
-      hiddenCaptureNums,
       pattern: expression,
+      hiddenCaptureNums,
     };
   }
 
@@ -207,8 +207,8 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   }
 
   return {
-    hiddenCaptureNums,
     pattern: expression,
+    hiddenCaptureNums,
   };
 }
 
