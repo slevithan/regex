@@ -12,10 +12,10 @@ function subroutines(expression, data) {
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
   const namedGroups = getNamedCapturingGroups(expression, {includeContents: true});
-  const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptureNums ?? []);
+  const transformed = processSubroutines(expression, namedGroups, data?.hiddenCaptures ?? []);
   return {
     pattern: processDefinitionGroup(transformed.pattern, namedGroups),
-    hiddenCaptureNums: transformed.hiddenCaptureNums,
+    hiddenCaptures: transformed.hiddenCaptures,
   };
 }
 
@@ -43,14 +43,14 @@ ${subroutinePattern}
 Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
-@param {Array<number>} hiddenCaptureNums
+@param {Array<number>} hiddenCaptures
 @returns {import('./regex.js').PluginResult}
 */
-function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
+function processSubroutines(expression, namedGroups, hiddenCaptures) {
   if (!/\\g</.test(expression)) {
     return {
       pattern: expression,
-      hiddenCaptureNums,
+      hiddenCaptures,
     };
   }
 
@@ -60,7 +60,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
   const openSubroutines = new Map();
   const openSubroutinesStack = [];
   const captureNumMap = [0];
-  const addedHiddenCaptureNums = [];
+  const addedHiddenCaptures = [];
   let numCapturesPassedOutsideSubroutines = 0;
   let numCapturesPassedInsideSubroutines = 0;
   let numCapturesPassedInsideThisSubroutine = 0;
@@ -92,8 +92,8 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
           numCapturesPassedInsideThisSubroutine = 0;
           numCapturesPassedInsideSubroutines++;
           updateHiddenCaptureTracking(
-            hiddenCaptureNums,
-            addedHiddenCaptureNums,
+            hiddenCaptures,
+            addedHiddenCaptures,
             numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
           );
         }
@@ -112,8 +112,8 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
             numCapturesPassedInsideThisSubroutine++;
             numCapturesPassedInsideSubroutines++;
             updateHiddenCaptureTracking(
-              hiddenCaptureNums,
-              addedHiddenCaptureNums,
+              hiddenCaptures,
+              addedHiddenCaptures,
               numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
             );
           }
@@ -178,7 +178,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
     }
   }
 
-  hiddenCaptureNums.push(...addedHiddenCaptureNums);
+  hiddenCaptures.push(...addedHiddenCaptures);
 
   if (hasBackrefs) {
     // Second pass to adjust backrefs
@@ -208,7 +208,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
 
   return {
     pattern: expression,
-    hiddenCaptureNums,
+    hiddenCaptures,
   };
 }
 
@@ -358,13 +358,13 @@ function lastOf(arr) {
 }
 
 /**
-@param {Array<number>} hiddenCaptureNums
-@param {Array<number>} addedHiddenCaptureNums
+@param {Array<number>} hiddenCaptures
+@param {Array<number>} addedHiddenCaptures
 @param {number} addedCaptureNum
 */
-function updateHiddenCaptureTracking(hiddenCaptureNums, addedHiddenCaptureNums, addedCaptureNum) {
-  addedHiddenCaptureNums.push(addedCaptureNum);
-  incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
+function updateHiddenCaptureTracking(hiddenCaptures, addedHiddenCaptures, addedCaptureNum) {
+  addedHiddenCaptures.push(addedCaptureNum);
+  incrementIfAtLeast(hiddenCaptures, addedCaptureNum);
 }
 
 export {

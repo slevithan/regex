@@ -13,12 +13,12 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {{
   flags?: string;
   captureTransfers?: Map<number | string, number>;
-  hiddenCaptureNums?: Array<number>;
+  hiddenCaptures?: Array<number>;
 }} PluginData
 @typedef {{
   pattern: string;
   captureTransfers?: Map<number | string, number>;
-  hiddenCaptureNums?: Array<number>;
+  hiddenCaptures?: Array<number>;
 }} PluginResult
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate
 @typedef {{
@@ -115,9 +115,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   expression = plugged.pattern;
   try {
     return opts.subclass ?
-      new RegExpSubclass(expression, opts.flags, {
-        hiddenCaptureNums: plugged.hiddenCaptureNums,
-      }) :
+      new RegExpSubclass(expression, opts.flags, {hiddenCaptures: plugged.hiddenCaptures}) :
       new RegExp(expression, opts.flags);
   } catch (err) {
     // Improve DX by always including the generated source in the error message. Some browsers
@@ -217,7 +215,7 @@ function handlePreprocessors(template, substitutions, options) {
 */
 function handlePlugins(expression, options) {
   const {flags, plugins, unicodeSetsPlugin, disable} = options;
-  let hiddenCaptureNums = [];
+  let hiddenCaptures = [];
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
@@ -225,20 +223,20 @@ function handlePlugins(expression, options) {
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
   ].forEach(plugin => {
-    const result = plugin(expression, {flags, hiddenCaptureNums});
+    const result = plugin(expression, {flags, hiddenCaptures});
     if (typeof result?.pattern !== 'string') {
       throw new Error('Plugin must return an object with a string property "pattern"');
     }
     expression = result.pattern;
-    if (result.hiddenCaptureNums) {
-      hiddenCaptureNums = result.hiddenCaptureNums;
+    if (result.hiddenCaptures) {
+      hiddenCaptures = result.hiddenCaptures;
     }
   });
   return {
     // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
     // in code to refer to regex source strings, except in the public API
     pattern: expression,
-    hiddenCaptureNums,
+    hiddenCaptures,
   };
 }
 

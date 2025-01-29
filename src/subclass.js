@@ -15,7 +15,7 @@ class RegExpSubclass extends RegExp {
   @param {string} expression
   @param {string} [flags]
   @param {{
-    hiddenCaptureNums?: Array<number>;
+    hiddenCaptures?: Array<number>;
   }} [options]
   */
   /**
@@ -38,8 +38,8 @@ class RegExpSubclass extends RegExp {
       }
     } else {
       super(expression, flags);
-      const hiddenCaptureNums = options?.hiddenCaptureNums ?? [];
-      this._captureMap = createCaptureMap(hiddenCaptureNums);
+      const hiddenCaptures = options?.hiddenCaptures ?? [];
+      this._captureMap = createCaptureMap(hiddenCaptures);
     }
   }
   /**
@@ -76,12 +76,12 @@ class RegExpSubclass extends RegExp {
 /**
 Build the capturing group map, with hidden captures marked to indicate their submatches shouldn't
 appear in match results.
-@param {Array<number>} hiddenCaptureNums
+@param {Array<number>} hiddenCaptures
 @returns {Map<number, {hidden: true;}>}
 */
-function createCaptureMap(hiddenCaptureNums) {
+function createCaptureMap(hiddenCaptures) {
   const captureMap = new Map();
-  for (const num of hiddenCaptureNums) {
+  for (const num of hiddenCaptures) {
     captureMap.set(num, {
       hidden: true,
     });

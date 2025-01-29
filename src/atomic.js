@@ -10,21 +10,21 @@ Apply transformations for atomic groups: `(?>…)`.
 @returns {Required<import('./regex.js').PluginResult>}
 */
 function atomic(expression, data) {
-  const hiddenCaptureNums = data?.hiddenCaptureNums ?? [];
+  const hiddenCaptures = data?.hiddenCaptures ?? [];
   // Capture transfer is used by <github.com/slevithan/oniguruma-to-es>
   let captureTransfers = data?.captureTransfers ?? new Map();
   if (!/\(\?>/.test(expression)) {
     return {
       pattern: expression,
       captureTransfers,
-      hiddenCaptureNums,
+      hiddenCaptures,
     };
   }
 
   const aGDelim = '(?>';
   const emulatedAGDelim = '(?:(?=(';
   const captureNumMap = [0];
-  const addedHiddenCaptureNums = [];
+  const addedHiddenCaptures = [];
   let numCapturesBeforeAG = 0;
   let numAGs = 0;
   let aGPos = NaN;
@@ -66,8 +66,8 @@ function atomic(expression, data) {
                 expression.slice(aGPos + aGDelim.length, index)
               }))<$$${addedCaptureNum}>)${expression.slice(index + 1)}`;
             hasProcessedAG = true;
-            addedHiddenCaptureNums.push(addedCaptureNum);
-            incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
+            addedHiddenCaptures.push(addedCaptureNum);
+            incrementIfAtLeast(hiddenCaptures, addedCaptureNum);
             if (captureTransfers.size) {
               const newCaptureTransfers = new Map();
               captureTransfers.forEach((/** @type {number} */ from, /** @type {number | string} */ to) => {
@@ -92,7 +92,7 @@ function atomic(expression, data) {
   // contains additional atomic groups
   } while (hasProcessedAG);
 
-  hiddenCaptureNums.push(...addedHiddenCaptureNums);
+  hiddenCaptures.push(...addedHiddenCaptures);
 
   // Second pass to adjust numbered backrefs
   expression = replaceUnescaped(
@@ -114,7 +114,7 @@ function atomic(expression, data) {
   return {
     pattern: expression,
     captureTransfers,
-    hiddenCaptureNums,
+    hiddenCaptures,
   };
 }
 
