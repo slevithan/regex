@@ -4,10 +4,12 @@ adjusts subpattern matches and indices (with flag `d`) to account for captures a
 emulating extended syntax.
 */
 class RegExpSubclass extends RegExp {
-  // Avoid `#private` to enable subclassing
+  // Avoid `#private` to allow for subclassing
   /**
   @private
-  @type {Map<number, {hidden: true;}>}
+  @type {Map<number, {
+    hidden: true;
+  }>}
   */
   _captureMap;
   /**
@@ -77,7 +79,9 @@ class RegExpSubclass extends RegExp {
 Build the capturing group map, with hidden captures marked to indicate their submatches shouldn't
 appear in match results.
 @param {Array<number>} hiddenCaptures
-@returns {Map<number, {hidden: true;}>}
+@returns {Map<number, {
+  hidden: true;
+}>}
 */
 function createCaptureMap(hiddenCaptures) {
   const captureMap = new Map();

@@ -85,7 +85,7 @@ Returns a RegExp from a template and substitutions to fill the template holes.
 */
 const regexFromTemplate = (options, template, ...substitutions) => {
   const opts = getOptions(options);
-  const prepped = handlePreprocessors(template, substitutions, opts);
+  const prepped = runPreprocessors(template, substitutions, opts);
 
   let precedingCaptures = 0;
   let expression = '';
@@ -111,7 +111,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     }
   });
 
-  const plugged = handlePlugins(expression, opts);
+  const plugged = runPlugins(expression, opts);
   expression = plugged.pattern;
   try {
     return opts.subclass ?
@@ -143,8 +143,8 @@ function rewrite(expression = '', options) {
   return {
     // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
     // in code to refer to regex source strings, except in the public API
-    pattern: handlePlugins(
-      handlePreprocessors({raw: [expression]}, [], opts).template.raw[0],
+    pattern: runPlugins(
+      runPreprocessors({raw: [expression]}, [], opts).template.raw[0],
       opts
     ).pattern,
     flags: opts.flags,
@@ -187,7 +187,7 @@ function getOptions(options) {
   substitutions: ReadonlyArray<InterpolatedValue>;
 }}
 */
-function handlePreprocessors(template, substitutions, options) {
+function runPreprocessors(template, substitutions, options) {
   const preprocessors = [];
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
@@ -213,8 +213,7 @@ function handlePreprocessors(template, substitutions, options) {
 @param {Required<RegexTagOptions>} options
 @returns {Required<PluginResult>}
 */
-function handlePlugins(expression, options) {
-  const {flags, plugins, unicodeSetsPlugin, disable} = options;
+function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
   let hiddenCaptures = [];
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
@@ -233,8 +232,6 @@ function handlePlugins(expression, options) {
     }
   });
   return {
-    // NOTE: Since `pattern` is a Regex+ export with special meaning, the term `expression` is used
-    // in code to refer to regex source strings, except in the public API
     pattern: expression,
     hiddenCaptures,
   };
