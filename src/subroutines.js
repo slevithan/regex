@@ -91,7 +91,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
         if (hasBackrefs) {
           numCapturesPassedInsideThisSubroutine = 0;
           numCapturesPassedInsideSubroutines++;
-          updateEmulationGroupTracking(
+          updateHiddenCaptureTracking(
             hiddenCaptureNums,
             addedHiddenCaptureNums,
             numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
@@ -111,7 +111,7 @@ function processSubroutines(expression, namedGroups, hiddenCaptureNums) {
           if (hasBackrefs) {
             numCapturesPassedInsideThisSubroutine++;
             numCapturesPassedInsideSubroutines++;
-            updateEmulationGroupTracking(
+            updateHiddenCaptureTracking(
               hiddenCaptureNums,
               addedHiddenCaptureNums,
               numCapturesPassedOutsideSubroutines + numCapturesPassedInsideSubroutines
@@ -362,7 +362,7 @@ function lastOf(arr) {
 @param {Array<number>} addedHiddenCaptureNums
 @param {number} addedCaptureNum
 */
-function updateEmulationGroupTracking(hiddenCaptureNums, addedHiddenCaptureNums, addedCaptureNum) {
+function updateHiddenCaptureTracking(hiddenCaptureNums, addedHiddenCaptureNums, addedCaptureNum) {
   addedHiddenCaptureNums.push(addedCaptureNum);
   incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
 }

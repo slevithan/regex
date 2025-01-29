@@ -132,7 +132,7 @@ describe('regex', () => {
     // Option disable.subroutines: See `subroutines.spec.js`
 
     describe('subclass', () => {
-      it('should adjust for emulation groups when referencing groups by number from outside the regex', () => {
+      it('should adjust for hidden captures when referencing groups by number from outside the regex', () => {
         // RegExp#exec
         expect(regex({subclass: true})`(?>(?<a>.))(?<b>.)`.exec('ab')[2]).toBe('b');
         expect(regex({subclass: true})`(?<a>.)(?>(?<b>.))`.exec('ab')[1]).toBe('a');
@@ -152,7 +152,7 @@ describe('regex', () => {
         expect(regex({subclass: false})`^(?<a>(?>.))\k<a>\g<a>(?<b>.)$`.exec('aaab')).toHaveSize(6);
       });
 
-      it('should adjust for emulation groups with methods that use an internal copy of the regex', () => {
+      it('should adjust for hidden captures with methods that use an internal copy of the regex', () => {
         // String#matchAll
         expect([...'ab'.matchAll(regex({flags: 'g', subclass: true})`(?>(?<a>.))(?<b>.)`)][0][2]).toBe('b');
         // String#split
@@ -162,7 +162,7 @@ describe('regex', () => {
         expect('ab'.split(regex({subclass: false})`(?>(?<a>.))(?<b>.)`)).not.toEqual(['', 'a', 'b', '']);
       });
 
-      it('should adjust indices with flag d for emulation groups', () => {
+      it('should adjust indices with flag d based on hidden captures', () => {
         if (!envSupportsFlagD) {
           pending('requires support for flag d (Node.js 16)');
         }

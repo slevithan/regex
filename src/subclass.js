@@ -1,12 +1,13 @@
 /**
 Works the same as JavaScript's native `RegExp` constructor in all contexts, but automatically
-adjusts subpattern matches and indices (with flag `d`) to account for injected emulation groups.
+adjusts subpattern matches and indices (with flag `d`) to account for captures added as part of
+emulating extended syntax.
 */
 class RegExpSubclass extends RegExp {
   // Avoid `#private` to enable subclassing
   /**
   @private
-  @type {Map<number, {exclude: true;}>}
+  @type {Map<number, {hidden: true;}>}
   */
   _captureMap;
   /**
@@ -48,7 +49,7 @@ class RegExpSubclass extends RegExp {
   @returns {RegExpExecArray | null}
   */
   exec(str) {
-    const match = RegExp.prototype.exec.call(this, str);
+    const match = super.exec(str);
     if (!match || !this._captureMap.size) {
       return match;
     }
@@ -61,7 +62,7 @@ class RegExpSubclass extends RegExp {
       match.indices.length = 1;
     }
     for (let i = 1; i < matchCopy.length; i++) {
-      if (!this._captureMap.get(i)?.exclude) {
+      if (!this._captureMap.get(i)?.hidden) {
         match.push(matchCopy[i]);
         if (this.hasIndices) {
           match.indices.push(indicesCopy[i]);
@@ -73,16 +74,16 @@ class RegExpSubclass extends RegExp {
 }
 
 /**
-Build the capturing group map, with emulation groups marked to indicate their submatches shouldn't
-appear in results.
+Build the capturing group map, with hidden captures marked to indicate their submatches shouldn't
+appear in match results.
 @param {Array<number>} hiddenCaptureNums
-@returns {Map<number, {exclude: true;}>}
+@returns {Map<number, {hidden: true;}>}
 */
 function createCaptureMap(hiddenCaptureNums) {
   const captureMap = new Map();
   for (const num of hiddenCaptureNums) {
     captureMap.set(num, {
-      exclude: true,
+      hidden: true,
     });
   }
   return captureMap;

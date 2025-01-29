@@ -70,11 +70,12 @@ function atomic(expression, data) {
             incrementIfAtLeast(hiddenCaptureNums, addedCaptureNum);
             if (captureTransfers.size) {
               const newCaptureTransfers = new Map();
-              captureTransfers.forEach((value, key) => {
-                // `key` can be a group name or number
-                let newKey = key >= addedCaptureNum ? key + 1 : key;
-                let newValue = value + (value >= addedCaptureNum ? 1 : 0);
-                newCaptureTransfers.set(newKey, newValue);
+              captureTransfers.forEach((/** @type {number} */ from, /** @type {number | string} */ to) => {
+                newCaptureTransfers.set(
+                  // `to` can be a group number or name
+                  to >= addedCaptureNum ? to + 1 : to,
+                  from + (from >= addedCaptureNum ? 1 : 0)
+                );
               });
               captureTransfers = newCaptureTransfers;
             }
