@@ -12,12 +12,12 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 @typedef {string | RegExp | Pattern | number} InterpolatedValue
 @typedef {{
   flags?: string;
-  captureTransfers?: Map<number | string, number>;
+  captureTransfersMap?: Map<number | string, number>;
   hiddenCaptures?: Array<number>;
 }} PluginData
 @typedef {{
   pattern: string;
-  captureTransfers?: Map<number | string, number>;
+  captureTransfersMap?: Map<number | string, number>;
   hiddenCaptures?: Array<number>;
 }} PluginResult
 @typedef {TemplateStringsArray | {raw: Array<string>}} RawTemplate

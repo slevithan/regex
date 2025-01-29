@@ -12,11 +12,11 @@ Apply transformations for atomic groups: `(?>…)`.
 function atomic(expression, data) {
   const hiddenCaptures = data?.hiddenCaptures ?? [];
   // Capture transfer is used by <github.com/slevithan/oniguruma-to-es>
-  let captureTransfers = data?.captureTransfers ?? new Map();
+  let captureTransfersMap = data?.captureTransfersMap ?? new Map();
   if (!/\(\?>/.test(expression)) {
     return {
       pattern: expression,
-      captureTransfers,
+      captureTransfersMap,
       hiddenCaptures,
     };
   }
@@ -68,16 +68,16 @@ function atomic(expression, data) {
             hasProcessedAG = true;
             addedHiddenCaptures.push(addedCaptureNum);
             incrementIfAtLeast(hiddenCaptures, addedCaptureNum);
-            if (captureTransfers.size) {
-              const newCaptureTransfers = new Map();
-              captureTransfers.forEach((/** @type {number} */ from, /** @type {number | string} */ to) => {
-                newCaptureTransfers.set(
+            if (captureTransfersMap.size) {
+              const newCaptureTransfersMap = new Map();
+              captureTransfersMap.forEach((/** @type {number} */ from, /** @type {number | string} */ to) => {
+                newCaptureTransfersMap.set(
                   // `to` can be a group number or name
                   to >= addedCaptureNum ? to + 1 : to,
                   from + (from >= addedCaptureNum ? 1 : 0)
                 );
               });
-              captureTransfers = newCaptureTransfers;
+              captureTransfersMap = newCaptureTransfersMap;
             }
             break;
           }
@@ -113,7 +113,7 @@ function atomic(expression, data) {
 
   return {
     pattern: expression,
-    captureTransfers,
+    captureTransfersMap,
     hiddenCaptures,
   };
 }
