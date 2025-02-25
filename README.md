@@ -18,8 +18,7 @@ Highlights include support for insignificant whitespace and comments, atomic gro
 
 With the Regex+ library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
-<details>
-  <summary><b>Table of contents</b></summary>
+## 📜 Contents
 
 - [Features](#-features)
 - [Install and use](#️-install-and-use)
@@ -47,7 +46,6 @@ With the Regex+ library, JavaScript steps up as one of the best regex flavors al
 - [Performance](#-performance)
 - [Compatibility](#-compatibility)
 - [FAQ](#-faq)
-</details>
 
 ## 💎 Features
 
@@ -698,8 +696,8 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 - *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. For example, in default context, `${foo}*` matches any number of `foo`; not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
-- Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at these positions.
-- Numbers interpolated into an enclosed `\u{…}` context are converted to hexadecimal.
+- Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at such positions.
+- Numbers (not strings) interpolated into an enclosed `\u{…}` context are converted to hexadecimal.
 - The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 </details>
 
