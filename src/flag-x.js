@@ -2,6 +2,11 @@ import {CharClassContext, doublePunctuatorChars, getEndContextForIncompleteExpre
 import {noncapturingDelim} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
 
+/**
+@import {PluginResult} from './regex.js';
+@import {Preprocessor} from './utils.js';
+*/
+
 const ws = /^\s$/;
 const escapedWsOrHash = /^\\[\s#]$/;
 const charClassWs = /^[ \t]$/;
@@ -27,7 +32,7 @@ Apply transformations for flag x (insignificant whitespace and line comments).
 
 Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
 regexes or strings.
-@type {import('./utils.js').Preprocessor}
+@type {Preprocessor}
 */
 function flagXPreprocessor(value, runningContext, options) {
   value = String(value);
@@ -156,7 +161,7 @@ function flagXPreprocessor(value, runningContext, options) {
 /**
 Remove `(?:)` token separators (most likely added by flag x) in cases where it's safe to do so.
 @param {string} expression
-@returns {import('./regex.js').PluginResult}
+@returns {PluginResult}
 */
 function clean(expression) {
   const sep = String.raw`\(\?:\)`;

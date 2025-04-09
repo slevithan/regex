@@ -1,13 +1,17 @@
 import {incrementIfAtLeast, noncapturingDelim, spliceStr} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
 
+/**
+@import {PluginData, PluginResult} from './regex.js';
+*/
+
 const atomicPluginToken = new RegExp(String.raw`(?<noncapturingStart>${noncapturingDelim})|(?<capturingStart>\((?:\?<[^>]+>)?)|\\?.`, 'gsu');
 
 /**
 Apply transformations for atomic groups: `(?>…)`.
 @param {string} expression
-@param {import('./regex.js').PluginData} [data]
-@returns {Required<import('./regex.js').PluginResult>}
+@param {PluginData} [data]
+@returns {Required<PluginResult>}
 */
 function atomic(expression, data) {
   const hiddenCaptures = data?.hiddenCaptures ?? [];
@@ -142,7 +146,7 @@ Transform posessive quantifiers into atomic groups. The posessessive quantifiers
 This follows Java, PCRE, Perl, and Python.
 Possessive quantifiers in Oniguruma and Onigmo are only: `?+`, `*+`, `++`.
 @param {string} expression
-@returns {import('./regex.js').PluginResult}
+@returns {PluginResult}
 */
 function possessive(expression) {
   if (!(new RegExp(`${baseQuantifier}\\+`).test(expression))) {

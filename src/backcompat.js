@@ -1,5 +1,9 @@
 import {doublePunctuatorChars} from './utils.js';
 
+/**
+@import {PluginResult} from './regex.js';
+*/
+
 const incompatibleEscapeChars = '&!#%,:;<=>@`~';
 const token = new RegExp(String.raw`
 \[\^?-?
@@ -15,7 +19,7 @@ const token = new RegExp(String.raw`
 Applies flag v rules when using flag u, for forward compatibility.
 Assumes flag u and doesn't worry about syntax errors that are caught by it.
 @param {string} expression
-@returns {import('./regex.js').PluginResult}
+@returns {PluginResult}
 */
 function backcompatPlugin(expression) {
   const unescapedLiteralHyphenMsg = 'Invalid unescaped "-" in character class';

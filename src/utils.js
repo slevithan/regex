@@ -1,6 +1,10 @@
 import {Pattern, pattern} from './pattern.js';
 import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
 
+/**
+@import {InterpolatedValue, RawTemplate, RegexTagOptions} from './regex.js';
+*/
+
 const RegexContext = {
   DEFAULT: 'DEFAULT',
   CHAR_CLASS: 'CHAR_CLASS',
@@ -295,9 +299,9 @@ function getUnbalancedChar(expression, leftChar, rightChar) {
 }
 
 /**
-@typedef {import('./regex.js').InterpolatedValue} InterpolatedValue
-@typedef {import('./regex.js').RawTemplate} RawTemplate
-@typedef {import('./regex.js').RegexTagOptions} RegexTagOptions
+@typedef {InterpolatedValue} InterpolatedValue
+@typedef {RawTemplate} RawTemplate
+@typedef {RegexTagOptions} RegexTagOptions
 @typedef {(
   value: InterpolatedValue,
   runningContext: RunningContext,

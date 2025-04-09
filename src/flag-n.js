@@ -1,6 +1,10 @@
 import {getEndContextForIncompleteExpression, RegexContext} from './utils.js';
 import {noncapturingDelim} from './utils-internals.js';
 
+/**
+@import {Preprocessor} from './utils.js';
+*/
+
 const token = new RegExp(String.raw`
 ${noncapturingDelim}
 | \(\?<
@@ -13,7 +17,7 @@ Apply transformations for flag n (named capture only).
 
 Preprocessors are applied to the outer regex and interpolated patterns, but not interpolated
 regexes or strings.
-@type {import('./utils.js').Preprocessor}
+@type {Preprocessor}
 */
 function flagNPreprocessor(value, runningContext) {
   value = String(value);

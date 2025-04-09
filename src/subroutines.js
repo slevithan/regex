@@ -3,9 +3,13 @@ import {incrementIfAtLeast, spliceStr} from './utils-internals.js';
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
 /**
+@import {PluginData, PluginResult} from './regex.js';
+*/
+
+/**
 @param {string} expression
-@param {import('./regex.js').PluginData} [data]
-@returns {import('./regex.js').PluginResult}
+@param {PluginData} [data]
+@returns {PluginResult}
 */
 function subroutines(expression, data) {
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
@@ -44,7 +48,7 @@ Apply transformations for subroutines: `\g<name>`.
 @param {string} expression
 @param {NamedCapturingGroupsMap} namedGroups
 @param {Array<number>} hiddenCaptures
-@returns {import('./regex.js').PluginResult}
+@returns {PluginResult}
 */
 function processSubroutines(expression, namedGroups, hiddenCaptures) {
   if (!/\\g</.test(expression)) {
