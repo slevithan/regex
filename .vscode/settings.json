@@ -1,0 +1,8 @@
+{
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "files.trimFinalNewlines": true,
+  "files.insertFinalNewline": true,
+  "javascript.format.semicolons": "insert",
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+}
