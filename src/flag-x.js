@@ -1,7 +1,6 @@
 import {CharClassContext, doublePunctuatorChars, getEndContextForIncompleteExpression, RegexContext, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {noncapturingDelim} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
-
 /**
 @import {PluginResult} from './regex.js';
 @import {Preprocessor} from './utils.js';

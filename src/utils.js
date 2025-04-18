@@ -1,6 +1,5 @@
 import {Pattern, pattern} from './pattern.js';
 import {Context, forEachUnescaped, replaceUnescaped} from 'regex-utilities';
-
 /**
 @import {InterpolatedValue, RawTemplate, RegexTagOptions} from './regex.js';
 */

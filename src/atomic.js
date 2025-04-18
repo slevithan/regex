@@ -1,6 +1,5 @@
 import {incrementIfAtLeast, noncapturingDelim, spliceStr} from './utils-internals.js';
 import {Context, replaceUnescaped} from 'regex-utilities';
-
 /**
 @import {PluginData, PluginResult} from './regex.js';
 */

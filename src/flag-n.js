@@ -1,6 +1,5 @@
 import {getEndContextForIncompleteExpression, RegexContext} from './utils.js';
 import {noncapturingDelim} from './utils-internals.js';
-
 /**
 @import {Preprocessor} from './utils.js';
 */

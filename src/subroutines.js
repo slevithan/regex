@@ -1,7 +1,6 @@
 import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
 import {incrementIfAtLeast, spliceStr} from './utils-internals.js';
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
-
 /**
 @import {PluginData, PluginResult} from './regex.js';
 */

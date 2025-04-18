@@ -1,5 +1,4 @@
 import {doublePunctuatorChars} from './utils.js';
-
 /**
 @import {PluginResult} from './regex.js';
 */
