@@ -848,6 +848,15 @@ The alternative syntax isn't used because it has several disadvantages:
 
 Regex+ was created by [Steven Levithan](https://github.com/slevithan) and [contributors](https://github.com/slevithan/regex/graphs/contributors). Inspiration included [PCRE](https://github.com/PCRE2Project/pcre2), [XRegExp](https://github.com/slevithan/xregexp), and [regexp-make-js](https://github.com/mikesamuel/regexp-make-js).
 
+### Sponsors and backers
+
+[<img src="https://github.com/brc-dd.png" width="40" height="40">](https://github.com/brc-dd)
+[<img src="https://github.com/roboflow.png" width="40" height="40">](https://github.com/roboflow)
+
+### Past sponsors
+
+[<img src="https://github.com/antfu.png" width="40" height="40">](https://github.com/antfu)
+
 If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) ongoing development.
 
 © 2024–present. MIT License.
