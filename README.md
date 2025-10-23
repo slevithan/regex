@@ -799,7 +799,7 @@ Regex+ uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag
 The following edge cases rely on modern JavaScript features:
 
 - To ensure atomization, nested character classes (which require flag <kbd>v</kbd>) are used when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns/strings into character classes. There's also an easy workaround: put the whole character class in a `pattern` and interpolate a string into the pattern.
-- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on pattern modifiers ([support](https://caniuse.com/mdn-javascript_regular_expressions_modifier)). A descriptive error is thrown in environments without support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+- Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on regex [modifiers](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Modifier). A descriptive error is thrown in environments without native support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
 
 ## 🙋 FAQ
 
@@ -808,7 +808,7 @@ The following edge cases rely on modern JavaScript features:
 
 The claim that JavaScript with the Regex+ library is among the best regex flavors is based on a holistic view. Following are some of the aspects considered:
 
-1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that's missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. Regex+ adds atomic groups to native JavaScript regexes, which is a solution to this problem and therefore can dramatically improve performance.
+1. **Performance:** An important aspect, but not the main one since mature regex implementations are generally pretty fast. JavaScript is strong on regex performance (at least considering V8's Irregexp engine and JavaScriptCore), but it uses a backtracking engine that's missing any syntax for backtracking control — a major limitation that makes ReDoS vulnerability more common. Regex+ adds atomic groups and possessive quantifiers to native JavaScript regexes, which are solutions to this problem and therefore can dramatically improve performance.
 2. **Support for advanced features** that handle common or important use cases: Here, JavaScript stepped up its game with ES2018 and ES2024. JavaScript is now best in class for some features like lookbehind (with it's infinite-length support) and Unicode properties (with multicharacter "properties of strings", set subtraction and intersection, and script extensions). These features are either not supported or not as robust in many other flavors.
 3. **Ability to write readable and maintainable patterns:** Here, native JavaScript has long been the worst of the major flavors, since it lacks the <kbd>x</kbd> (extended) flag that allows insignificant whitespace and comments. Regex+ not only adds <kbd>x</kbd> (and turns it on by default), but it additionally adds regex subroutines and subroutine definition groups (matched only by PCRE and Perl, although some other flavors have inferior versions) which enable powerful subpattern composition and reuse. And it includes context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns, all of which can also help with composition and readability.
 </details>
@@ -850,12 +850,12 @@ Regex+ was created by [Steven Levithan](https://github.com/slevithan) and [contr
 
 ### Sponsors and backers
 
-[<img src="https://github.com/brc-dd.png" width="40" height="40">](https://github.com/brc-dd)
 [<img src="https://github.com/roboflow.png" width="40" height="40">](https://github.com/roboflow)
 
 ### Past sponsors
 
 [<img src="https://github.com/antfu.png" width="40" height="40">](https://github.com/antfu)
+[<img src="https://github.com/brc-dd.png" width="40" height="40">](https://github.com/brc-dd)
 
 If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) ongoing development.
 
