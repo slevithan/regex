@@ -794,12 +794,18 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-Regex+ uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is supported by Node.js 20 and 2023-era browsers ([support](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)). When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead while enforcing <kbd>v</kbd>'s escaping rules, which extends support to Node.js 14 and 2020-era browsers or earlier. The exception is Safari, which is supported starting with v16.4 (released 2023-03-27).
+Regex+ is supported starting with Node.js 14, 2020-era browsers (except Safari, supported as of v16.4 from 2023-03-27), and React Native 0.74.6/0.75.1.
+
+<details>
+  <summary>Show more details</summary>
+
+Regex+ uses flag <kbd>v</kbd> (`unicodeSets`) when it's supported natively. Flag <kbd>v</kbd> is [supported](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets) by Node.js 20 and 2023-era browsers. When <kbd>v</kbd> isn't available, flag <kbd>u</kbd> is automatically used instead while enforcing <kbd>v</kbd>'s escaping rules.
 
 The following edge cases rely on modern JavaScript features:
 
 - To ensure atomization, nested character classes (which require flag <kbd>v</kbd>) are used when interpolating more than one token at a time *inside character classes*. A descriptive error is thrown when this isn't supported, which you can avoid by not interpolating multi-token patterns/strings into character classes. There's also an easy workaround: put the whole character class in a `pattern` and interpolate a string into the pattern.
 - Using an interpolated `RegExp` instance with a different value for flag <kbd>i</kbd> than its outer regex relies on regex [modifiers](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Modifier). A descriptive error is thrown in environments without native support, which you can avoid by aligning the use of flag <kbd>i</kbd> on inner and outer regexes. Local-only application of other flags doesn't rely on this feature.
+</details>
 
 ## 🙋 FAQ
 
