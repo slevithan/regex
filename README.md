@@ -12,11 +12,18 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-Regex+ (aka `regex`, based on its package and tag name) is a template tag that extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. It returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself. It's also lightweight, supports all ES2025 regex features, has built-in types, and can be used as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) to avoid any runtime dependencies or user runtime cost.
+The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself.
 
-Highlights include support for insignificant whitespace and comments, atomic groups and possessive quantifiers (that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS)), subroutines and subroutine definition groups (that enable powerful subpattern composition), and context-aware interpolation of regexes, escaped strings, and partial patterns.
+**With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
-With the Regex+ library, JavaScript steps up as one of the best regex flavors alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
+Features added to native JavaScript regular expressions include insignificant whitespace and comments for readability, atomic groups and possessive quantifiers (that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS)), subroutines and subroutine definition groups (that enable powerful subpattern composition), and context-aware interpolation of regexes, escaped strings, and partial patterns.
+
+Details:
+
+- Lightweight (7 kB minzip)
+- [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) available, to avoid any runtime dependencies or user runtime cost
+- Supports all ES2025 regex features
+- Built-in types
 
 ## 📜 Contents
 
@@ -703,14 +710,19 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 ## 🔩 Options
 
-Typically, `regex` is used as follows:
+Typically, the `regex` tag is used as follows:
 
 ```js
-regex`…` // Without flags
-regex('gi')`…` // With flags
+import {regex} from 'regex';
+
+// Without flags
+const re1 = regex`…`;
+
+// With flags
+const re2 = regex('gi')`…`;
 ```
 
-However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for use within other tools.
+However, several options are available that can be provided via an options object in place of the flags argument. These options aren't usually needed, and are primarily intended for use when Regex+ is extended or wrapped by other tools.
 
 Following are the available options and their default values:
 
@@ -778,6 +790,7 @@ Function `rewrite` returns an object with properties `pattern` and `flags` as st
 
 ```js
 import {rewrite} from 'regex';
+
 rewrite('^ (ab | cd)', {flags: 'm'});
 // → {pattern: '^(?:ab|cd)', flags: 'mv'}
 ```
@@ -826,6 +839,7 @@ Yes, but you might not need to. If you want to use `regex` with dynamic input, y
 
 ```js
 import {regex, pattern} from 'regex';
+
 const str = '…';
 const re = regex('g')`${pattern(str)}`;
 ```
@@ -834,6 +848,7 @@ If you prefer to call `regex` as a function (rather than using it as a template 
 
 ```js
 import {regex} from 'regex';
+
 const str = '…';
 const re = regex('g')({raw: [str]});
 ```
