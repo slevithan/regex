@@ -12,7 +12,7 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag extends JavaScript regular expressions with key features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance, and can exceed the performance of regex literals you'd write yourself.
+The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with defaults based on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
 
 **With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
@@ -21,9 +21,9 @@ Features added to native JavaScript regular expressions include insignificant wh
 Details:
 
 - Lightweight (7 kB minzip)
-- [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex) available, to avoid any runtime dependencies or user runtime cost
+- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), to avoid any runtime dependencies or user runtime cost
 - Supports all ES2025 regex features
-- Built-in types
+- Type definitions included
 
 ## 📜 Contents
 
@@ -119,7 +119,8 @@ Using a global name:
 ```js
 import {regex, pattern} from 'regex';
 
-// Subroutines and subroutine definition group
+// Subroutines and a subroutine definition group
+// Also showing insignificant whitespace for readability
 const record = regex`
   ^ Admitted: \g<date> \n
     Released: \g<date> $
@@ -136,16 +137,18 @@ const record = regex`
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware interpolation
+// Also showing inline comments and insignificant whitespace
 const re = regex('m')`
-  # Only the inner regex is case insensitive (flag i)
-  # Also, the outer regex's flag m is not applied to it
+  # RegExp: Only the inner regex is case insensitive (flag i), and the outer
+  # regex's flags (including implicit flag x) aren't applied to this subpattern
   ${/^a.b$/i}
   |
-  # Strings are escaped and repeated as complete units
-  ^ ${'a.b'}+ $
+  # String: Regex special chars are escaped
+  ${'a|b'}+
+  # Quantifying an interpolated value repeats it as a complete unit
   |
-  # This string is contextually sandboxed but not escaped
-  ${pattern('^ a.b $')}
+  # Pattern: This string is contextually sandboxed but not escaped
+  [${pattern('a-b')}]
 `;
 
 // Numbered backreferences in interpolated regexes are adjusted
@@ -154,10 +157,81 @@ regex`^ (?<first>.) ${double} ${double} $`;
 // → /^(?<first>.)(.)\2(.)\3$/v
 ```
 
-See also the following examples of using subroutine definition groups to refactor regexes for readability and maintainability:
+<details>
+  <summary>Show examples of using subroutine definition groups to refactor regexes for readability and maintainability</summary>
 
-- [IP address regex](https://x.com/slevithan/status/1828112006353953055).
-- [Date time regex](https://bsky.app/profile/slev.life/post/3lgc6ullyvk2x).
+### Date/time regex
+
+```js
+// Regex found in production for validating a date and time
+const DATE_FILTER_RE =
+  /^(since|until):((?!0{3})\d{4}(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|(?!-00:00)[+-](?:[01]\d|2[0-3]):(?:[0-5]\d))?)?)?)?)$/;
+
+// As a modern regex with identical results, using Regex+
+const DATE_FILTER_RE = regex`
+  ^
+  (?<prefix> since | until) :
+  (?:<dateTime>
+    \g<year>
+    (- \g<month> (- \g<day> (T \g<time>)? )? )?
+  )
+  $
+
+  # Subroutine definitions
+  (?(DEFINE)
+    (?<year> (?! 000) \d{4})
+    (?<month> 0[1-9] | 1[0-2])
+    (?<day> [1-9] | [12]\d | 3[01])
+    (?<time> \g<hour> : \g<minute> (: \g<second>)? \g<timeZone>?)
+    (?<hour> [01]\d | 2[0-3])
+    (?<minute> [0-5\d])
+    (?<second> [0-5]\d (\.\d+)?)
+    (?<timeZone> Z | (?! -00:00) [+\-] \g<hour> : \g<minute>)
+  )
+`;
+```
+
+Note: The modified version can be minified to a regex literal using Regex+'s Babel plugin.
+
+### IP address regex
+
+```js
+// Production regex used by Valibot for validating an IP address
+const IP_REGEX =
+  /^(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])(?:\.(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])){3}$|^(?:(?:[\da-f]{1,4}:){7}[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,7}:|(?:[\da-f]{1,4}:){1,6}:[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,5}(?::[\da-f]{1,4}){1,2}|(?:[\da-f]{1,4}:){1,4}(?::[\da-f]{1,4}){1,3}|(?:[\da-f]{1,4}:){1,3}(?::[\da-f]{1,4}){1,4}|(?:[\da-f]{1,4}:){1,2}(?::[\da-f]{1,4}){1,5}|[\da-f]{1,4}:(?::[\da-f]{1,4}){1,6}|:(?:(?::[\da-f]{1,4}){1,7}|:)|fe80:(?::[\da-f]{0,4}){0,4}%[\da-z]+|::(?:f{4}(?::0{1,4})?:)?(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d)|(?:[\da-f]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d))$/iu;
+
+// As a modern regex with identical results, using Regex+
+const IP_REGEX = regex('i')`
+  ^ (\g<ipv4> | \g<ipv6>) $
+
+  # Subroutine definitions
+  (?(DEFINE)
+    (?<ipv4>    \g<byte> (\. \g<byte>){3})
+    (?<byte>    25[0-5] | 2[0-4]\d | 1\d\d | [1-9]?\d)
+    (?<segment> \p{AHex}{1,4})
+    (?<part>    \g<segment> :)
+    (?<ipv6>
+      ( \g<part>{7}
+        | :: \g<part>{0,6}
+        | \g<part>    : \g<part>{0,5}
+        | \g<part>{2} : \g<part>{0,4}
+        | \g<part>{3} : \g<part>{0,3}
+        | \g<part>{4} : \g<part>{0,2}
+        | \g<part>{5} : \g<part>?
+      ) \g<segment>
+      | ::
+      # With zone identifier
+      | fe80: (: \p{AHex}{0,4}){0,4} % [\da-z]+
+      # Mixed addresses
+      | :: (ffff (: 0{1,4})? :)? \g<ipv4>
+      | \g<part>{1,4} : \g<ipv4>
+    )
+  )
+`;
+```
+
+Note: There are some edge cases where this pattern doesn't match IPv6 addresses to spec. The reformatted regex intentionally reproduces the original's matches exactly. But since it's written in a readable/maintainable way, the bugs are easily fixed (good luck with the original regex).
+</details>
 
 ## ❓ Context
 
@@ -553,7 +627,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 
 - Adding a pattern inside a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
 - When you don't want the pattern to specify its own, local flags.
-- Composing a dynamic number of strings escaped via `regex` interpolation.
+- Composing a dynamic number of strings that are escaped via `regex` interpolation.
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
 
 For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
@@ -801,7 +875,7 @@ rewrite('^ (ab | cd)', {flags: 'm'});
 
 ## ⚡ Performance
 
-`regex` transpiles its input to native `RegExp` instances. Therefore regexes created by `regex` perform equally as fast as native regexes. The use of `regex` can also be transpiled via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
+The `regex` tag transpiles its input to native `RegExp` instances, so they operate with native performance. The use of `regex` can also be transpiled away via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
 For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via `regex`'s [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers).
 
