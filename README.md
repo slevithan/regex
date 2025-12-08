@@ -12,16 +12,16 @@
   [![bundle][bundle-src]][bundle-href]
 </div>
 
-The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with defaults based on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
+The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
 
 **With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
-Features added to native JavaScript regular expressions include insignificant whitespace and comments for readability, atomic groups and possessive quantifiers (that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS)), subroutines and subroutine definition groups (that enable powerful subpattern composition), and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Features added to native JavaScript regular expressions include insignificant whitespace and comments for readability, atomic groups and possessive quantifiers that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines and subroutine definition groups that enable grammatical patterns with powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 Details:
 
 - Lightweight (7 kB minzip)
-- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), to avoid any runtime dependencies or user runtime cost
+- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), which avoids any runtime dependencies or user runtime cost
 - Supports all ES2025 regex features
 - Type definitions included
 
@@ -61,7 +61,7 @@ Details:
 - Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
 - New flags:
   - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-  - Always-on flag <kbd>n</kbd> (*named capture only* mode) improves regex readability and efficiency.
+  - Always-on flag <kbd>n</kbd> ("named capture only" mode) improves regex readability and efficiency.
 - No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
 
 **Extended regex syntax**.
@@ -120,7 +120,7 @@ Using a global name:
 import {regex, pattern} from 'regex';
 
 // Subroutines and a subroutine definition group
-// Also showing insignificant whitespace for readability
+// Also shows insignificant whitespace for readability
 const record = regex`
   ^ Admitted: \g<date> \n
     Released: \g<date> $
@@ -137,16 +137,15 @@ const record = regex`
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware interpolation
-// Also showing line comments and insignificant whitespace
+// Also shows line comments and insignificant whitespace
 const re = regex('m')`
-  # RegExp: Only the inner regex is case insensitive (flag i). The outer
-  # regex's flags (including implicit flag x) also don't change what this
-  # subpattern matches
+  # RegExp: Only the inner regex is case insensitive (flag i), and the outer
+  # regex's flags (including implicit flag x) don't apply to it
   ${/^a.$/i}
   |
   # String: Regex special chars are escaped
+  # Note that quantifying an interpolated value repeats it as a complete unit
   ${'a|b'}+
-  # Quantifying an interpolated value repeats it as a complete unit
   |
   # Pattern: This string is contextually sandboxed but not escaped
   [${pattern('a-z')}]
@@ -164,7 +163,7 @@ regex`^ (?<first>.) ${double} ${double} $`;
 ### Date/time regex
 
 ```js
-// Unmaintainable regex found in production for validating a date and time
+// Unmaintainable regex from real-world code for validating a date and time
 const DATE_FILTER_RE =
   /^(since|until):((?!0{3})\d{4}(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|(?!-00:00)[+-](?:[01]\d|2[0-3]):(?:[0-5]\d))?)?)?)?)$/;
 
@@ -197,7 +196,7 @@ If desired, the refactored version can be minified to a native regex literal usi
 ### IP address regex
 
 ```js
-// Unmaintainable production regex used by Valibot for validating an IP address
+// Unmaintainable regex used by Valibot for validating an IP address
 const IP_REGEX =
   /^(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])(?:\.(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])){3}$|^(?:(?:[\da-f]{1,4}:){7}[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,7}:|(?:[\da-f]{1,4}:){1,6}:[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,5}(?::[\da-f]{1,4}){1,2}|(?:[\da-f]{1,4}:){1,4}(?::[\da-f]{1,4}){1,3}|(?:[\da-f]{1,4}:){1,3}(?::[\da-f]{1,4}){1,4}|(?:[\da-f]{1,4}:){1,2}(?::[\da-f]{1,4}){1,5}|[\da-f]{1,4}:(?::[\da-f]{1,4}){1,6}|:(?:(?::[\da-f]{1,4}){1,7}|:)|fe80:(?::[\da-f]{0,4}){0,4}%[\da-z]+|::(?:f{4}(?::0{1,4})?:)?(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d)|(?:[\da-f]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d))$/iu;
 
@@ -231,12 +230,12 @@ const IP_REGEX = regex('i')`
 `;
 ```
 
-Note that the refactored regex intentionally reproduces the original's matches exactly, even though there are some edge cases where it doesn't follow the IPv6 spec. However, since it's written in a readable/maintainable way, the bugs are much more easily spotted and fixed. Good luck with changing the original regex!
+Note that the refactored regex intentionally reproduces the original's matches exactly, even though there are some cases where it doesn't follow the IPv6 spec. However, since it's written in a maintainable way, the bugs are much more easily spotted and fixed. Good luck with updating the original regex!
 </details>
 
 ## ❓ Context
 
-Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four different sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are just plain hard to fully grok and can easily create subtle bugs.
+Due to years of legacy and backward compatibility, regular expression syntax in JavaScript is a bit of a mess. There are four sets of incompatible syntax and behavior rules that might apply to your regexes depending on the flags and features you use. The differences are hard to remember or understand, and can easily create subtle bugs.
 
 <details>
   <summary>See the four parsing modes</summary>
@@ -247,13 +246,15 @@ Due to years of legacy and backward compatibility, regular expression syntax in 
 4. UnicodeSets mode with flag <kbd>v</kbd> (an upgrade to <kbd>u</kbd>) incompatibly changes escaping rules within character classes, fixes case-insensitive matching for `\p` and `\P` within negated `[^…]`, and adds support for new features/syntax.
 </details>
 
-Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, subroutine definition groups, interpolation, and *named capture only* mode — even long and complex regexes can be beautiful, grammatical, and intuitive.
+Additionally, JavaScript regex syntax is hard to write and even harder to read and refactor. But it doesn't have to be that way! With a few key features — raw multiline strings, insignificant whitespace, comments, subroutines, subroutine definition groups, interpolation, and "named capture only" mode — even long and complex regexes can be beautiful, grammatical, and intuitive.
 
-Regex+ adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes (in environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible). It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking, and it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
+Regex+ adds all of these features and returns native `RegExp` instances. It always uses flag <kbd>v</kbd> (already a best practice for new regexes) so you never forget to turn it on and don't have to worry about the differences in other parsing modes. (In environments without native <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are backward compatible.) It also supports atomic groups and possessive quantifiers to help you avoid catastrophic backtracking, and it gives you best-in-class, context-aware interpolation of `RegExp` instances, escaped strings, and partial patterns.
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. With recent advancements and the Regex+ library, those days are over. Modern JavaScript regexes have [significantly improved](https://github.com/slevithan/awesome-regex#javascript-regex-evolution), adding lookbehind, named capture, Unicode properties, set subtraction and intersection, etc. The extended syntax and implicit flags provided by Regex+ add the key remaining pieces needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. Those days are over. Regex+ builds on the many regex features [added in new JavaScript versions](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) by adding the key remaining pieces (via its extended syntax and implicit flags) that are needed to stand alongside or surpass other major flavors.
+
+The following syntax is added on top of the regex features your JavaScript environment supports natively. Extended syntax works by being transpiled into native syntax, often in complex ways that are impractical to write by hand.
 
 ### Atomic groups
 
@@ -278,7 +279,7 @@ Consider `` regex`(?>a+)ab` `` vs `` regex`(?:a+)ab` ``. The former (with an ato
 - Then, when it tries to match the additional `a` outside the group, it fails (the next character in the target string is a `b`), so the regex engine backtracks.
 - But because it can't backtrack into the atomic group to make the `+` give up its last matched `a`, there are no additional options to try and the overall match attempt fails.
 
-For a more useful example, consider how this can affect lazy (non-greedy) quantifiers. Let's say you want to match `<b>…</b>` tags that are followed by `!`. You might try this:
+For a more useful example, consider how this can affect lazy (nongreedy) quantifiers. Let's say you want to match `<b>…</b>` tags that are followed by `!`. You might try this:
 
 ```js
 const re = regex('gis')`<b>.*?</b>!`;
@@ -311,11 +312,11 @@ Now, after the regex engine finds the first `</b>` and exits the atomic group, i
 
 ### Possessive quantifiers
 
-Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing this.
+Possessive quantifiers are created by adding `+` to a quantifier, and they're similar to greedy quantifiers except they don't allow backtracking. Although greedy quantifiers start out by matching as much as possible, if the remainder of the regex doesn't find a match, the regex engine will backtrack and try all permutations of how many times the quantifier should repeat. Possessive quantifiers prevent the regex engine from doing so.
 
 > Possessive quantifiers are syntactic sugar for [atomic groups](#atomic-groups) when their contents are a single repeated item (which could be a token, character class, or group).
 
-Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `/a+./`, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so in this case there's nothing left for the following `.` to match.
+Like atomic groups, possessive quantifiers are mostly useful for performance and preventing ReDoS, but they can also be used to eliminate certain matches. For example, `` regex`a++.` `` matches one or more `a` followed by a character other than `a`. Unlike `` regex`a+.` ``, it won't match a sequence of only `a` characters like `'aaa'`. The possessive `++` doesn't give back any of the `a`s it matched, so there's nothing left for the following `.` to match.
 
 Here's how possessive quantifier syntax compares to the greedy and lazy quantifiers that JavaScript supports natively:
 
@@ -342,17 +343,17 @@ The following example illustrates how subroutines and backreferences differ:
 ```js
 // A backreference with \k<name>
 regex`(?<prefix>sens|respons)e\ and\ \k<prefix>ibility`
-/* Matches:
-- 'sense and sensibility'
-- 'response and responsibility' */
+// Matches:
+// - 'sense and sensibility'
+// - 'response and responsibility'
 
 // A subroutine with \g<name>
 regex`(?<prefix>sens|respons)e\ and\ \g<prefix>ibility`
-/* Matches:
-- 'sense and sensibility'
-- 'sense and responsibility'
-- 'response and sensibility'
-- 'response and responsibility' */
+// Matches:
+// - 'sense and sensibility'
+// - 'sense and responsibility'
+// - 'response and sensibility'
+// - 'response and responsibility'
 ```
 
 Subroutines go beyond the composition benefits of [interpolation](#-interpolation). Apart from the obvious difference that they don't require variables to be defined outside of the regex, they also don't simply insert the referenced subpattern.
@@ -380,7 +381,7 @@ The backreference `\k<double>` matches whatever was matched by capturing group `
 - If there are [duplicate capture names](https://github.com/tc39/proposal-duplicate-named-capturing-groups), subroutines refer to the first instance of the given group (matching the behavior of PCRE and Perl).
 - Although subroutines can be chained to any depth, a descriptive error is thrown if they're used recursively. Support for recursion can be added via a plugin (see [*Recursion*](#recursion)).
 - Like backreferences, subroutines can't be used *within* character classes.
-- As with all extended syntax in `regex`, subroutines are applied after interpolation, giving them maximal flexibility.
+- As with all of Regex+'s extended syntax, subroutines are applied after interpolation, giving them maximal flexibility.
 </details>
 
 <details>
@@ -417,7 +418,7 @@ const re = regex`
 
 Here, the `{0}` quantifier at the end once again prevents matching its group at that position, while enabling all of the named groups within it to be used by reference.
 
-When using a regex to find matches (e.g. via the string `matchAll` method), named groups defined this way appear on each match's `groups` object with the value `undefined` (which is the value for any capturing group that didn't participate in a match). See the next section [*Subroutine definition groups*](#subroutine-definition-groups) for a way to prevent such groups from appearing on the `groups` object.
+Named groups defined this way don't *participate* in the match, and thus appear on a match result's `groups` object with the value `undefined` (the same as for any capturing group that didn't participate in a match). See the next section, [*Subroutine definition groups*](#subroutine-definition-groups), for a way to prevent such groups from appearing on the `groups` object.
 </details>
 
 > [!NOTE]
@@ -425,7 +426,7 @@ When using a regex to find matches (e.g. via the string `matchAll` method), name
 
 ### Subroutine definition groups
 
-The syntax `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with [subroutines](#subroutines), this enables writing regexes in a grammatical way that can significantly improve readability and maintainability.
+The special group `(?(DEFINE)…)` can be used at the end of a regex to define subpatterns for use by reference only. When combined with [subroutines](#subroutines), this enables writing regexes in a grammatical way that can significantly improve readability and maintainability.
 
 > Named groups defined within subroutine definition groups don't appear on the `groups` object of matches.
 
@@ -458,7 +459,7 @@ console.log(match.groups);
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- **Quantity:** Only one definition group is allowed per regex, but it can contain any number of named groups and those groups can appear in any order.
+- **Quantity:** Only one definition group is allowed per regex, but it can contain any number of named groups, and those groups can appear in any order.
 - **Placement:** Apart from trailing whitespace and comments (allowed by implicit flag <kbd>x</kbd>), definition groups must appear at the end of their pattern.
 - **Contents:** At the top level of definition groups, only named groups, whitespace, and comments are allowed.
 - **Duplicate names:** All named groups within definition groups must use unique names.
@@ -483,19 +484,19 @@ regex('gm')`^.+`
 
 Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on when using `regex`, giving your regexes a modern baseline syntax and avoiding the need to continually opt-in to their superior modes.
 
-> For special situations such as when using Regex+ within other tools, implicit flags can be disabled. See: [*Options*](#-options).
+> For special situations such as when wrapping Regex+ within other tools, implicit flags can be disabled. See: [*Options*](#-options).
 
 ### Flag `v`
 
-JavaScript's native flag <kbd>v</kbd> gives you the best level of Unicode support, strict errors, and all the latest regex features like character class set operations and properties of strings (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)). It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
+JavaScript's native flag <kbd>v</kbd> (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)) gives you the best level of Unicode support, strict errors, and all the latest regex features like multicharacter properties of strings and character class subtraction/intersection. It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
-> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are forward and backward compatible.
+> In environments without native support for flag <kbd>v</kbd>, flag <kbd>u</kbd> is automatically used instead while applying <kbd>v</kbd>'s escaping rules so your regexes are backward compatible.
 
 ### Flag `x`
 
-Emulated flag <kbd>x</kbd> makes whitespace insignificant and adds support for line comments (starting with `#`), allowing you to freely format your regexes for readability. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
+Emulated flag <kbd>x</kbd> makes whitespace insignificant and adds support for line comments starting with `#`, allowing you to freely format your regexes for readability. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
 Example:
 
@@ -525,7 +526,7 @@ const re = regex`
 ```
 
 > [!NOTE]
-> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. Note that the rules for whitespace *within character classes* are inconsistent across regex flavors, so Regex+ follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
+> Flag <kbd>x</kbd> is based on the JavaScript [proposal](https://github.com/tc39/proposal-regexp-x-mode) for it as well as support in many other regex flavors. The rules for whitespace *within character classes* are inconsistent across regex flavors, so Regex+ follows the JavaScript proposal and the flag <kbd>xx</kbd> option from Perl and PCRE.
 
 <details>
   <summary>👉 <b>Show more details</b></summary>
@@ -540,7 +541,7 @@ const re = regex`
 
 ### Flag `n`
 
-Emulated flag <kbd>n</kbd> gives you *named capture only* mode, which turns unnamed groups `(…)` into noncapturing groups. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
+Emulated flag <kbd>n</kbd> gives you "named capture only" mode, which turns unnamed groups `(…)` into noncapturing groups. It's always implicitly on, though it doesn't extend into interpolated `RegExp` instances (to avoid changing their meaning).
 
 Requiring the syntactically clumsy `(?:…)` where you could just use `(…)` hurts readability and encourages adding unneeded captures (which hurt efficiency and refactoring). Flag <kbd>n</kbd> fixes this, making your regexes more readable.
 
@@ -553,7 +554,7 @@ regex`\b(ab|cd)\b`
 ```
 
 > [!NOTE]
-> Flag <kbd>n</kbd> is based on .NET, C++, Oniguruma, PCRE, Perl, and XRegExp. Most of these share the flag letter <kbd>n</kbd>, but the option is variously called *explicit capture*, *no auto capture*, *don't capture group*, or *nosubs*. In Regex+, flag <kbd>n</kbd> also prevents using numbered backreferences to named groups, which follows the behavior of C++ and the default handling of Oniguruma and Ruby. Referring to named groups by number is a footgun, and the way that named groups are numbered is inconsistent across regex flavors.
+> Flag <kbd>n</kbd> is based on .NET, C++, Oniguruma, PCRE, Perl, and XRegExp. Most of these share the flag letter <kbd>n</kbd>, but the option is variously called *explicit capture*, *no auto capture*, *don't capture group*, or *nosubs*. In Regex+, flag <kbd>n</kbd> also prevents using numbered backreferences to named groups, which follows the behavior of C++ and the default handling of Oniguruma and Ruby. Referring to named groups by number is a footgun for multiple reasons including that named groups are numbered differently across regex flavors.
 
 ## 🧩 Interpolation
 
@@ -576,15 +577,15 @@ This is also true for other flags that can change how an inner regex is matched:
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-- Regexes can't be interpolated inside character classes (so `` regex`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex syntax (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
-- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. E.g. `new RegExp(/./, 's')`.
+- Regexes can't be interpolated inside character classes (so `` regex`[${/./}]` `` is an error) because the syntax context doesn't match. See [*Interpolating partial patterns*](#interpolating-partial-patterns) for a way to safely embed regex pattern strings (rather than `RegExp` instances) in character classes and other edge-case locations with different context.
+- To change the flags used by an interpolated regex, use the built-in capability of `RegExp` to copy a regex while providing new flags. Ex: `new RegExp(/./, 's')`.
 </details>
 
 ### Interpolating escaped strings
 
-The `regex` tag escapes regex special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware way that prevents changing the meaning or error status of characters outside the interpolated string.
+The `regex` tag escapes any regex special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag <kbd>v</kbd> nested union if it contains more than one character node.
+> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
 
 As a result, the `regex` tag provides an easy and safe alternative to ES2025's [`RegExp.escape`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape).
 
@@ -601,9 +602,10 @@ regex`^${str}+$`
 
 // Instead of (note: flag u or v required to avoid bugs)
 new RegExp(`[a-${RegExp.escape(str)}]`, 'u')
-// You can say (note: interpolated at the end of a range, so throws if more
-// than one char in str)
+// You can say
 regex`[a-${str}]`
+// Note: Since it's interpolated at the end of a character range, it throws for
+// safety if more than one char in `str`
 
 // Instead of (note: set subtraction)
 new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v')
@@ -614,14 +616,14 @@ regex`[\w--${str}]`
 <details>
   <summary>👉 <b>Show more details</b></summary>
 
-Some examples of where context awareness comes into play:
+Following are some examples of how context awareness can be relevant when escaping regex special characters:
 
 - A `~` is not escaped at the top level, but it must be escaped within character classes if it's immediately preceded or followed by another `~` (in or outside of the interpolation) which would turn it into a reserved UnicodeSets double punctuator.
 - Leading digits must be escaped if they're preceded by a numbered backreference or `\0`, else `RegExp` throws (or in Unicode-unaware mode they might turn into octal escapes).
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
 
-These and other issues (including the effects of current and potential future flags like <kbd>x</kbd>) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. Other popular regex escaping libraries don't even attempt to handle these kinds of issues. ES2025's native `RegExp.escape` offered an alternative that is also safe, but since it isn't context aware it might produce noisier outputs.
+These and other issues (including the effects of current and potential future flags like <kbd>x</kbd>) make it unsafe to escape special characters without context in regexes, or at least complicated to get right. Other popular regex escaping libraries don't even attempt to handle these kinds of issues. ES2025's native `RegExp.escape` provides an alternative that's also safe, but since it isn't context aware it might produce noisier outputs by overescaping.
 </details>
 
 ### Interpolating partial patterns
@@ -632,6 +634,7 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 - When you don't want the pattern to specify its own, local flags.
 - Composing a dynamic number of strings that are escaped via `regex` interpolation.
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
+<!-- - Sharing a subroutine definition group (which isn't native syntax) across regexes. -->
 
 For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 
@@ -780,7 +783,7 @@ The above descriptions of interpolation might feel complex. But there are three 
 
 - *Atomized* means that the value is treated as a complete unit; it isn't related to the *atomic groups* feature. For example, in default context, `${foo}*` matches any number of `foo`; not just its last token. In character class context, subtraction and intersection operators apply to the entire atom.
 - *Sandboxed* means that the value can't change the meaning or error status of characters outside of the interpolation, and vice versa.
-- Character classes have a sub-context on the borders of ranges. Only one character node (e.g. `a` or `\u0061`) can be interpolated at such positions.
+- Character classes have a subcontext on the borders of ranges. Only one character node (ex: `a` or `\u0061`) can be interpolated at such positions.
 - Numbers (not strings) interpolated into an enclosed `\u{…}` context are converted to hexadecimal.
 - The implementation details vary for how `regex` accomplishes sandboxing and atomization, based on the details of the specific pattern. But the concepts should always hold up.
 </details>
@@ -827,16 +830,16 @@ regex({
 
 **`flags`** — For providing flags when using an options object.
 
-**`subclass`** — When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (e.g. in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax might add unnamed captures to generated regex source that can affect group numbering.
+**`subclass`** — When `true`, the resulting regex is constructed using a `RegExp` subclass that avoids edge case issues with numbered backreferences. Without subclassing, submatches referenced *by number* from outside of the regex (ex: in replacement strings) might reference the wrong values, because `regex`'s emulation of extended syntax might add unnamed captures to generated regex source that can affect group numbering.
 
-Context: `regex`'s implicit flag <kbd>n</kbd> (*named capture only* mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass: true` resolves this, since the subclass knows about captures that are added only to emulate extended syntax, and automatically adjusts match results in all contexts.
+Context: `regex`'s implicit flag <kbd>n</kbd> ("named capture only" mode) means that all captures have names, so normally there's no need to reference submatches by number. In fact, flag <kbd>n</kbd> *prevents* you from doing so within the regex. And even in edge cases (such as when interpolating `RegExp` instances with numbered backreferences, or when flag <kbd>n</kbd> is explicitly disabled), any numbered backreferences within the regex are automatically adjusted to work correctly. However, issues can arise if you reference submatches by number (instead of their group names) from outside of the regex. Setting `subclass` to `true` resolves this, since the subclass knows about captures that are added only to emulate extended syntax, and automatically hides them from match results in all contexts.
 
-> This option isn't enabled by default because it would prevent Regex+'s Babel plugin from emitting regex literals. It also has a tiny performance cost, and is rarely needed. The primary use case is tools that use `regex` internally with flag <kbd>n</kbd> disabled.
+> This option isn't enabled by default because it would prevent Regex+'s Babel plugin from emitting regex literals. It also has a tiny performance cost, and is rarely needed. The primary use case is tools that wrap `regex` with flag <kbd>n</kbd> disabled.
 
 **`plugins`** — An array of functions. Plugins are called in order, after applying emulated flags and interpolation, but before the built-in plugins for extended syntax. This means that plugins can output extended syntax like atomic groups and subroutines. Plugins are expected to return an object with a string property `pattern`, and are called with two arguments:
 
 1. The pattern, as processed so far by preceding plugins, etc.
-2. An object with a `flags` property that includes the native (non-emulated) flags that will be used by the regex.
+2. An object with a `flags` property that includes the native flags that will be used by the regex.
 
 The final result after running all plugins is provided to the `RegExp` constructor.
 
@@ -846,15 +849,15 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 - Setting `unicodeSetsPlugin` to `null` prevents `regex` from applying flag <kbd>v</kbd>'s escaping rules. This can be useful in combination with option `disable: {v: true}` for tools that want to use `regex`'s extended syntax and/or flags but need to accept input with flag <kbd>u</kbd>'s escaping rules.
 - Regex+ is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
-- This plugin runs last, which means it's possible to wrap an existing library (e.g. [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)), without the library needing to understand `regex`'s extended syntax.
+- This plugin runs last, which means it's possible to wrap an existing library (ex: [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)) without the library needing to understand `regex`'s extended syntax.
 
 **`disable`** — A set of options that can be individually disabled by setting their values to `true`.
 
 - **`x`** — Disables implicit, emulated [flag <kbd>x</kbd>](#flag-x).
-- **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use unnamed captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (e.g. in replacement strings) can result in incorrect values because extended syntax might add additional unnamed captures to generated regex source. It's therefore recommended to enable the `subclass` option when disabling `n`.
+- **`n`** — Disables implicit, emulated [flag <kbd>n</kbd>](#flag-n). Note that, although it's safe to use unnamed captures and numbered backreferences within a regex when flag <kbd>n</kbd> is disabled, referencing submatches by number from *outside* a regex (ex: in replacement strings) can result in incorrect values because extended syntax might add additional unnamed captures to generated regex source. It's therefore recommended to enable the `subclass` option when disabling `n`.
 - **`v`** — Disables implicit [flag <kbd>v</kbd>](#flag-v) even when it's supported natively, resulting in flag <kbd>u</kbd> being added instead (in combination with the `unicodeSetsPlugin`).
 - **`atomic`** — Disables [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers), resulting in a syntax error if they're used.
-- **`subroutines`** — Disables [subroutines](#subroutines) and [subroutine definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
+- **`subroutines`** — Disables [subroutines](#subroutines) and [definition groups](#subroutine-definition-groups), resulting in a syntax error if they're used.
 
 **`force`** — Options that, if set to `true`, override default settings (as well as options set on the `disable` object).
 
