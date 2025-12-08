@@ -92,7 +92,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   let runningContext;
   // Intersperse raw template strings and substitutions
   prepped.template.raw.forEach((raw, i) => {
-    const wrapEscapedStr = !!(prepped.template.raw[i] || prepped.template.raw[i + 1]);
+    const hasNonEmptyBoundary = !!(prepped.template.raw[i] || prepped.template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
@@ -102,7 +102,14 @@ const regexFromTemplate = (options, template, ...substitutions) => {
     const {regexContext, charClassContext} = runningContext;
     if (i < prepped.template.raw.length - 1) {
       const substitution = prepped.substitutions[i];
-      expression += interpolate(substitution, opts.flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures);
+      expression += interpolate(
+        substitution,
+        opts.flags,
+        regexContext,
+        charClassContext,
+        hasNonEmptyBoundary,
+        precedingCaptures
+      );
       if (substitution instanceof RegExp) {
         precedingCaptures += countCaptures(substitution.source);
       } else if (substitution instanceof Pattern) {
@@ -242,15 +249,18 @@ function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
 @param {string} flags
 @param {string} regexContext
 @param {string} charClassContext
-@param {boolean} wrapEscapedStr
+@param {boolean} hasNonEmptyBoundary
 @param {number} precedingCaptures
 @returns {string}
 */
-function interpolate(value, flags, regexContext, charClassContext, wrapEscapedStr, precedingCaptures) {
+function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBoundary, precedingCaptures) {
   if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
     throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
   }
-  if (regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN || charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN) {
+  if (
+    regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN ||
+    charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN
+  ) {
     // Throw in all cases, but only *need* to handle a preceding unescaped backslash (which would
     // break sandboxing) since other errors would be handled by the invalid generated regex syntax
     throw new Error('Interpolation preceded by invalid incomplete token');
@@ -312,7 +322,7 @@ function interpolate(value, flags, regexContext, charClassContext, wrapEscapedSt
     return `(?:${value})`;
   }
   // Sandbox and atomize
-  return wrapEscapedStr ? `(?:${escapedValue})` : escapedValue;
+  return hasNonEmptyBoundary ? `(?:${escapedValue})` : escapedValue;
 }
 
 /**
