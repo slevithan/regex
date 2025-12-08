@@ -137,18 +137,19 @@ const record = regex`
 const words = regex`^(?>\w+\s?)+$`;
 
 // Context-aware interpolation
-// Also showing inline comments and insignificant whitespace
+// Also showing line comments and insignificant whitespace
 const re = regex('m')`
-  # RegExp: Only the inner regex is case insensitive (flag i), and the outer
-  # regex's flags (including implicit flag x) aren't applied to this subpattern
-  ${/^a.b$/i}
+  # RegExp: Only the inner regex is case insensitive (flag i). The outer
+  # regex's flags (including implicit flag x) also don't change what this
+  # subpattern matches
+  ${/^a.$/i}
   |
   # String: Regex special chars are escaped
   ${'a|b'}+
   # Quantifying an interpolated value repeats it as a complete unit
   |
   # Pattern: This string is contextually sandboxed but not escaped
-  [${pattern('a-b')}]
+  [${pattern('a-z')}]
 `;
 
 // Numbered backreferences in interpolated regexes are adjusted
@@ -158,26 +159,26 @@ regex`^ (?<first>.) ${double} ${double} $`;
 ```
 
 <details>
-  <summary>Show examples of using subroutine definition groups to refactor regexes for readability and maintainability</summary>
+  <summary>Show examples of using subroutine definition groups to refactor previously unmaintainable regexes</summary>
 
 ### Date/time regex
 
 ```js
-// Regex found in production for validating a date and time
+// Unmaintainable regex found in production for validating a date and time
 const DATE_FILTER_RE =
   /^(since|until):((?!0{3})\d{4}(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|(?!-00:00)[+-](?:[01]\d|2[0-3]):(?:[0-5]\d))?)?)?)?)$/;
 
-// As a modern regex with identical results, using Regex+
+// Refactored for Regex+, with identical matches
+// Includes a subroutine definition group at the bottom
 const DATE_FILTER_RE = regex`
   ^
   (?<prefix> since | until) :
-  (?:<dateTime>
+  (?<dateTime>
     \g<year>
     (- \g<month> (- \g<day> (T \g<time>)? )? )?
   )
   $
 
-  # Subroutine definitions
   (?(DEFINE)
     (?<year> (?! 000) \d{4})
     (?<month> 0[1-9] | 1[0-2])
@@ -191,20 +192,20 @@ const DATE_FILTER_RE = regex`
 `;
 ```
 
-Note: The modified version can be minified to a regex literal using Regex+'s Babel plugin.
+If desired, the refactored version can be minified to a native regex literal using Regex+'s Babel plugin.
 
 ### IP address regex
 
 ```js
-// Production regex used by Valibot for validating an IP address
+// Unmaintainable production regex used by Valibot for validating an IP address
 const IP_REGEX =
   /^(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])(?:\.(?:(?:[1-9]|1\d|2[0-4])?\d|25[0-5])){3}$|^(?:(?:[\da-f]{1,4}:){7}[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,7}:|(?:[\da-f]{1,4}:){1,6}:[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,5}(?::[\da-f]{1,4}){1,2}|(?:[\da-f]{1,4}:){1,4}(?::[\da-f]{1,4}){1,3}|(?:[\da-f]{1,4}:){1,3}(?::[\da-f]{1,4}){1,4}|(?:[\da-f]{1,4}:){1,2}(?::[\da-f]{1,4}){1,5}|[\da-f]{1,4}:(?::[\da-f]{1,4}){1,6}|:(?:(?::[\da-f]{1,4}){1,7}|:)|fe80:(?::[\da-f]{0,4}){0,4}%[\da-z]+|::(?:f{4}(?::0{1,4})?:)?(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d)|(?:[\da-f]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d))$/iu;
 
-// As a modern regex with identical results, using Regex+
+// Refactored for Regex+, with identical matches
+// All except the first line are subroutine definitions
 const IP_REGEX = regex('i')`
   ^ (\g<ipv4> | \g<ipv6>) $
 
-  # Subroutine definitions
   (?(DEFINE)
     (?<ipv4>    \g<byte> (\. \g<byte>){3})
     (?<byte>    25[0-5] | 2[0-4]\d | 1\d\d | [1-9]?\d)
@@ -230,7 +231,7 @@ const IP_REGEX = regex('i')`
 `;
 ```
 
-Note: There are some edge cases where this pattern doesn't match IPv6 addresses to spec. The reformatted regex intentionally reproduces the original's matches exactly. But since it's written in a readable/maintainable way, the bugs are easily fixed (good luck with the original regex).
+Note that the refactored regex intentionally reproduces the original's matches exactly, even though there are some edge cases where it doesn't follow the IPv6 spec. However, since it's written in a readable/maintainable way, the bugs are much more easily spotted and fixed. Good luck with changing the original regex!
 </details>
 
 ## ❓ Context
@@ -581,11 +582,11 @@ This is also true for other flags that can change how an inner regex is matched:
 
 ### Interpolating escaped strings
 
-The `regex` tag escapes special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware and safe way that prevents changing the meaning or error status of characters outside the interpolated string.
+The `regex` tag escapes regex special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
+> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag <kbd>v</kbd> nested union if it contains more than one character node.
 
-As a result, `regex` is a safe and context-aware alternative to JavaScript proposal [`RegExp.escape`](https://github.com/tc39/proposal-regex-escaping).
+As a result, the `regex` tag provides an easy and safe alternative to ES2025's [`RegExp.escape`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape).
 
 ```js
 // Instead of
@@ -598,17 +599,20 @@ new RegExp(`^(?:${RegExp.escape(str)})+$`)
 // You can say
 regex`^${str}+$`
 
-// Instead of
-new RegExp(`[a-${RegExp.escape(str)}]`, 'u') // Flag u/v required to avoid bugs
-// You can say
+// Instead of (note: flag u or v required to avoid bugs)
+new RegExp(`[a-${RegExp.escape(str)}]`, 'u')
+// You can say (note: interpolated at the end of a range, so throws if more
+// than one char in str)
 regex`[a-${str}]`
-// Given the context at the end of a range, throws if more than one char in str
 
-// Instead of
-new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v') // Set subtraction
+// Instead of (note: set subtraction)
+new RegExp(`[\\w--[${RegExp.escape(str)}]]`, 'v')
 // You can say
 regex`[\w--${str}]`
 ```
+
+<details>
+  <summary>👉 <b>Show more details</b></summary>
 
 Some examples of where context awareness comes into play:
 
@@ -617,9 +621,8 @@ Some examples of where context awareness comes into play:
 - Letters `A`-`Z` and `a`-`z` must be escaped if preceded by uncompleted token `\c`, else they'll convert what should be an error into a valid token that probably doesn't match what you expect.
 - You can't escape your way out of protecting against a preceding unescaped `\`. Doing nothing could turn e.g. `w` into `\w` and introduce a bug, but then escaping the first character wouldn't prevent the `\` from mangling it, and if you escaped the preceding `\` elsewhere in your code you'd change its meaning.
 
-These and other issues (including the effects of current and potential future flags like <kbd>x</kbd>) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. The existing popular regex escaping libraries don't even attempt to handle these kinds of issues.
-
-`regex` solves all of this via context awareness. So instead of remembering anything above, you should just switch to always safely escaping regex syntax via `regex`.
+These and other issues (including the effects of current and potential future flags like <kbd>x</kbd>) make escaping without context unsafe to use at arbitrary positions in a regex, or at least complicated to get right. Other popular regex escaping libraries don't even attempt to handle these kinds of issues. ES2025's native `RegExp.escape` offered an alternative that is also safe, but since it isn't context aware it might produce noisier outputs.
+</details>
 
 ### Interpolating partial patterns
 
