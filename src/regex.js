@@ -254,9 +254,16 @@ function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
 @returns {string}
 */
 function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBoundary, precedingCaptures) {
-  if (value instanceof RegExp && regexContext !== RegexContext.DEFAULT) {
-    throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
+  if (value instanceof RegExp) {
+    if (regexContext !== RegexContext.DEFAULT) {
+      throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
+    }
+    const transformed = transformForLocalFlags(value, flags);
+    const backrefsAdjusted = adjustNumberedBackrefs(transformed.value, precedingCaptures);
+    // Sandbox and atomize; if we used a pattern modifier it has the same effect
+    return transformed.usedModifier ? backrefsAdjusted : wrap(backrefsAdjusted);
   }
+
   if (
     regexContext === RegexContext.INVALID_INCOMPLETE_TOKEN ||
     charClassContext === CharClassContext.INVALID_INCOMPLETE_TOKEN
@@ -265,27 +272,24 @@ function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBo
     // break sandboxing) since other errors would be handled by the invalid generated regex syntax
     throw new Error('Interpolation preceded by invalid incomplete token');
   }
+
   if (
     typeof value === 'number' &&
     (regexContext === RegexContext.ENCLOSED_U || charClassContext === CharClassContext.ENCLOSED_U)
   ) {
     return value.toString(16);
   }
+
   const isPattern = value instanceof Pattern;
-  let escapedValue = '';
-  if (!(value instanceof RegExp)) {
-    value = String(value);
-    if (!isPattern) {
-      escapedValue = escapeV(
-        value,
-        regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT
-      );
-    }
-    // Check `escapedValue` (not just patterns) since possible breakout char `>` isn't escaped
-    const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
-    if (breakoutChar) {
-      throw new Error(`Unescaped stray "${breakoutChar}" in the interpolated value would have side effects outside it`);
-    }
+  value = String(value);
+  const escapedValue = isPattern ? null : escapeV(
+    value,
+    regexContext === RegexContext.CHAR_CLASS ? Context.CHAR_CLASS : Context.DEFAULT
+  );
+  // Checks `escapedValue` in addition to patterns since potential breakout char `>` isn't escaped
+  const breakoutChar = getBreakoutChar(escapedValue || value, regexContext, charClassContext);
+  if (breakoutChar) {
+    throw new Error(`Unescaped stray "${breakoutChar}" in the interpolated value would have side effects outside it`);
   }
 
   if (
@@ -294,10 +298,10 @@ function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBo
     enclosedTokenRegexContexts.has(regexContext) ||
     enclosedTokenCharClassContexts.has(charClassContext)
   ) {
-    return isPattern ? String(value) : escapedValue;
+    return isPattern ? value : escapedValue;
   } else if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPattern) {
-      if (hasUnescaped(String(value), '^-|^&&|-$|&&$')) {
+      if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
         // Sandboxing so we don't change the chars outside the pattern into being part of an
         // operation they didn't initiate. Same problem as starting a pattern with a quantifier
         throw new Error('Cannot use range or set operator at boundary of interpolated pattern; move the operation into the pattern or the operator outside of it');
@@ -310,19 +314,20 @@ function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBo
     // Atomize via nested character class `[…]` if more than one node
     return containsCharClassUnion(escapedValue) ? `[${escapedValue}]` : escapedValue;
   }
-  // `RegexContext.DEFAULT`
-  if (value instanceof RegExp) {
-    const transformed = transformForLocalFlags(value, flags);
-    const backrefsAdjusted = adjustNumberedBackrefs(transformed.value, precedingCaptures);
-    // Sandbox and atomize; if we used a pattern modifier it has the same effect
-    return transformed.usedModifier ? backrefsAdjusted : `(?:${backrefsAdjusted})`;
-  }
   if (isPattern) {
     // Sandbox and atomize
-    return `(?:${value})`;
+    return wrap(value);
   }
   // Sandbox and atomize
-  return hasNonEmptyBoundary ? `(?:${escapedValue})` : escapedValue;
+  return hasNonEmptyBoundary ? wrap(escapedValue) : escapedValue;
+}
+
+/**
+@param {string} str
+@returns {string}
+*/
+function wrap(str) {
+  return `(?:${str})`;
 }
 
 /**
@@ -343,7 +348,7 @@ function transformForLocalFlags(re, outerFlags) {
     if (envSupportsFlagGroups) {
       modFlagsObj.i = re.ignoreCase;
     } else {
-      throw new Error('Pattern modifiers not supported, so flag i on the outer and interpolated regex must match');
+      throw new Error('Flag groups not supported, so flag i on the outer and interpolated regex must match');
     }
   }
   if (re.dotAll !== outerFlags.includes('s')) {

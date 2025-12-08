@@ -62,7 +62,7 @@ describe('interpolation: regexes', () => {
       expect('aa').toMatch(regex`^${pattern`(?<n>)`}${/(.)\1/}$`);
     });
 
-    it('should treat pattern modifiers as noncapturing when adjusting backreferences', () => {
+    it('should treat flag groups as noncapturing when adjusting backreferences', () => {
       if (!envSupportsFlagGroups) {
         pending('requires support for flag groups (Node.js 23)');
       }
