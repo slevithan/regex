@@ -219,6 +219,10 @@ describe('subroutine definition groups', () => {
     `).toThrow();
   });
 
+  it('should allow inclusion via an interpolated pattern', () => {
+    expect('ab').toMatch(regex`^\g<n>$${pattern`(?(DEFINE)(?<n>..))`}`);
+  });
+
   it('should not allow multiple definition groups', () => {
     expect(() => regex`(?(DEFINE))(?(DEFINE))`).toThrow();
     expect(() => regex`(?(DEFINE)) . (?(DEFINE))`).toThrow();

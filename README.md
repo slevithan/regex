@@ -632,9 +632,9 @@ As an alternative to interpolating `RegExp` instances, you might sometimes want 
 
 - Adding a pattern inside a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
 - When you don't want the pattern to specify its own, local flags.
-- Composing a dynamic number of strings that are escaped via `regex` interpolation.
+- Embedding a pre-escaped string, or composing a dynamic number of escaped strings.
 - Dynamically adding backreferences without their corresponding captures (which wouldn't be valid as a standalone `RegExp`).
-<!-- - Sharing a subroutine definition group (which isn't native syntax) across regexes. -->
+- Sharing a subroutine definition group across regexes.
 
 For all of these cases, you can `import {pattern} from 'regex'` and then interpolate `pattern(str)` to avoid escaping special characters in the string or creating an intermediary `RegExp` instance. You can also use `` pattern`…` `` as a tag, as shorthand for ``pattern(String.raw`…`)``.
 

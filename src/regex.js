@@ -92,7 +92,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
   let runningContext;
   // Intersperse raw template strings and substitutions
   prepped.template.raw.forEach((raw, i) => {
-    const hasNonEmptyBoundary = !!(prepped.template.raw[i] || prepped.template.raw[i + 1]);
+    const hasNonEmptyRawBoundary = !!(prepped.template.raw[i] || prepped.template.raw[i + 1]);
     // Even with flag n enabled, we might have named captures
     precedingCaptures += countCaptures(raw);
     // Sandbox `\0` in character classes. Not needed outside character classes because in other
@@ -107,7 +107,7 @@ const regexFromTemplate = (options, template, ...substitutions) => {
         opts.flags,
         regexContext,
         charClassContext,
-        hasNonEmptyBoundary,
+        hasNonEmptyRawBoundary,
         precedingCaptures
       );
       if (substitution instanceof RegExp) {
@@ -249,19 +249,19 @@ function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
 @param {string} flags
 @param {string} regexContext
 @param {string} charClassContext
-@param {boolean} hasNonEmptyBoundary
+@param {boolean} hasNonEmptyRawBoundary
 @param {number} precedingCaptures
 @returns {string}
 */
-function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBoundary, precedingCaptures) {
+function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyRawBoundary, precedingCaptures) {
   if (value instanceof RegExp) {
     if (regexContext !== RegexContext.DEFAULT) {
       throw new Error('Cannot interpolate a RegExp at this position because the syntax context does not match');
     }
     const transformed = transformForLocalFlags(value, flags);
-    const backrefsAdjusted = adjustNumberedBackrefs(transformed.value, precedingCaptures);
-    // Sandbox and atomize; if we used a pattern modifier it has the same effect
-    return transformed.usedModifier ? backrefsAdjusted : wrap(backrefsAdjusted);
+    const backrefsAdjusted = adjustNumberedBackrefs(transformed, precedingCaptures);
+    // Sandbox and atomize
+    return wrapIfUnsafe(backrefsAdjusted);
   }
 
   if (
@@ -299,7 +299,8 @@ function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBo
     enclosedTokenCharClassContexts.has(charClassContext)
   ) {
     return isPattern ? value : escapedValue;
-  } else if (regexContext === RegexContext.CHAR_CLASS) {
+  }
+  if (regexContext === RegexContext.CHAR_CLASS) {
     if (isPattern) {
       if (hasUnescaped(value, '^-|^&&|-$|&&$')) {
         // Sandboxing so we don't change the chars outside the pattern into being part of an
@@ -316,24 +317,25 @@ function interpolate(value, flags, regexContext, charClassContext, hasNonEmptyBo
   }
   if (isPattern) {
     // Sandbox and atomize
-    return wrap(value);
+    return wrapIfUnsafe(value);
   }
-  // Sandbox and atomize
-  return hasNonEmptyBoundary ? wrap(escapedValue) : escapedValue;
+  // Sandbox and atomize, but avoid noise from noncapturing group if unnecessary (safe to avoid
+  // because interpolated patterns and regexes are always wrapped)
+  return hasNonEmptyRawBoundary ? `(?:${escapedValue})` : escapedValue;
 }
 
 /**
 @param {string} str
 @returns {string}
 */
-function wrap(str) {
-  return `(?:${str})`;
+function wrapIfUnsafe(str) {
+  return (str.startsWith('(') && str.endsWith(')')) ? str : `(?:${str})`;
 }
 
 /**
 @param {RegExp} re
 @param {string} outerFlags
-@returns {{value: string; usedModifier?: boolean;}}
+@returns {string}
 */
 function transformForLocalFlags(re, outerFlags) {
   /** @type {{i: boolean | null; m: boolean | null; s: boolean | null;}} */
@@ -374,13 +376,10 @@ function transformForLocalFlags(re, outerFlags) {
       modifier += `-${modOff}`;
     }
     if (modifier) {
-      return {
-        value: `(?${modifier}:${value})`,
-        usedModifier: true,
-      };
+      return `(?${modifier}:${value})`;
     }
   }
-  return {value};
+  return value;
 }
 
 export {
