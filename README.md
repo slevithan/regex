@@ -1,8 +1,8 @@
 <div align="center">
   <a href="https://github.com/slevithan/regex#readme">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/slevithan/regex@5.0.1/media/regex-logo-dark.svg">
-      <img alt="regex logo" height="180" src="https://cdn.jsdelivr.net/gh/slevithan/regex@5.0.1/media/regex-logo.svg">
+      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo-dark.svg">
+      <img alt="regex logo" height="180" src="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo.svg">
     </picture>
   </a>
   <br><br>
