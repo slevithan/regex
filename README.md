@@ -191,7 +191,7 @@ const DATE_FILTER_RE = regex`
 `;
 ```
 
-If desired, the refactored version can be minified to a native regex literal using Regex+'s Babel plugin.
+If desired, the refactored version can be minified back into a regex literal during a build step, using Regex+'s Babel plugin.
 
 ### IP address regex
 
@@ -230,7 +230,7 @@ const IP_REGEX = regex('i')`
 `;
 ```
 
-Note that the refactored regex intentionally reproduces the original's matches exactly, even though there are some cases where it doesn't follow the IPv6 spec. However, since it's written in a maintainable way, the bugs are much more easily spotted and fixed. Good luck with updating the original regex!
+The refactored regex intentionally reproduces the original's matches exactly, even though there are some cases where it doesn't follow the IPv6 spec. However, since it's written in a maintainable way, the bugs are much more easily spotted and fixed. Good luck with updating the original regex!
 </details>
 
 ## ❓ Context
@@ -252,9 +252,9 @@ Regex+ adds all of these features and returns native `RegExp` instances. It alwa
 
 ## 🦾 Extended regex syntax
 
-Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. Those days are over. Regex+ builds on the many regex features [added in new JavaScript versions](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) by adding the key remaining pieces (via its extended syntax and implicit flags) that are needed to stand alongside or surpass other major flavors.
+Historically, JavaScript regexes were not as powerful or readable as other major regex flavors like Java, .NET, PCRE, Perl, Python, and Ruby. Those days are over. Regex+ builds on the many regex features [added in new JavaScript versions](https://github.com/slevithan/awesome-regex#javascript-regex-evolution) and adds the key remaining pieces (via its extended syntax and implicit flags) that are needed to stand alongside or surpass other major flavors.
 
-The following syntax is added on top of the regex features your JavaScript environment supports natively. Extended syntax works by being transpiled into native syntax, often in complex ways that are impractical to write by hand.
+The following syntax is added to the regex features your JavaScript environment supports natively. Extended syntax is transpiled into native features, often in complex ways that are impractical to write by hand.
 
 ### Atomic groups
 
@@ -488,7 +488,7 @@ Flag <kbd>v</kbd> and emulated flags <kbd>x</kbd> and <kbd>n</kbd> are always on
 
 ### Flag `v`
 
-JavaScript's native flag <kbd>v</kbd> (see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)) gives you the best level of Unicode support, strict errors, and all the latest regex features like multicharacter properties of strings and character class subtraction/intersection. It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
+JavaScript's native flag <kbd>v</kbd> (`unicodeSets`, see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)) gives you the best level of Unicode support, strict errors, and all the latest regex features like multicharacter properties of strings and character class subtraction/intersection. It's always on when using `regex`, which helps avoid numerous Unicode-related bugs, and means there's only one way to parse a regex instead of [four](#-context) (so you only need to remember one set of regex syntax and behavior).
 
 Flag <kbd>v</kbd> is applied to the full pattern after interpolation happens.
 
