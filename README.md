@@ -1,16 +1,14 @@
-<div align="center">
-  <a href="https://github.com/slevithan/regex#readme">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo-dark.svg">
-      <img alt="regex logo" height="180" src="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo.svg">
-    </picture>
-  </a>
-  <br><br>
+<a href="https://github.com/slevithan/regex#readme">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo-dark.svg">
+    <img alt="Regex+ logo" width="315" height="140" src="https://cdn.jsdelivr.net/gh/slevithan/regex@6.1.0/media/logo.svg">
+  </picture>
+</a>
+<br><br>
 
-  [![npm version][npm-version-src]][npm-version-href]
-  [![npm downloads][npm-downloads-src]][npm-downloads-href]
-  [![bundle][bundle-src]][bundle-href]
-</div>
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
 
 The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
 
