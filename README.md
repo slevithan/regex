@@ -14,19 +14,19 @@ The Regex+ library (package name: `regex`) provides a template tag named `regex`
 
 **With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
-Features added to native JavaScript regular expressions include insignificant whitespace and comments for readability, atomic groups and possessive quantifiers that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines and subroutine definition groups that enable grammatical patterns with powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
+Features that the `regex` tag adds to native JavaScript regular expressions include insignificant whitespace and comments for readability, atomic groups and possessive quantifiers that can help you avoid [ReDoS](https://en.wikipedia.org/wiki/ReDoS), subroutines and definition groups that enable grammatical patterns with powerful subpattern composition, and context-aware interpolation of regexes, escaped strings, and partial patterns.
 
 Details:
 
 - Lightweight (7 kB minzip)
 - Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), which avoids any runtime dependencies or user runtime cost
-- Supports all ES2025 regex features
-- Type definitions included
+- Supports all ES2026 regex features
+- Includes type definitions
 
 ## 📜 Contents
 
-- [Features](#-features)
 - [Install and use](#️-install-and-use)
+- [Features](#-features)
 - [Examples](#-examples)
 - [Context](#-context)
 - [Extended regex syntax](#-extended-regex-syntax)
@@ -52,39 +52,17 @@ Details:
 - [Compatibility](#-compatibility)
 - [FAQ](#-faq)
 
-## 💎 Features
-
-**A modern regex baseline** so you don't need to continually opt-in to best practices.
-
-- Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
-- New flags:
-  - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
-  - Always-on flag <kbd>n</kbd> ("named capture only" mode) improves regex readability and efficiency.
-- No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
-
-**Extended regex syntax**.
-
-- Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
-- Subroutines and definition groups enable powerful composition, improving readability and maintainability.
-- Recursive matching via an official plugin.
-- Custom syntax plugins supported.
-
-**Context-aware and safe interpolation** of regexes, strings, and partial patterns.
-
-- Interpolated strings have their special characters escaped.
-- Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
-
 ## 🕹️ Install and use
 
-```sh
-npm install regex
-```
+First run `pnpm install regex`, or the equivalent with your package manager of choice.
+
+Then it's just:
 
 ```js
 import {regex} from 'regex';
 
-// Works with all string/regexp methods since it returns a native regexp
 const str = 'abc';
+// Returns a native RegExp instance, so it works with all string/regexp methods
 regex`\w`.test(str); // → true
 str.match(regex('g')`\w`); // → ['a', 'b', 'c']
 ```
@@ -111,6 +89,28 @@ Using a global name:
 </script>
 ```
 </details>
+
+## 💎 Features
+
+**A modern regex baseline** so you don't need to continually opt-in to best practices.
+
+- Always-on flag <kbd>v</kbd> gives you the best level of Unicode support and strict errors.
+- New flags:
+  - Always-on flag <kbd>x</kbd> allows you to freely add whitespace and comments to your regexes.
+  - Always-on flag <kbd>n</kbd> ("named capture only" mode) improves regex readability and efficiency.
+- No unreadable escaped backslashes `\\\\` since it's a raw string template tag.
+
+**Extended regex syntax**.
+
+- Atomic groups and possessive quantifiers can dramatically improve performance and prevent ReDoS.
+- Subroutines and definition groups enable powerful composition, improving readability and maintainability.
+- Recursive matching via an official plugin.
+- Custom syntax plugins supported.
+
+**Context-aware and safe interpolation** of regexes, strings, and partial patterns.
+
+- Interpolated strings have their special characters escaped.
+- Interpolated regexes locally preserve the meaning of their own flags (or their absense), and their numbered backreferences are adjusted to work within the overall pattern.
 
 ## 🪧 Examples
 
@@ -228,7 +228,7 @@ const IP_REGEX = regex('i')`
 `;
 ```
 
-The refactored regex intentionally reproduces the original's matches exactly, even though there are some cases where it doesn't follow the IPv6 spec. However, since it's written in a maintainable way, the bugs are much more easily spotted and fixed. Good luck with updating the original regex!
+The refactored regex intentionally reproduces the original's matches exactly, even though there are some edge cases where it doesn't follow the IPv6 spec. However, since it's written in a maintainable way, the bugs are much more easily spotted and fixed. Good luck if you want to update the original, structureless regex!
 </details>
 
 ## ❓ Context
