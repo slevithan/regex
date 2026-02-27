@@ -10,7 +10,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
 
-The Regex+ library (package name: `regex`) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
+The Regex+ library (`regex` on npm) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
 
 **With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
@@ -19,9 +19,9 @@ Features that the `regex` tag adds to native JavaScript regular expressions incl
 Details:
 
 - Lightweight (7 kB minzip)
-- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), which avoids any runtime dependencies or user runtime cost
+- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), for no runtime cost and zero runtime dependencies
 - Supports all ES2026 regex features
-- Includes type definitions
+- JS library with type definitions included
 
 ## 📜 Contents
 
@@ -161,7 +161,7 @@ regex`^ (?<first>.) ${double} ${double} $`;
 ### Date/time regex
 
 ```js
-// Unmaintainable regex from real-world code for validating a date and time
+// Unmaintainable regex from in-the-wild code for validating a date and time
 const DATE_FILTER_RE =
   /^(since|until):((?!0{3})\d{4}(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|(?!-00:00)[+-](?:[01]\d|2[0-3]):(?:[0-5]\d))?)?)?)?)$/;
 
