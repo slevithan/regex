@@ -19,9 +19,10 @@ Features that the `regex` tag adds to native JavaScript regular expressions incl
 Details:
 
 - Lightweight (7 kB minzip)
-- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), for no runtime cost and zero runtime dependencies
 - Supports all ES2026 regex features
 - JS library with type definitions included
+- Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), for no runtime cost and zero runtime dependencies
+- Has a [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Septh.vscode-regexplus) (3rd party) for highlighting Regex+ syntax
 
 ## 📜 Contents
 
@@ -847,7 +848,7 @@ The final result after running all plugins is provided to the `RegExp` construct
 
 - Setting `unicodeSetsPlugin` to `null` prevents `regex` from applying flag <kbd>v</kbd>'s escaping rules. This can be useful in combination with option `disable: {v: true}` for tools that want to use `regex`'s extended syntax and/or flags but need to accept input with flag <kbd>u</kbd>'s escaping rules.
 - Regex+ is not primarily a backward compatibility library, so in order to remain lightweight, it doesn't transpile flag <kbd>v</kbd>'s new features out of the box. By replacing the default function, you can add backward compatible support for these features. See also: [*Compatibility*](#-compatibility).
-- This plugin runs last, which means it's possible to wrap an existing library (ex: [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)) without the library needing to understand `regex`'s extended syntax.
+- This plugin runs last, which means it's possible to wrap an existing library (ex: [regexpu-core](https://github.com/mathiasbynens/regexpu-core), used by Babel to [transpile <kbd>v</kbd>](https://babel.dev/docs/babel-plugin-transform-unicode-sets-regex)) without the library needing to understand Regex+'s extended syntax.
 
 **`disable`** — A set of options that can be individually disabled by setting their values to `true`.
 
@@ -881,7 +882,7 @@ rewrite('^ (ab | cd)', {flags: 'm'});
 
 The `regex` tag transpiles its input to native `RegExp` instances, so they operate with native performance. The use of `regex` can also be transpiled away via a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), avoiding the tiny overhead of transpiling at runtime.
 
-For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance via `regex`'s [atomic groups](#atomic-groups) and [possessive quantifiers](#possessive-quantifiers).
+For regexes that rely on or have the potential to trigger heavy backtracking, you can dramatically improve beyond native performance by using [atomic groups](#atomic-groups) or [possessive quantifiers](#possessive-quantifiers).
 
 ## 🪶 Compatibility
 
