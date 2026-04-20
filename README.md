@@ -10,7 +10,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
 
-The Regex+ library (`regex` on npm) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for new features that make regexes more powerful and dramatically more readable. The `regex` tag returns native `RegExp` instances that run with native performance and can exceed the performance of regex literals you'd write yourself.
+The Regex+ library (`regex` on npm) provides a template tag named `regex`. This tag modernizes JavaScript regular expressions with always-on best practices and support for key new features that make regexes more powerful and dramatically more readable. It does this while returning native `RegExp` instances that run with native performance.
 
 **With the Regex+ library, JavaScript steps up as one of the best regex flavors** alongside PCRE and Perl, possibly surpassing C++, Java, .NET, Python, and Ruby.
 
@@ -22,7 +22,7 @@ Details:
 - Supports all ES2026 regex features
 - JS library with type definitions included
 - Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), for no runtime cost and zero runtime dependencies
-- Has a [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Septh.vscode-regexplus) (3rd party) for highlighting Regex+ syntax
+- <img src="https://img.shields.io/badge/NEW-78C372" height="12" /> Has a [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Septh.vscode-regexplus) (3rd party) for highlighting Regex+ syntax
 
 ## 📜 Contents
 
@@ -55,9 +55,7 @@ Details:
 
 ## 🕹️ Install and use
 
-First run `pnpm install regex`, or the equivalent with your package manager of choice.
-
-Then it's just:
+First run `pnpm install regex`, or the equivalent with your favorite package manager.
 
 ```js
 import {regex} from 'regex';
@@ -584,7 +582,7 @@ This is also true for other flags that can change how an inner regex is matched:
 
 The `regex` tag escapes any regex special characters in interpolated strings (and values coerced to strings). This escaping is done in a context-aware way that prevents changing the meaning or error status of characters outside the interpolated string.
 
-> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a flag-<kbd>v</kbd>-mode nested union if it contains more than one character node.
+> As with all interpolation in `regex`, escaped strings are sandboxed and treated as complete units. For example, a following quantifier repeats the entire escaped string rather than just its last character. And if interpolating into a character class, the escaped string is treated as a nested union class if it contains more than one character node.
 
 As a result, the `regex` tag provides an easy and safe alternative to ES2025's [`RegExp.escape`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape).
 
@@ -627,7 +625,7 @@ These and other issues (including the effects of current and potential future fl
 
 ### Interpolating partial patterns
 
-As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Some example use cases:
+As an alternative to interpolating `RegExp` instances, you might sometimes want to interpolate partial regex patterns as strings. Example use cases:
 
 - Adding a pattern inside a character class (not allowed for `RegExp` instances since their top-level syntax context doesn't match).
 - When you don't want the pattern to specify its own, local flags.
@@ -886,7 +884,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-Regex+ is supported starting with Node.js 14, 2020-era browsers (except Safari, supported as of v16.4 from 2023-03-27), and React Native 0.74.6/0.75.1.
+Regex+ is supported starting with Node.js 14, 2020-era browsers (except Safari, which is supported as of v16.4 from 2023-03-27), and React Native 0.74.6/0.75.1.
 
 <details>
   <summary>Show more details</summary>
