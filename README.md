@@ -22,7 +22,7 @@ Details:
 - Supports all ES2026 regex features
 - JS library with type definitions included
 - Available as a [Babel plugin](https://github.com/slevithan/babel-plugin-transform-regex), for no runtime cost and zero runtime dependencies
-- <img src="https://img.shields.io/badge/NEW-78C372" height="12" /> Has a [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Septh.vscode-regexplus) (3rd party) for highlighting Regex+ syntax
+- 🆕 Has a [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Septh.vscode-regexplus) (3rd party) for highlighting Regex+ syntax
 
 ## 📜 Contents
 
@@ -884,7 +884,7 @@ For regexes that rely on or have the potential to trigger heavy backtracking, yo
 
 ## 🪶 Compatibility
 
-Regex+ is supported starting with Node.js 14, 2020-era browsers (except Safari, which is supported as of v16.4 from 2023-03-27), and React Native 0.74.6/0.75.1.
+Regex+ supports Node.js 14+, 2020-era browsers (except Safari, which is supported as of 2023's v16.4), and React Native 0.74.6/0.75.1.
 
 <details>
   <summary>Show more details</summary>
@@ -955,7 +955,7 @@ Regex+ was created by [Steven Levithan](https://github.com/slevithan) and [contr
 [<img src="https://github.com/antfu.png" width="40" height="40">](https://github.com/antfu)
 [<img src="https://github.com/brc-dd.png" width="40" height="40">](https://github.com/brc-dd)
 
-If you want to support this project, I'd love your help by contributing improvements, sharing it with others, or [sponsoring](https://github.com/sponsors/slevithan) ongoing development.
+[Become a sponsor](https://github.com/sponsors/slevithan).
 
 © 2024–present. MIT License.
 
