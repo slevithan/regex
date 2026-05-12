@@ -183,7 +183,7 @@ function possessive(expression) {
           throw new Error(`Invalid quantifier "${m}"`);
         }
         let charsAdded = -1; // -1 for removed trailing `+`
-        // Possessivizing fixed repetition quantifiers like `{2}` does't change their behavior, so
+        // Possessivizing fixed repetition quantifiers like `{2}` doesn't change their behavior, so
         // avoid doing so (convert them to greedy)
         if (/^\{\d+\}$/.test(qBase)) {
           expression = spliceStr(expression, index + qBase.length, qMod, '');
