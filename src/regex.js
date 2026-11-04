@@ -5,6 +5,7 @@ import {clean, flagXPreprocessor} from './flag-x.js';
 import {Pattern, pattern} from './pattern.js';
 import {RegExpSubclass} from './subclass.js';
 import {subroutines} from './subroutines.js';
+import {normalizeCharClassOpeners} from './utils-internals.js';
 import {adjustNumberedBackrefs, CharClassContext, containsCharClassUnion, countCaptures, enclosedTokenCharClassContexts, enclosedTokenRegexContexts, envSupportsFlagGroups, envSupportsFlagV, escapeV, getBreakoutChar, getEndContextForIncompleteExpression, preprocess, RegexContext, sandboxLoneCharClassCaret, sandboxLoneDoublePunctuatorChar, sandboxUnsafeNulls} from './utils.js';
 import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 
@@ -14,6 +15,7 @@ import {Context, hasUnescaped, replaceUnescaped} from 'regex-utilities';
   flags?: string;
   captureTransfers?: Map<number, Array<number>>;
   hiddenCaptures?: Array<number>;
+  unicodeSets?: boolean;
 }} PluginData
 @typedef {{
   pattern: string;
@@ -195,6 +197,20 @@ function getOptions(options) {
 }}
 */
 function runPreprocessors(template, substitutions, options) {
+  if (!options.unicodeSetsPlugin && options.flags.includes('u')) {
+    const context = {inCharClass: false};
+    ({template, substitutions} = preprocess(
+      template,
+      substitutions,
+      (value, runningContext) => ({
+        transformed: normalizeCharClassOpeners(
+          String(value), false, !options.disable.x, context
+        ),
+        runningContext,
+      }),
+      options
+    ));
+  }
   const preprocessors = [];
   // Implicit flag x is handled first because otherwise some regex syntax (if unescaped) within
   // comments could cause problems when parsing
@@ -222,6 +238,7 @@ function runPreprocessors(template, substitutions, options) {
 */
 function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
   let hiddenCaptures = [];
+  const unicodeSets = flags.includes('v') || !!unicodeSetsPlugin;
   [ ...plugins, // Run first, so provided plugins can output extended syntax
     ...(disable.subroutines ? [] : [subroutines]),
     ...(disable.atomic      ? [] : [possessive, atomic]),
@@ -229,7 +246,7 @@ function runPlugins(expression, {flags, plugins, unicodeSetsPlugin, disable}) {
     // Run last, so it doesn't have to worry about parsing extended syntax
     ...(!unicodeSetsPlugin  ? [] : [unicodeSetsPlugin]),
   ].forEach(plugin => {
-    const result = plugin(expression, {flags, hiddenCaptures});
+    const result = plugin(expression, {flags, hiddenCaptures, unicodeSets});
     if (typeof result?.pattern !== 'string') {
       throw new Error('Plugin must return an object with a string property "pattern"');
     }

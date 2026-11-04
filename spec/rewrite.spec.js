@@ -1,3 +1,6 @@
+import {atomic, possessive} from '../src/atomic.js';
+import {subroutines} from '../src/subroutines.js';
+
 describe('rewrite', () => {
   function toRegExp(expression, options) {
     const result = rewrite(expression, options);
@@ -68,6 +71,33 @@ describe('rewrite', () => {
 
     it('should process subroutine definition groups', () => {
       expect(toRegExp('\\g<a>(?(DEFINE)(?<a>.))').exec('a').groups).toBeUndefined();
+    });
+
+    it('should process extended syntax around literal [ with Unicode sets disabled', () => {
+      const options = {disable: {v: true}, unicodeSetsPlugin: null};
+
+      expect('[').toMatch(toRegExp('(?>[[])', options));
+      expect('[').toMatch(toRegExp('[[]++', options));
+      expect('[[').toMatch(toRegExp('\\g<a>(?(DEFINE)(?<a>[[]))', options));
+      expect('[').toMatch(toRegExp('# ignored [\n(?>[[])', options));
+      expect('[').toMatch(regex(options)`(?>[${pattern`[`}])`);
+      expect('[').toMatch(regex(options)`(?>[${''}[])`);
+    });
+
+    it('should preserve extended syntax after a comment across interpolation', () => {
+      const options = {disable: {v: true}, unicodeSetsPlugin: null};
+      expect('[').toMatch(regex(options)`# ignored [${pattern`(?>[[])`}`);
+    });
+
+    it('should support flag u in standalone internal plugins', () => {
+      const data = {flags: 'u'};
+      expect('[').toMatch(new RegExp(atomic('(?>[[])', data).pattern, 'u'));
+      expect('[[').toMatch(new RegExp(
+        atomic(possessive('^[[]++$', data).pattern, data).pattern, 'u'
+      ));
+      expect('[[').toMatch(new RegExp(
+        subroutines('^(?<a>[[])\\g<a>$', data).pattern, 'u'
+      ));
     });
   });
 
