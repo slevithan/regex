@@ -1,5 +1,5 @@
 import {capturingDelim, countCaptures, namedCapturingDelim} from './utils.js';
-import {incrementIfAtLeast, spliceStr} from './utils-internals.js';
+import {incrementIfAtLeast, normalizeCharClassOpeners, spliceStr} from './utils-internals.js';
 import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped, replaceUnescaped} from 'regex-utilities';
 /**
 @import {PluginData, PluginResult} from './regex.js';
@@ -11,6 +11,10 @@ import {Context, execUnescaped, forEachUnescaped, getGroupContents, hasUnescaped
 @returns {PluginResult}
 */
 function subroutines(expression, data) {
+  expression = normalizeCharClassOpeners(
+    expression,
+    data?.unicodeSets ?? data?.flags?.includes('v') ?? true
+  );
   // NOTE: subroutines and definition groups fully support numbered backreferences and unnamed
   // captures (from interpolated regexes or from turning implicit flag n off), and all of the
   // complex forward and backward backreference adjustments that can result
