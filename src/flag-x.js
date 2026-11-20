@@ -136,7 +136,10 @@ function flagXPreprocessor(value, runningContext, options) {
         // Avoid escaping lone double punctuators unless required, since some of them are not
         // allowed to be escaped with flag u (the `unicodeSetsPlugin` already unescapes them when
         // using flag u, but it can be set to `null` via an option)
-        if (charClassWs.test(nextChar) || m === '^') {
+        if (
+          m === '^' ||
+          (charClassWs.test(nextChar) && (options.flags.includes('v') || options.unicodeSetsPlugin))
+        ) {
           updated = sandboxLoneDoublePunctuatorChar(updated);
         }
         transformed += update(updated);
