@@ -309,6 +309,39 @@ describe('flag x', () => {
       }
     });
 
+    it('should preserve flag-u punctuation when Unicode-set escaping is disabled', () => {
+      const options = {disable: {v: true}, unicodeSetsPlugin: null};
+      const chars = '&!#$%*+,.:;<=>?@^`~'.split('');
+      chars.forEach(c => {
+        [`[a${c} b]`, `[a${c}\tb]`, `[ ${c} ]`, `[a${c} ${c}b]`].forEach(value => {
+          const re = regex(options)({raw: [value]});
+          expect(re.flags).withContext(value).toContain('u');
+          expect(c).withContext(value).toMatch(re);
+          expect(' ').withContext(value).not.toMatch(re);
+          expect('\t').withContext(value).not.toMatch(re);
+          expect('z').withContext(value).not.toMatch(re);
+        });
+      });
+    });
+
+    it('should preserve flag-u punctuation in rewritten and interpolated patterns', () => {
+      const options = {disable: {v: true}, unicodeSetsPlugin: null};
+      const result = rewrite('[a# b]', options);
+      expect('#').toMatch(new RegExp(result.pattern, result.flags));
+      expect('#').toMatch(regex(options)`${pattern`[a# b]`}`);
+      expect('#').toMatch(regex(options)`[a# ${''}b]`);
+    });
+
+    it('should keep flag-u character class negation and explicit escape errors', () => {
+      const options = {disable: {v: true}, unicodeSetsPlugin: null};
+      expect('^').toMatch(regex(options)`[ ^ ]`);
+      expect('a').not.toMatch(regex(options)`[ ^ ]`);
+      expect('a').not.toMatch(regex(options)`[^ a]`);
+      expect('z').toMatch(regex(options)`[^ a]`);
+      expect(() => regex(options)`[a\# b]`).toThrow();
+      expect(' ').toMatch(regex({...options, disable: {v: true, x: true}})`[a# b]`);
+    });
+
     it('should match (as a literal character) a lone double-punctuator character separated from its partner by whitespace', () => {
       const doublePunctuatorChars = '&!#$%*+,.:;<=>?@^`~'.split('');
       doublePunctuatorChars.forEach(c => {
